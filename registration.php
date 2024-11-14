@@ -1,6 +1,6 @@
 <?php
 \Magento\Framework\Component\ComponentRegistrar::register(
     \Magento\Framework\Component\ComponentRegistrar::MODULE,
-    'Gene_BetterCheckoutNewModule',
+    'Gene_BetterCheckoutPPCP',
     __DIR__
 );
