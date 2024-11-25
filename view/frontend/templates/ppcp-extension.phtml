@@ -1,0 +1,25 @@
+<?php
+/**
+ * @var \Magento\Framework\View\Element\Template $block
+ * @var \Magento\Framework\Escaper $escaper
+ * @var \Gene\BetterCheckout\ViewModel\Assets $assetViewModel
+ */
+
+$expressGooglePay = $block->getViewFileUrl('Gene_BetterCheckoutPPCP::js/checkout/dist/components/ExpressPayments/GooglePay/GooglePay.min.js');
+$expressApplePay = $block->getViewFileUrl('Gene_BetterCheckoutPPCP::js/checkout/dist/components/ExpressPayments/ApplePay/ApplePay.min.js');
+$expressPayPal = $block->getViewFileUrl('Gene_BetterCheckoutPPCP::js/checkout/dist/components/ExpressPayments/PayPal/PayPal.min.js');
+
+$styles = $block->getViewFileUrl('Gene_BetterCheckoutPPCP::js/checkout/dist/styles.css');
+?>
+
+<script>
+    window.geneCheckout = window.geneCheckout || {};
+    window.geneCheckout.expressPaymentMethods = window.geneCheckout.expressPaymentMethods || {};
+
+    // Express Payments
+    window.geneCheckout.expressPaymentMethods.PpcpGooglePay = "<?= $escaper->escapeJs($expressGooglePay) ?>";
+    window.geneCheckout.expressPaymentMethods.PpcpApplePay = "<?= $escaper->escapeJs($expressApplePay) ?>";
+    window.geneCheckout.expressPaymentMethods.PpcpPayPal = "<?= $escaper->escapeJs($expressPayPal) ?>";
+</script>
+
+<link rel="stylesheet" href="<?= $escaper->escapeHtmlAttr($styles) ?>" />
