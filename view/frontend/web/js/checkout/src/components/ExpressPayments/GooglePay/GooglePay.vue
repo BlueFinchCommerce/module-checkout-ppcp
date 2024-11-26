@@ -1,7 +1,6 @@
 <template>
   <div
     id="ppcp-google-pay"
-    ref="PPCPGooglePay"
     :class="!googlePayLoaded ? 'text-loading' : ''"
     :data-cy="'instant-checkout-PPCPGooglePay'"
   />
@@ -9,9 +8,10 @@
 
 <script>
 import { mapActions, mapState } from 'pinia';
-import { markRaw } from 'vue';
-
 import usePpcpStore from '../../../stores/PpcpStore';
+
+// Helpers
+import loadScript from "../../../helpers/addScript";
 
 export default {
   name: 'PpcpGooglePay',
@@ -28,7 +28,11 @@ export default {
   },
   computed: {
     ...mapState(usePpcpStore, [
-
+      'google',
+      'environment',
+      'buyerCountry',
+      'productionClientId',
+      'sandboxClientId',
     ]),
   },
   async created() {
@@ -46,64 +50,34 @@ export default {
     await configStore.getInitialConfig();
     await cartStore.getCart();
 
-    const googlePayConfig = paymentStore.availableMethods.find((method) => (
-      method.code === this.method
-    ));
-
-    if (!googlePayConfig) {
-      // Early return if Braintree Google Pay isn't enabled.
-      paymentStore.removeExpressMethod(this.key);
-      this.googlePayLoaded = true;
-      return;
-    }
-
-    await this.createClientToken();
-
-    this.googleClient = markRaw(new window.google.payments.api.PaymentsClient({
-      environment: this.environment === 'sandbox' ? 'TEST' : 'PRODUCTION',
-      paymentDataCallbacks: {
-        ...(cartStore.cart.is_virtual ? {} : { onPaymentDataChanged: this.onPaymentDataChanged }),
-        onPaymentAuthorized: this.onPaymentAuthorized,
-      },
-    }));
-
-    this.instance = await markRaw(braintree.client.create({
-      authorization: this.clientToken,
-    }));
-
-    braintree.googlePayment.create({
-      client: this.instance,
-      googlePayVersion: 2,
-    }, (error, googlePaymentInstance) => {
-      this.googlePaymentInstance = markRaw(googlePaymentInstance);
-
-      this.googleClient
-        .isReadyToPay({
-          apiVersion: 2,
-          apiVersionMinor: 0,
-          allowedPaymentMethods: googlePaymentInstance.createPaymentDataRequest().allowedPaymentMethods,
-          existingPaymentMethodRequired: true,
-        }).then(async (isReadyToPay) => {
-        if (isReadyToPay) {
-          const button = this.googleClient.createButton({
-            buttonColor: this.google.buttonColor,
-            buttonType: 'buy',
-            buttonSizeMode: 'fill',
-            onClick: () => this.onClick(googlePayConfig.code),
-          });
-          this.$refs.braintreeGooglePay.append(button);
-          this.googlePayLoaded = true;
-        }
-      });
-    });
-  },
-  mounted() {
-    const googlePayScript = document.createElement('script');
-    googlePayScript.setAttribute('src', 'https://pay.google.com/gp/p/js/pay.js');
-    document.head.appendChild(googlePayScript);
+    await this.getInitialConfigValues();
+    this.addSdkScript();
   },
   methods: {
-    ...mapActions(usePpcpStore, ['createClientToken']),
+    ...mapActions(usePpcpStore, ['getInitialConfigValues']),
+    addSdkScript() {
+      const loadPayPalScript = loadScript();
+      const params = {
+        'intent': this.google.paymentAction,
+        'components': 'googlepay',
+      };
+
+      if (this.environment === 'sandbox') {
+        params['buyer-country'] = this.buyerCountry;
+        params['client-id'] = this.sandboxClientId;
+      } else {
+        params['client-id'] = this.productionClientId;
+      }
+
+      loadPayPalScript(
+        'https://www.paypal.com/sdk/js',
+        params
+      ).then(() => {
+        console.log('loadded')
+      }).catch((error) => {
+        console.error('Failed to load GooglePay script:', error);
+      });
+    },
     async onClick(type) {
       const [
         agreementStore,

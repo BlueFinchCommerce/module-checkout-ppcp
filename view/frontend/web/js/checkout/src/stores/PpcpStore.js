@@ -74,8 +74,12 @@ export default defineStore('ppcpStore', {
       this.$patch(data);
     },
 
-    getInitialConfigValues() {
-      return `
+    async getInitialConfigValues() {
+      const graphQlRequest = await window.geneCheckout.helpers.loadFromCheckout([
+        'services.graphQlRequest',
+      ]);
+      
+      const request = async () => graphQlRequest(`{
         storeConfig {
           ppcp_environment
           ppcp_active
@@ -114,7 +118,7 @@ export default defineStore('ppcpStore', {
           ppcp_paypal_paylater_message_text_color
           ppcp_paypal_paylater_message_text_size
           ppcp_paypal_paylater_message_text_align
-    
+
           ppcp_venmo_active
           ppcp_venmo_title
           ppcp_venmo_payment_action
@@ -133,11 +137,14 @@ export default defineStore('ppcpStore', {
           ppcp_card_three_d_secure
           ppcp_card_sort_order
         }
-      `;
+      }`).then(this.handleInitialConfig);
+    
+      await this.getCachedResponse(request, 'getInitialConfig');
     },
 
-    handleInitialConfig({ storeConfig }) {
-      if (storeConfig) {
+    async handleInitialConfig(config) {
+      if (config?.data?.storeConfig) {
+        const storeConfig = config.data.storeConfig;
         this.setData({
           environment: storeConfig.ppcp_environment,
           isPPCPenabled: storeConfig.ppcp_active,
@@ -153,7 +160,6 @@ export default defineStore('ppcpStore', {
             threeDSecureStatus: storeConfig.ppcp_card_three_d_secure,
             sortOrder: storeConfig.ppcp_card_sort_order,
           },
-          
           google: {
             buttonColor: storeConfig.ppcp_googlepay_button_colour,
             enabled: storeConfig.ppcp_googlepay_active,
@@ -161,7 +167,6 @@ export default defineStore('ppcpStore', {
             sortOrder: storeConfig.ppcp_googlepay_sort_order,
             title: storeConfig.ppcp_googlepay_title,
           },
-          
           apple: {
             merchantName: storeConfig.ppcp_applepay_merchant_name,
             enabled: storeConfig.ppcp_applepay_active,
@@ -169,7 +174,6 @@ export default defineStore('ppcpStore', {
             sortOrder: storeConfig.ppcp_applepay_sort_order,
             title: storeConfig.ppcp_applepay_title,
           },
-          
           venmo: {
             vaultActive: storeConfig.ppcp_venmo_payment_action,
             enabled: storeConfig.ppcp_venmo_active,
@@ -177,14 +181,12 @@ export default defineStore('ppcpStore', {
             sortOrder: storeConfig.ppcp_venmo_sort_order,
             title: storeConfig.ppcp_venmo_title,
           },
-          
           apm: {
             enabled: storeConfig.ppcp_apm_active,
             title: storeConfig.ppcp_apm_title,
-            sortOrder: storeConfig.ppcp_apm_allowed_methods,
-            allowedPayments: storeConfig.ppcp_apm_sort_order,
+            sortOrder: storeConfig.ppcp_apm_sort_order,
+            allowedPayments: storeConfig.ppcp_apm_allowed_methods,
           },
-          
           paypal: {
             enabled: storeConfig.ppcp_paypal_active,
             vaultActive: storeConfig.ppcp_paypal_vault_active,
