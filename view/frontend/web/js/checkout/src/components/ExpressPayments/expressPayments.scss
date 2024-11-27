@@ -1,0 +1,8 @@
+#ppcp-google-pay {
+  max-height: var(--braintree-express-button-height, 45px);
+
+  button,
+  &.text-loading {
+    height: var(--braintree-express-button-height, 45px);
+  }
+}
