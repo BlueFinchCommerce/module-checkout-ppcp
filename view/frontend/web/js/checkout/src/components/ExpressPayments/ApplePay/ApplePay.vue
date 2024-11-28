@@ -58,15 +58,15 @@ export default {
       'stores.useConfigStore',
     ]);
 
+    await configStore.getInitialConfig();
+    await cartStore.getCart();
+
+    if (!this.apple.merchantName) {
+      await this.getInitialConfigValues();
+    }
+
     if (this.apple.enabled) {
       paymentStore.addExpressMethod(this.key);
-      await configStore.getInitialConfig();
-      await cartStore.getCart();
-
-      if (!this.apple.merchantName) {
-        await this.getInitialConfigValues();
-      }
-
       await this.addSdkScript();
       this.showApplePay();
     } else {

@@ -49,12 +49,12 @@ export default {
       'stores.useConfigStore',
     ]);
 
+    await configStore.getInitialConfig();
+    await cartStore.getCart();
+    await this.getInitialConfigValues();
+
     if (this.google.enabled) {
       paymentStore.addExpressMethod(this.key);
-      await configStore.getInitialConfig();
-      await cartStore.getCart();
-
-      await this.getInitialConfigValues();
       await this.initGooglePay();
     } else {
       paymentStore.removeExpressMethod(this.key);
