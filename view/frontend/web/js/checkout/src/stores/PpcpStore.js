@@ -141,77 +141,78 @@ export default defineStore('ppcpStore', {
 
     async handleInitialConfig(config) {
       if (config?.data?.storeConfig) {
+        const storeconfig = config.data.storeConfig;
         this.setData({
-          environment: config.data.storeConfig.ppcp_environment,
-          isPPCPenabled: config.data.storeConfig.ppcp_active,
-          sandboxClientId: config.data.storeConfig.ppcp_sandbox_client_id,
-          productionClientId: config.data.storeConfig.ppcp_client_id_production,
-          buyerCountry: config.data.storeConfig.ppcp_buyer_country,
+          environment: storeconfig.ppcp_environment,
+          isPPCPenabled: storeconfig.ppcp_active,
+          sandboxClientId: storeconfig.ppcp_sandbox_client_id,
+          productionClientId: storeconfig.ppcp_client_id_production,
+          buyerCountry: storeconfig.ppcp_buyer_country,
 
           card: {
-            enabled: config.data.storeConfig.ppcp_card_active,
-            vaultActive: config.data.storeConfig.ppcp_card_vault_active,
-            title: config.data.storeConfig.ppcp_card_title,
-            paymentAction: config.data.storeConfig.ppcp_card_payment_action,
-            threeDSecureStatus: config.data.storeConfig.ppcp_card_three_d_secure,
-            sortOrder: config.data.storeConfig.ppcp_card_sort_order,
+            enabled: storeconfig.ppcp_card_active,
+            vaultActive: storeconfig.ppcp_card_vault_active,
+            title: storeconfig.ppcp_card_title,
+            paymentAction: storeconfig.ppcp_card_payment_action,
+            threeDSecureStatus: storeconfig.ppcp_card_three_d_secure,
+            sortOrder: storeconfig.ppcp_card_sort_order,
           },
           google: {
-            buttonColor: config.data.storeConfig.ppcp_googlepay_button_colour,
-            enabled: config.data.storeConfig.ppcp_googlepay_active,
-            paymentAction: config.data.storeConfig.ppcp_googlepay_payment_action,
-            sortOrder: config.data.storeConfig.ppcp_googlepay_sort_order,
-            title: config.data.storeConfig.ppcp_googlepay_title,
+            buttonColor: storeconfig.ppcp_googlepay_button_colour,
+            enabled: storeconfig.ppcp_googlepay_active,
+            paymentAction: storeconfig.ppcp_googlepay_payment_action,
+            sortOrder: storeconfig.ppcp_googlepay_sort_order,
+            title: storeconfig.ppcp_googlepay_title,
           },
           apple: {
-            merchantName: config.data.storeConfig.ppcp_applepay_merchant_name,
-            enabled: config.data.storeConfig.ppcp_applepay_active,
-            paymentAction: config.data.storeConfig.ppcp_applepay_payment_action,
-            sortOrder: config.data.storeConfig.ppcp_applepay_sort_order,
-            title: config.data.storeConfig.ppcp_applepay_title,
+            merchantName: storeconfig.ppcp_applepay_merchant_name,
+            enabled: storeconfig.ppcp_applepay_active,
+            paymentAction: storeconfig.ppcp_applepay_payment_action,
+            sortOrder: storeconfig.ppcp_applepay_sort_order,
+            title: storeconfig.ppcp_applepay_title,
           },
           venmo: {
-            vaultActive: config.data.storeConfig.ppcp_venmo_payment_action,
-            enabled: config.data.storeConfig.ppcp_venmo_active,
-            paymentAction: config.data.storeConfig.ppcp_venmo_payment_action,
-            sortOrder: config.data.storeConfig.ppcp_venmo_sort_order,
-            title: config.data.storeConfig.ppcp_venmo_title,
+            vaultActive: storeconfig.ppcp_venmo_payment_action,
+            enabled: storeconfig.ppcp_venmo_active,
+            paymentAction: storeconfig.ppcp_venmo_payment_action,
+            sortOrder: storeconfig.ppcp_venmo_sort_order,
+            title: storeconfig.ppcp_venmo_title,
           },
           apm: {
-            enabled: config.data.storeConfig.ppcp_apm_active,
-            title: config.data.storeConfig.ppcp_apm_title,
-            sortOrder: config.data.storeConfig.ppcp_apm_sort_order,
-            allowedPayments: config.data.storeConfig.ppcp_apm_allowed_methods,
+            enabled: storeconfig.ppcp_apm_active,
+            title: storeconfig.ppcp_apm_title,
+            sortOrder: storeconfig.ppcp_apm_sort_order,
+            allowedPayments: storeconfig.ppcp_apm_allowed_methods,
           },
           paypal: {
-            enabled: config.data.storeConfig.ppcp_paypal_active,
-            vaultActive: config.data.storeConfig.ppcp_paypal_vault_active,
-            title: config.data.storeConfig.ppcp_paypal_title,
-            paymentAction: config.data.storeConfig.ppcp_paypal_payment_action,
-            requireBillingAddress: config.data.storeConfig
+            enabled: storeconfig.ppcp_paypal_active,
+            vaultActive: storeconfig.ppcp_paypal_vault_active,
+            title: storeconfig.ppcp_paypal_title,
+            paymentAction: storeconfig.ppcp_paypal_payment_action,
+            requireBillingAddress: storeconfig
               .ppcp_paypal_require_billing_address,
-            sortOrder: config.data.storeConfig.ppcp_paypal_sort_order,
-            buttonLabel: config.data.storeConfig.ppcp_paypal_button_paypal_label,
-            buttonColor: config.data.storeConfig.ppcp_paypal_button_paypal_color,
-            buttonShape: config.data.storeConfig.ppcp_paypal_button_paypal_shape,
-            payLaterActive: config.data.storeConfig.ppcp_paypal_paylater_enable_paylater,
-            payLaterButtonColour: config.data.storeConfig
+            sortOrder: storeconfig.ppcp_paypal_sort_order,
+            buttonLabel: storeconfig.ppcp_paypal_button_paypal_label,
+            buttonColor: storeconfig.ppcp_paypal_button_paypal_color,
+            buttonShape: storeconfig.ppcp_paypal_button_paypal_shape,
+            payLaterActive: storeconfig.ppcp_paypal_paylater_enable_paylater,
+            payLaterButtonColour: storeconfig
               .ppcp_paypal_paylater_button_paylater_color,
-            payLaterButtonShape: config.data.storeConfig
+            payLaterButtonShape: storeconfig
               .ppcp_paypal_paylater_button_paylater_shape,
-            payLaterMessageActive: config.data.storeConfig
+            payLaterMessageActive: storeconfig
               .ppcp_paypal_paylater_message_enable,
-            payLaterMessageLayout: config.data.storeConfig
+            payLaterMessageLayout: storeconfig
               .ppcp_paypal_paylater_message_layout,
-            payLaterMessageLogoType: config.data.storeConfig
+            payLaterMessageLogoType: storeconfig
               .ppcp_paypal_paylater_message_logo_type,
-            payLaterMessageLogoPosition: config.data.storeConfig
+            payLaterMessageLogoPosition: storeconfig
               .ppcp_paypal_paylater_message_logo_position,
-            payLaterMessageColour: config.data.storeConfig
+            payLaterMessageColour: storeconfig
               .ppcp_paypal_paylater_message_text_color,
-            payLaterMessageTextSize: config.data.storeConfig
+            payLaterMessageTextSize: storeconfig
               .ppcp_paypal_paylater_message_text_size,
-            payLaterMessageTextAlign: config.data.storeConfig
+            payLaterMessageTextAlign: storeconfig
               .ppcp_paypal_paylater_message_text_align,
           },
         });
