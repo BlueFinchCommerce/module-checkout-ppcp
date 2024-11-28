@@ -58,16 +58,20 @@ export default {
       'stores.useConfigStore',
     ]);
 
-    paymentStore.addExpressMethod(this.key);
-    await configStore.getInitialConfig();
-    await cartStore.getCart();
+    if (this.apple.enabled) {
+      paymentStore.addExpressMethod(this.key);
+      await configStore.getInitialConfig();
+      await cartStore.getCart();
 
-    if (!this.apple.merchantName) {
-      await this.getInitialConfigValues();
+      if (!this.apple.merchantName) {
+        await this.getInitialConfigValues();
+      }
+
+      await this.addSdkScript();
+      this.showApplePay();
+    } else {
+      paymentStore.removeExpressMethod(this.key);
     }
-
-    await this.addSdkScript();
-    this.showApplePay();
   },
   methods: {
     ...mapActions(usePpcpStore, ['getInitialConfigValues']),
