@@ -1,0 +1,20 @@
+#ppcp-google-pay {
+  max-height: var(--braintree-express-button-height, 45px);
+}
+#ppcp-google-pay button, #ppcp-google-pay.text-loading {
+  height: var(--braintree-express-button-height, 45px);
+}
+
+#ppcp-google-pay {
+  max-height: var(--braintree-express-button-height, 45px);
+}
+#ppcp-google-pay button, #ppcp-google-pay.text-loading {
+  height: var(--braintree-express-button-height, 45px);
+}
+
+#ppcp-google-pay {
+  max-height: var(--braintree-express-button-height, 45px);
+}
+#ppcp-google-pay button, #ppcp-google-pay.text-loading {
+  height: var(--braintree-express-button-height, 45px);
+}

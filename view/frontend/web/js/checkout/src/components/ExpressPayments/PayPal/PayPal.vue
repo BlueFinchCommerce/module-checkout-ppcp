@@ -5,9 +5,6 @@
 <script>
 export default {
   name: 'PpcpPayPal',
-  mounted() {
-    console.log('PpcpPayPal')
-  },
 };
 </script>
 
