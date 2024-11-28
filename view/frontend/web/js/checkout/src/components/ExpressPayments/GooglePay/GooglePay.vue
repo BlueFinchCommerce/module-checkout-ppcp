@@ -22,7 +22,7 @@ export default {
     return {
       googlePayNoShippingMethods: '',
       googlePayLoaded: false,
-      googlepayConfig: null,
+      googlePayConfig: null,
       key: 'ppcpGooglePay',
       method: 'ppcp_googlepay',
       orderID: null,
@@ -35,7 +35,6 @@ export default {
       'buyerCountry',
       'productionClientId',
       'sandboxClientId',
-      'google',
     ]),
   },
   async created() {
@@ -67,8 +66,8 @@ export default {
     async initGooglePay() {
       try {
         await this.addSdkScript();
-        const googlepayConfig = await this.deviceSupported();
-        const clientConfig = await this.createGooglePayClient(googlepayConfig);
+        const googlePayConfig = await this.deviceSupported();
+        const clientConfig = await this.createGooglePayClient(googlePayConfig);
         const button = await this.createGooglePayButton(clientConfig);
 
         if (button) {
@@ -117,13 +116,13 @@ export default {
         this.googlepay = window.paypal_ppcp_googlepay.Googlepay();
 
         this.googlepay.config()
-          .then(async (googlepayConfig) => {
-            if (googlepayConfig.isEligible) {
-              googlepayConfig.allowedPaymentMethods.forEach((method) => {
+          .then(async (googlePayConfig) => {
+            if (googlePayConfig.isEligible) {
+              googlePayConfig.allowedPaymentMethods.forEach((method) => {
                 //  eslint-disable-next-line no-param-reassign
                 method.parameters.billingAddressParameters.phoneNumberRequired = true;
               });
-              resolve(googlepayConfig);
+              resolve(googlePayConfig);
             } else {
               reject(new Error('Device not eligible for Google Pay'));
             }
@@ -134,7 +133,7 @@ export default {
       });
     },
 
-    createGooglePayClient(googlepayConfig) {
+    createGooglePayClient(googlePayConfig) {
       const paymentDataCallbacks = {
         onPaymentAuthorized: this.onPaymentAuthorized,
       };
@@ -142,7 +141,7 @@ export default {
       if (this.onPaymentDataChanged) {
         paymentDataCallbacks.onPaymentDataChanged = (data) => this.onPaymentDataChanged(
           data,
-          googlepayConfig,
+          googlePayConfig,
         );
       }
 
@@ -152,13 +151,13 @@ export default {
       });
 
       return this.googlePayClient.isReadyToPay({
-        apiVersion: googlepayConfig.apiVersion,
-        apiVersionMinor: googlepayConfig.apiVersionMinor,
-        allowedPaymentMethods: googlepayConfig.allowedPaymentMethods,
+        apiVersion: googlePayConfig.apiVersion,
+        apiVersionMinor: googlePayConfig.apiVersionMinor,
+        allowedPaymentMethods: googlePayConfig.allowedPaymentMethods,
       })
         .then((response) => {
           if (response.result) {
-            return googlepayConfig;
+            return googlePayConfig;
           }
           return null;
         });
@@ -173,7 +172,7 @@ export default {
       });
     },
 
-    async onClick(googlepayConfig) {
+    async onClick(googlePayConfig) {
       const [
         agreementStore,
         cartStore,
@@ -199,7 +198,7 @@ export default {
       }
       shippingMethodsStore.setNotClickAndCollect();
 
-      const paymentDataRequest = { ...googlepayConfig };
+      const paymentDataRequest = { ...googlePayConfig };
       const callbackIntents = ['PAYMENT_AUTHORIZATION'];
       const requiresShipping = this.onPaymentDataChanged && !cartStore.cart.is_virtual;
 
@@ -207,14 +206,14 @@ export default {
         callbackIntents.push('SHIPPING_ADDRESS', 'SHIPPING_OPTION');
       }
 
-      paymentDataRequest.allowedPaymentMethods = googlepayConfig.allowedPaymentMethods;
+      paymentDataRequest.allowedPaymentMethods = googlePayConfig.allowedPaymentMethods;
       paymentDataRequest.transactionInfo = {
-        countryCode: googlepayConfig.countryCode,
+        countryCode: googlePayConfig.countryCode,
         currencyCode: configStore.currencyCode,
         totalPriceStatus: 'FINAL',
         totalPrice: (cartStore.cartGrandTotal / 100).toString(),
       };
-      paymentDataRequest.merchantInfo = googlepayConfig.merchantInfo;
+      paymentDataRequest.merchantInfo = googlePayConfig.merchantInfo;
       paymentDataRequest.shippingAddressRequired = requiresShipping;
       paymentDataRequest.shippingAddressParameters = {
         phoneNumberRequired: requiresShipping,
@@ -233,7 +232,7 @@ export default {
         });
     },
 
-    async onPaymentDataChanged(data, googlepayConfig) {
+    async onPaymentDataChanged(data, googlePayConfig) {
       const [
         cartStore,
         configStore,
@@ -326,7 +325,7 @@ export default {
               totalPriceStatus: 'FINAL',
               totalPrice: cartStore.cart.prices.grand_total.value.toString(),
               totalPriceLabel: 'Total',
-              countryCode: googlepayConfig.countryCode,
+              countryCode: googlePayConfig.countryCode,
             };
 
             resolve(paymentDataRequestUpdate);
