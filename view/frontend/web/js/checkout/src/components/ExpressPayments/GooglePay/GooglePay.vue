@@ -49,15 +49,20 @@ export default {
       'stores.useConfigStore',
     ]);
 
+    paymentStore.addExpressMethod(this.key);
     await configStore.getInitialConfig();
     await cartStore.getCart();
     await this.getInitialConfigValues();
 
-    if (this.google.enabled) {
-      paymentStore.addExpressMethod(this.key);
+    const googlePayConfig = paymentStore.availableMethods.find((method) => (
+      method.code === this.method
+    ));
+
+    if (googlePayConfig) {
       await this.initGooglePay();
     } else {
       paymentStore.removeExpressMethod(this.key);
+      this.googlePayLoaded = true;
     }
   },
   mounted() {

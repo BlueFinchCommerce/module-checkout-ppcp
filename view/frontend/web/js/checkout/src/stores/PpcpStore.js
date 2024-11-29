@@ -144,13 +144,13 @@ export default defineStore('ppcpStore', {
         const storeconfig = config.data.storeConfig;
         this.setData({
           environment: storeconfig.ppcp_environment,
-          isPPCPenabled: storeconfig.ppcp_active === 1,
+          isPPCPenabled: storeconfig.ppcp_active === '1',
           sandboxClientId: storeconfig.ppcp_sandbox_client_id,
           productionClientId: storeconfig.ppcp_client_id_production,
           buyerCountry: storeconfig.ppcp_buyer_country,
 
           card: {
-            enabled: storeconfig.ppcp_card_active === 1,
+            enabled: storeconfig.ppcp_card_active === '1',
             vaultActive: storeconfig.ppcp_card_vault_active,
             title: storeconfig.ppcp_card_title,
             paymentAction: storeconfig.ppcp_card_payment_action,
@@ -159,33 +159,33 @@ export default defineStore('ppcpStore', {
           },
           google: {
             buttonColor: storeconfig.ppcp_googlepay_button_colour,
-            enabled: storeconfig.ppcp_googlepay_active === 1,
+            enabled: storeconfig.ppcp_googlepay_active === '1',
             paymentAction: storeconfig.ppcp_googlepay_payment_action,
             sortOrder: storeconfig.ppcp_googlepay_sort_order,
             title: storeconfig.ppcp_googlepay_title,
           },
           apple: {
             merchantName: storeconfig.ppcp_applepay_merchant_name,
-            enabled: storeconfig.ppcp_applepay_active === 1,
+            enabled: storeconfig.ppcp_applepay_active === '1',
             paymentAction: storeconfig.ppcp_applepay_payment_action,
             sortOrder: storeconfig.ppcp_applepay_sort_order,
             title: storeconfig.ppcp_applepay_title,
           },
           venmo: {
             vaultActive: storeconfig.ppcp_venmo_payment_action,
-            enabled: storeconfig.ppcp_venmo_active === 1,
+            enabled: storeconfig.ppcp_venmo_active === '1',
             paymentAction: storeconfig.ppcp_venmo_payment_action,
             sortOrder: storeconfig.ppcp_venmo_sort_order,
             title: storeconfig.ppcp_venmo_title,
           },
           apm: {
             enabled: storeconfig.ppcp_apm_active,
-            title: storeconfig.ppcp_apm_title === 1,
+            title: storeconfig.ppcp_apm_title === '1',
             sortOrder: storeconfig.ppcp_apm_sort_order,
             allowedPayments: storeconfig.ppcp_apm_allowed_methods,
           },
           paypal: {
-            enabled: storeconfig.ppcp_paypal_active === 1,
+            enabled: storeconfig.ppcp_paypal_active === '1',
             vaultActive: storeconfig.ppcp_paypal_vault_active,
             title: storeconfig.ppcp_paypal_title,
             paymentAction: storeconfig.ppcp_paypal_payment_action,
