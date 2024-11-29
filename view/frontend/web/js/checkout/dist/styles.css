@@ -5,11 +5,13 @@
   height: var(--braintree-express-button-height, 45px);
 }
 
-#ppcp-google-pay {
-  max-height: var(--braintree-express-button-height, 45px);
+.ppcp-apple-pay-container {
+  min-height: var(--braintree-express-button-height, 45px);
 }
-#ppcp-google-pay button, #ppcp-google-pay.text-loading {
+.ppcp-apple-pay-container apple-pay-button, .ppcp-apple-pay-container.text-loading {
   height: var(--braintree-express-button-height, 45px);
+  --apple-pay-button-height: var(--braintree-express-button-height, 45px);
+  width: 100%;
 }
 
 #ppcp-google-pay {
@@ -17,4 +19,29 @@
 }
 #ppcp-google-pay button, #ppcp-google-pay.text-loading {
   height: var(--braintree-express-button-height, 45px);
+}
+
+.ppcp-apple-pay-container {
+  min-height: var(--braintree-express-button-height, 45px);
+}
+.ppcp-apple-pay-container apple-pay-button, .ppcp-apple-pay-container.text-loading {
+  height: var(--braintree-express-button-height, 45px);
+  --apple-pay-button-height: var(--braintree-express-button-height, 45px);
+  width: 100%;
+}
+
+#ppcp-google-pay {
+  max-height: var(--braintree-express-button-height, 45px);
+}
+#ppcp-google-pay button, #ppcp-google-pay.text-loading {
+  height: var(--braintree-express-button-height, 45px);
+}
+
+.ppcp-apple-pay-container {
+  min-height: var(--braintree-express-button-height, 45px);
+}
+.ppcp-apple-pay-container apple-pay-button, .ppcp-apple-pay-container.text-loading {
+  height: var(--braintree-express-button-height, 45px);
+  --apple-pay-button-height: var(--braintree-express-button-height, 45px);
+  width: 100%;
 }

@@ -1,5 +1,6 @@
 <template>
   <div
+    v-if="google.enabled"
     id="ppcp-google-pay"
     :class="!googlePayLoaded ? 'text-loading' : ''"
     :data-cy="'instant-checkout-PPCPGooglePay'"
@@ -51,9 +52,18 @@ export default {
     paymentStore.addExpressMethod(this.key);
     await configStore.getInitialConfig();
     await cartStore.getCart();
-
     await this.getInitialConfigValues();
-    await this.initGooglePay();
+
+    const googlePayConfig = paymentStore.availableMethods.find((method) => (
+      method.code === this.method
+    ));
+
+    if (googlePayConfig) {
+      await this.initGooglePay();
+    } else {
+      paymentStore.removeExpressMethod(this.key);
+      this.googlePayLoaded = true;
+    }
   },
   mounted() {
     const googlePayScript = document.createElement('script');
