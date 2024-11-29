@@ -40,19 +40,19 @@
                 <item name="ppcp_paypal_payment_action" xsi:type="string">payment/ppcp_paypal/payment_action</item>
                 <item name="ppcp_paypal_require_billing_address" xsi:type="string">payment/ppcp_paypal/require_billing_address</item>
                 <item name="ppcp_paypal_sort_order" xsi:type="string">payment/ppcp_paypal/sort_order</item>
-                <item name="ppcp_paypal_button_paypal_label" xsi:type="string">payment/ppcp_paypal/styling/button_paypal_label</item>
-                <item name="ppcp_paypal_button_paypal_color" xsi:type="string">payment/ppcp_paypal/styling/button_paypal_color</item>
-                <item name="ppcp_paypal_button_paypal_shape" xsi:type="string">payment/ppcp_paypal/styling/button_paypal_shape</item>
-                <item name="ppcp_paypal_paylater_enable_paylater" xsi:type="string">payment/ppcp_paypal/paylater/enable_paylater</item>
-                <item name="ppcp_paypal_paylater_button_paylater_color" xsi:type="string">payment/ppcp_paypal/paylater/paylater_styling/payment_action</item>
-                <item name="ppcp_paypal_paylater_button_paylater_shape" xsi:type="string">payment/ppcp_paypal/paylater/paylater_styling/payment_action</item>
-                <item name="ppcp_paypal_paylater_message_enable" xsi:type="string">payment/ppcp_paypal/paylater/paylater_message_styling/message_enable</item>
-                <item name="ppcp_paypal_paylater_message_layout" xsi:type="string">payment/ppcp_paypal/paylater/paylater_message_styling/message_layout</item>
-                <item name="ppcp_paypal_paylater_message_logo_type" xsi:type="string">payment/ppcp_paypal/paylater/paylater_message_styling/message_logo_type</item>
-                <item name="ppcp_paypal_paylater_message_logo_position" xsi:type="string">payment/ppcp_paypal/paylater/paylater_message_styling/message_logo_position</item>
-                <item name="ppcp_paypal_paylater_message_text_color" xsi:type="string">payment/ppcp_paypal/paylater/paylater_message_styling/message_text_color</item>
-                <item name="ppcp_paypal_paylater_message_text_size" xsi:type="string">payment/ppcp_paypal/paylater/paylater_message_styling/message_text_size</item>
-                <item name="ppcp_paypal_paylater_message_text_align" xsi:type="string">payment/ppcp_paypal/paylater/paylater_message_styling/message_text_align</item>
+                <item name="ppcp_paypal_button_paypal_label" xsi:type="string">payment/ppcp_paypal/button_paypal_label</item>
+                <item name="ppcp_paypal_button_paypal_color" xsi:type="string">payment/ppcp_paypal/button_paypal_color</item>
+                <item name="ppcp_paypal_button_paypal_shape" xsi:type="string">payment/ppcp_paypal/button_paypal_shape</item>
+                <item name="ppcp_paypal_paylater_enable_paylater" xsi:type="string">payment/ppcp_paypal/enable_paylater</item>
+                <item name="ppcp_paypal_paylater_button_paylater_color" xsi:type="string">payment/ppcp_paypal/button_paylater_color</item>
+                <item name="ppcp_paypal_paylater_button_paylater_shape" xsi:type="string">payment/ppcp_paypal/button_paylater_shape</item>
+                <item name="ppcp_paypal_paylater_message_enable" xsi:type="string">payment/ppcp_paypal/message_enable</item>
+                <item name="ppcp_paypal_paylater_message_layout" xsi:type="string">payment/ppcp_paypal/message_layout</item>
+                <item name="ppcp_paypal_paylater_message_logo_type" xsi:type="string">payment/ppcp_paypal/message_logo_type</item>
+                <item name="ppcp_paypal_paylater_message_logo_position" xsi:type="string">payment/ppcp_paypal/message_logo_position</item>
+                <item name="ppcp_paypal_paylater_message_text_color" xsi:type="string">payment/ppcp_paypal/message_text_color</item>
+                <item name="ppcp_paypal_paylater_message_text_size" xsi:type="string">payment/ppcp_paypal/message_text_size</item>
+                <item name="ppcp_paypal_paylater_message_text_align" xsi:type="string">payment/ppcp_paypal/message_text_align</item>
 
                 <!-- PPCP Venmo Config -->
                 <item name="ppcp_venmo_active" xsi:type="string">payment/ppcp_venmo/active</item>

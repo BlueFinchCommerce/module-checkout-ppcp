@@ -17,3 +17,11 @@
     width: 100%;
   }
 }
+
+.paypal-button-container {
+  max-height: var(--braintree-express-button-height, 45px);
+
+  &.text-loading {
+    height: var(--braintree-express-button-height, 45px);
+  }
+}

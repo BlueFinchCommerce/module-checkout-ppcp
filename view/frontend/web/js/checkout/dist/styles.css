@@ -14,6 +14,13 @@
   width: 100%;
 }
 
+.paypal-button-container {
+  max-height: var(--braintree-express-button-height, 45px);
+}
+.paypal-button-container.text-loading {
+  height: var(--braintree-express-button-height, 45px);
+}
+
 #ppcp-google-pay {
   max-height: var(--braintree-express-button-height, 45px);
 }
@@ -30,6 +37,13 @@
   width: 100%;
 }
 
+.paypal-button-container {
+  max-height: var(--braintree-express-button-height, 45px);
+}
+.paypal-button-container.text-loading {
+  height: var(--braintree-express-button-height, 45px);
+}
+
 #ppcp-google-pay {
   max-height: var(--braintree-express-button-height, 45px);
 }
@@ -44,4 +58,11 @@
   height: var(--braintree-express-button-height, 45px);
   --apple-pay-button-height: var(--braintree-express-button-height, 45px);
   width: 100%;
+}
+
+.paypal-button-container {
+  max-height: var(--braintree-express-button-height, 45px);
+}
+.paypal-button-container.text-loading {
+  height: var(--braintree-express-button-height, 45px);
 }

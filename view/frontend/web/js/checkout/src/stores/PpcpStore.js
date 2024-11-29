@@ -195,7 +195,7 @@ export default defineStore('ppcpStore', {
             buttonLabel: storeconfig.ppcp_paypal_button_paypal_label,
             buttonColor: storeconfig.ppcp_paypal_button_paypal_color,
             buttonShape: storeconfig.ppcp_paypal_button_paypal_shape,
-            payLaterActive: storeconfig.ppcp_paypal_paylater_enable_paylater,
+            payLaterActive: storeconfig.ppcp_paypal_paylater_enable_paylater === '1',
             payLaterButtonColour: storeconfig
               .ppcp_paypal_paylater_button_paylater_color,
             payLaterButtonShape: storeconfig
