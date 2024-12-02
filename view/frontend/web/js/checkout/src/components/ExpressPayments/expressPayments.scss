@@ -23,6 +23,10 @@
 .paypal-button-container {
   max-height: var(--ppcp-express-button-height, 45px);
 
+  &#ppcp-paypal_ppcp_paylater {
+    margin: var(--indent__s) 0;
+  }
+
   &.text-loading {
     height: var(--ppcp-express-button-height, 45px);
   }
