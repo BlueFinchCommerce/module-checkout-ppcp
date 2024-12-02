@@ -1,0 +1,23 @@
+{
+  "name": "gene-better-checkout-ppcp",
+  "version": "1.0.0",
+  "description": "## What is this?",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint . --rulesdir ./vendor/magento/magento-coding-standard/eslint/rules",
+    "lint-fix": "eslint . --rulesdir ./vendor/magento/magento-coding-standard/eslint/rules --fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/genecommerce/template-module.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/genecommerce/template-module/issues"
+  },
+  "homepage": "https://github.com/genecommerce/template-module#readme",
+  "devDependencies": {
+    "eslint": "^8"
+  }
+}
