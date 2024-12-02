@@ -20,16 +20,6 @@
         "phpcompatibility/php-compatibility": "^9.3",
         "phpunit/phpunit": "^9.5"
     },
-    "repositories": [
-        {
-            "type": "composer",
-            "url": "https://repo.magento.com/"
-        },
-        {
-            "type": "composer",
-            "url": "https://repo.packagist.com/gene/"
-        }
-    ],
     "authors": [
         {
             "name": "",
