@@ -1,19 +1,33 @@
+// --ppcp-express-button-height
+
 #ppcp-google-pay {
-  max-height: var(--braintree-express-button-height, 45px);
+  max-height: var(--ppcp-express-button-height, 45px);
 
   button,
   &.text-loading {
-    height: var(--braintree-express-button-height, 45px);
+    height: var(--ppcp-express-button-height, 45px);
   }
 }
 
 .ppcp-apple-pay-container {
-  min-height: var(--braintree-express-button-height, 45px);
+  min-height: var(--ppcp-express-button-height, 45px);
 
   apple-pay-button,
   &.text-loading {
-    height: var(--braintree-express-button-height, 45px);
-    --apple-pay-button-height: var(--braintree-express-button-height, 45px);
+    height: var(--ppcp-express-button-height, 45px);
+    --apple-pay-button-height: var(--ppcp-express-button-height, 45px);
     width: 100%;
+  }
+}
+
+.paypal-button-container {
+  max-height: var(--ppcp-express-button-height, 45px);
+
+  &#ppcp-paypal_ppcp_paylater {
+    margin: var(--indent__s) 0;
+  }
+
+  &.text-loading {
+    height: var(--ppcp-express-button-height, 45px);
   }
 }
