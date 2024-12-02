@@ -145,9 +145,6 @@ export default {
           ? window[`paypal_${this.method}`].FUNDING.PAYLATER
           : window[`paypal_${this.method}`].FUNDING.PAYPAL,
         createOrder: async () => {
-          const ppcpOrderId = await createPPCPPaymentRest(this.method);
-          [this.orderID] = JSON.parse(ppcpOrderId);
-
           try {
             const data = await createPPCPPaymentRest(this.method);
             const orderData = JSON.parse(data);
