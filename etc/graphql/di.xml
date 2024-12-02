@@ -1,0 +1,73 @@
+<?xml version="1.0" ?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Magento\StoreGraphQl\Model\Resolver\Store\StoreConfigDataProvider">
+        <arguments>
+            <argument name="extendedConfigData" xsi:type="array">
+                <!-- PPCP Config -->
+                <item name="ppcp_environment" xsi:type="string">payment/paypal_complete_payments/ppcp_environment</item>
+                <item name="ppcp_active" xsi:type="string">payment/paypal_complete_payments/is_active</item>
+                <item name="ppcp_sandbox_client_id" xsi:type="string">payment/paypal_complete_payments/client_id_sandbox</item>
+                <item name="ppcp_client_id_production" xsi:type="string">payment/paypal_complete_payments/client_id_production</item>
+                <item name="ppcp_buyer_country" xsi:type="string">payment/ppcp_paypal/buyer_country</item>
+
+                <!-- PPCP Google Pay Config -->
+                <item name="ppcp_googlepay_active" xsi:type="string">payment/ppcp_googlepay/active</item>
+                <item name="ppcp_googlepay_title" xsi:type="string">payment/ppcp_googlepay/title</item>
+                <item name="ppcp_googlepay_payment_action" xsi:type="string">payment/ppcp_googlepay/payment_action</item>
+                <item name="ppcp_googlepay_button_colour" xsi:type="string">payment/ppcp_googlepay/button_colour</item>
+                <item name="ppcp_googlepay_sort_order" xsi:type="string">payment/ppcp_googlepay/sort_order</item>
+
+                <!-- PPCP Card Payments Config -->
+                <item name="ppcp_card_active" xsi:type="string">payment/ppcp_card/active</item>
+                <item name="ppcp_card_vault_active" xsi:type="string">payment/ppcp_card/ppcp_card_vault_active</item>
+                <item name="ppcp_card_title" xsi:type="string">payment/ppcp_card/title</item>
+                <item name="ppcp_card_payment_action" xsi:type="string">payment/ppcp_card/payment_action</item>
+                <item name="ppcp_card_three_d_secure" xsi:type="string">payment/ppcp_card/three_d_secure</item>
+                <item name="ppcp_card_sort_order" xsi:type="string">payment/ppcp_card/sort_order</item>
+
+                <!-- PPCP Apple Pay Config -->
+                <item name="ppcp_applepay_active" xsi:type="string">payment/ppcp_applepay/active</item>
+                <item name="ppcp_applepay_title" xsi:type="string">payment/ppcp_applepay/title</item>
+                <item name="ppcp_applepay_payment_action" xsi:type="string">payment/ppcp_applepay/payment_action</item>
+                <item name="ppcp_applepay_merchant_name" xsi:type="string">payment/ppcp_applepay/merchant_name</item>
+                <item name="ppcp_applepay_sort_order" xsi:type="string">payment/ppcp_applepay/sort_order</item>
+
+                <!-- PPCP PayPal Config -->
+                <item name="ppcp_paypal_active" xsi:type="string">payment/ppcp_paypal/active</item>
+                <item name="ppcp_paypal_vault_active" xsi:type="string">payment/ppcp_paypal/ppcp_paypal_vault_active</item>
+                <item name="ppcp_paypal_title" xsi:type="string">payment/ppcp_paypal/title</item>
+                <item name="ppcp_paypal_payment_action" xsi:type="string">payment/ppcp_paypal/payment_action</item>
+                <item name="ppcp_paypal_require_billing_address" xsi:type="string">payment/ppcp_paypal/require_billing_address</item>
+                <item name="ppcp_paypal_sort_order" xsi:type="string">payment/ppcp_paypal/sort_order</item>
+                <item name="ppcp_paypal_button_paypal_label" xsi:type="string">payment/ppcp_paypal/button_paypal_label</item>
+                <item name="ppcp_paypal_button_paypal_color" xsi:type="string">payment/ppcp_paypal/button_paypal_color</item>
+                <item name="ppcp_paypal_button_paypal_shape" xsi:type="string">payment/ppcp_paypal/button_paypal_shape</item>
+                <item name="ppcp_paypal_paylater_enable_paylater" xsi:type="string">payment/ppcp_paypal/enable_paylater</item>
+                <item name="ppcp_paypal_paylater_button_paylater_color" xsi:type="string">payment/ppcp_paypal/button_paylater_color</item>
+                <item name="ppcp_paypal_paylater_button_paylater_shape" xsi:type="string">payment/ppcp_paypal/button_paylater_shape</item>
+                <item name="ppcp_paypal_paylater_message_enable" xsi:type="string">payment/ppcp_paypal/message_enable</item>
+                <item name="ppcp_paypal_paylater_message_layout" xsi:type="string">payment/ppcp_paypal/message_layout</item>
+                <item name="ppcp_paypal_paylater_message_logo_type" xsi:type="string">payment/ppcp_paypal/message_logo_type</item>
+                <item name="ppcp_paypal_paylater_message_logo_position" xsi:type="string">payment/ppcp_paypal/message_logo_position</item>
+                <item name="ppcp_paypal_paylater_message_text_color" xsi:type="string">payment/ppcp_paypal/message_text_color</item>
+                <item name="ppcp_paypal_paylater_message_text_size" xsi:type="string">payment/ppcp_paypal/message_text_size</item>
+                <item name="ppcp_paypal_paylater_message_text_align" xsi:type="string">payment/ppcp_paypal/message_text_align</item>
+
+                <!-- PPCP Venmo Config -->
+                <item name="ppcp_venmo_active" xsi:type="string">payment/ppcp_venmo/active</item>
+                <item name="ppcp_venmo_title" xsi:type="string">payment/ppcp_venmo/title</item>
+                <item name="ppcp_venmo_payment_action" xsi:type="string">payment/ppcp_venmo/payment_action</item>
+                <item name="ppcp_venmo_vault_active" xsi:type="string">payment/ppcp_venmo/ppcp_venmo_vault_active</item>
+                <item name="ppcp_venmo_sort_order" xsi:type="string">payment/ppcp_venmo/sort_order</item>
+
+                <!-- PPCP APM Config -->
+                <item name="ppcp_apm_active" xsi:type="string">payment/ppcp_apm/active</item>
+                <item name="ppcp_apm_title" xsi:type="string">payment/ppcp_apm/title</item>
+                <item name="ppcp_apm_allowed_methods" xsi:type="string">payment/ppcp_apm/allowed_methods</item>
+                <item name="ppcp_apm_sort_order" xsi:type="string">payment/ppcp_apm/sort_order</item>
+
+            </argument>
+        </arguments>
+    </type>
+</config>

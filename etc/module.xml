@@ -4,6 +4,7 @@
         <sequence>
             <module name="Gene_BetterCheckout"/>
             <module name="Magento_GraphQl"/>
+            <module name="PayPal_PPCP"/>
         </sequence>
     </module>
 </config>
