@@ -65,6 +65,13 @@ export default defineStore('ppcpStore', {
       threeDSecureStatus: '',
       sortOrder: null,
     },
+    ppcpConfig: {
+      createOrderUrl: '',
+      createGuestOrderUrl: '',
+      changeShippingMethodUrl: '',
+      changeShippingAddressUrl: '',
+      finishOrderUrl: '',
+    },
   }),
   actions: {
     setData(data) {
@@ -78,24 +85,32 @@ export default defineStore('ppcpStore', {
 
       const request = async () => graphQlRequest(`{
         storeConfig {
+          ppcp_config {
+            create_order_url
+            create_guest_order_url
+            change_shipping_method_url
+            change_shipping_address_url
+            finish_order_url
+          }
+
           ppcp_environment
           ppcp_active
           ppcp_sandbox_client_id
           ppcp_client_id_production
           ppcp_buyer_country
-          
+
           ppcp_googlepay_active
           ppcp_googlepay_title
           ppcp_googlepay_payment_action
           ppcp_googlepay_button_colour
           ppcp_googlepay_sort_order
-          
+
           ppcp_applepay_active
           ppcp_applepay_title
           ppcp_applepay_payment_action
           ppcp_applepay_merchant_name
           ppcp_applepay_sort_order
-    
+
           ppcp_paypal_active
           ppcp_paypal_vault_active
           ppcp_paypal_title
@@ -126,7 +141,7 @@ export default defineStore('ppcpStore', {
           ppcp_apm_title
           ppcp_apm_allowed_methods
           ppcp_apm_sort_order
-          
+
           ppcp_card_active
           ppcp_card_vault_active
           ppcp_card_title
@@ -148,33 +163,43 @@ export default defineStore('ppcpStore', {
           sandboxClientId: storeconfig.ppcp_sandbox_client_id,
           productionClientId: storeconfig.ppcp_client_id_production,
           buyerCountry: storeconfig.ppcp_buyer_country,
-
+          ppcpConfig: {
+            createOrderUrl: storeconfig.ppcp_config.create_order_url,
+            createGuestOrderUrl: storeconfig.ppcp_config.create_guest_order_url,
+            changeShippingMethodUrl: storeconfig.ppcp_config.change_shipping_method_url,
+            changeShippingAddressUrl: storeconfig.ppcp_config.change_shipping_address_url,
+            finishOrderUrl: storeconfig.ppcp_config.finish_order_url,
+          },
           card: {
             enabled: storeconfig.ppcp_card_active === '1',
             vaultActive: storeconfig.ppcp_card_vault_active,
             title: storeconfig.ppcp_card_title,
-            paymentAction: storeconfig.ppcp_card_payment_action,
+            paymentAction: storeconfig.ppcp_card_payment_action
+              === 'authorize_capture' ? 'capture' : storeconfig.ppcp_card_payment_action,
             threeDSecureStatus: storeconfig.ppcp_card_three_d_secure,
             sortOrder: storeconfig.ppcp_card_sort_order,
           },
           google: {
             buttonColor: storeconfig.ppcp_googlepay_button_colour,
             enabled: storeconfig.ppcp_googlepay_active === '1',
-            paymentAction: storeconfig.ppcp_googlepay_payment_action,
+            paymentAction: storeconfig.ppcp_googlepay_payment_action
+            === 'authorize_capture' ? 'capture' : storeconfig.ppcp_googlepay_payment_action,
             sortOrder: storeconfig.ppcp_googlepay_sort_order,
             title: storeconfig.ppcp_googlepay_title,
           },
           apple: {
             merchantName: storeconfig.ppcp_applepay_merchant_name,
             enabled: storeconfig.ppcp_applepay_active === '1',
-            paymentAction: storeconfig.ppcp_applepay_payment_action,
+            paymentAction: storeconfig.ppcp_applepay_payment_action
+            === 'authorize_capture' ? 'capture' : storeconfig.ppcp_applepay_payment_action,
             sortOrder: storeconfig.ppcp_applepay_sort_order,
             title: storeconfig.ppcp_applepay_title,
           },
           venmo: {
             vaultActive: storeconfig.ppcp_venmo_payment_action,
             enabled: storeconfig.ppcp_venmo_active === '1',
-            paymentAction: storeconfig.ppcp_venmo_payment_action,
+            paymentAction: storeconfig.ppcp_venmo_payment_action
+            === 'authorize_capture' ? 'capture' : storeconfig.ppcp_venmo_payment_action,
             sortOrder: storeconfig.ppcp_venmo_sort_order,
             title: storeconfig.ppcp_venmo_title,
           },
@@ -188,7 +213,8 @@ export default defineStore('ppcpStore', {
             enabled: storeconfig.ppcp_paypal_active === '1',
             vaultActive: storeconfig.ppcp_paypal_vault_active,
             title: storeconfig.ppcp_paypal_title,
-            paymentAction: storeconfig.ppcp_paypal_payment_action,
+            paymentAction: storeconfig.ppcp_paypal_payment_action
+            === 'authorize_capture' ? 'capture' : storeconfig.ppcp_paypal_payment_action,
             requireBillingAddress: storeconfig
               .ppcp_paypal_require_billing_address,
             sortOrder: storeconfig.ppcp_paypal_sort_order,
