@@ -66,16 +66,17 @@ export default defineStore('ppcpStore', {
       sortOrder: null,
     },
   }),
-  getters: {
-    selectedVaultMethod: (state) => [],
-  },
   actions: {
     setData(data) {
       this.$patch(data);
     },
 
-    getInitialConfigValues() {
-      return `
+    async getInitialConfigValues() {
+      const graphQlRequest = await window.geneCheckout.helpers.loadFromCheckout([
+        'services.graphQlRequest',
+      ]);
+
+      const request = async () => graphQlRequest(`{
         storeConfig {
           ppcp_environment
           ppcp_active
@@ -114,7 +115,7 @@ export default defineStore('ppcpStore', {
           ppcp_paypal_paylater_message_text_color
           ppcp_paypal_paylater_message_text_size
           ppcp_paypal_paylater_message_text_align
-    
+
           ppcp_venmo_active
           ppcp_venmo_title
           ppcp_venmo_payment_action
@@ -133,170 +134,89 @@ export default defineStore('ppcpStore', {
           ppcp_card_three_d_secure
           ppcp_card_sort_order
         }
-      `;
+      }`).then(this.handleInitialConfig);
+
+      await this.getCachedResponse(request, 'getInitialConfig');
     },
 
-    handleInitialConfig({ storeConfig }) {
-      if (storeConfig) {
+    async handleInitialConfig(config) {
+      if (config?.data?.storeConfig) {
+        const storeconfig = config.data.storeConfig;
         this.setData({
-          environment: storeConfig.ppcp_environment,
-          isPPCPenabled: storeConfig.ppcp_active,
-          sandboxClientId: storeConfig.ppcp_sandbox_client_id,
-          productionClientId: storeConfig.ppcp_client_id_production,
-          buyerCountry: storeConfig.ppcp_buyer_country,
-  
+          environment: storeconfig.ppcp_environment,
+          isPPCPenabled: storeconfig.ppcp_active === '1',
+          sandboxClientId: storeconfig.ppcp_sandbox_client_id,
+          productionClientId: storeconfig.ppcp_client_id_production,
+          buyerCountry: storeconfig.ppcp_buyer_country,
+
           card: {
-            enabled: storeConfig.ppcp_card_active,
-            vaultActive: storeConfig.ppcp_card_vault_active,
-            title: storeConfig.ppcp_card_title,
-            paymentAction: storeConfig.ppcp_card_payment_action,
-            threeDSecureStatus: storeConfig.ppcp_card_three_d_secure,
-            sortOrder: storeConfig.ppcp_card_sort_order,
+            enabled: storeconfig.ppcp_card_active === '1',
+            vaultActive: storeconfig.ppcp_card_vault_active,
+            title: storeconfig.ppcp_card_title,
+            paymentAction: storeconfig.ppcp_card_payment_action,
+            threeDSecureStatus: storeconfig.ppcp_card_three_d_secure,
+            sortOrder: storeconfig.ppcp_card_sort_order,
           },
-          
           google: {
-            buttonColor: storeConfig.ppcp_googlepay_button_colour,
-            enabled: storeConfig.ppcp_googlepay_active,
-            paymentAction: storeConfig.ppcp_googlepay_payment_action,
-            sortOrder: storeConfig.ppcp_googlepay_sort_order,
-            title: storeConfig.ppcp_googlepay_title,
+            buttonColor: storeconfig.ppcp_googlepay_button_colour,
+            enabled: storeconfig.ppcp_googlepay_active === '1',
+            paymentAction: storeconfig.ppcp_googlepay_payment_action,
+            sortOrder: storeconfig.ppcp_googlepay_sort_order,
+            title: storeconfig.ppcp_googlepay_title,
           },
-          
           apple: {
-            merchantName: storeConfig.ppcp_applepay_merchant_name,
-            enabled: storeConfig.ppcp_applepay_active,
-            paymentAction: storeConfig.ppcp_applepay_payment_action,
-            sortOrder: storeConfig.ppcp_applepay_sort_order,
-            title: storeConfig.ppcp_applepay_title,
+            merchantName: storeconfig.ppcp_applepay_merchant_name,
+            enabled: storeconfig.ppcp_applepay_active === '1',
+            paymentAction: storeconfig.ppcp_applepay_payment_action,
+            sortOrder: storeconfig.ppcp_applepay_sort_order,
+            title: storeconfig.ppcp_applepay_title,
           },
-          
           venmo: {
-            vaultActive: storeConfig.ppcp_venmo_payment_action,
-            enabled: storeConfig.ppcp_venmo_active,
-            paymentAction: storeConfig.ppcp_venmo_payment_action,
-            sortOrder: storeConfig.ppcp_venmo_sort_order,
-            title: storeConfig.ppcp_venmo_title,
+            vaultActive: storeconfig.ppcp_venmo_payment_action,
+            enabled: storeconfig.ppcp_venmo_active === '1',
+            paymentAction: storeconfig.ppcp_venmo_payment_action,
+            sortOrder: storeconfig.ppcp_venmo_sort_order,
+            title: storeconfig.ppcp_venmo_title,
           },
-          
           apm: {
-            enabled: storeConfig.ppcp_apm_active,
-            title: storeConfig.ppcp_apm_title,
-            sortOrder: storeConfig.ppcp_apm_allowed_methods,
-            allowedPayments: storeConfig.ppcp_apm_sort_order,
+            enabled: storeconfig.ppcp_apm_active,
+            title: storeconfig.ppcp_apm_title === '1',
+            sortOrder: storeconfig.ppcp_apm_sort_order,
+            allowedPayments: storeconfig.ppcp_apm_allowed_methods,
           },
-          
           paypal: {
-            enabled: storeConfig.ppcp_paypal_active,
-            vaultActive: storeConfig.ppcp_paypal_vault_active,
-            title: storeConfig.ppcp_paypal_title,
-            paymentAction: storeConfig.ppcp_paypal_payment_action,
-            requireBillingAddress: storeConfig.ppcp_paypal_require_billing_address,
-            sortOrder: storeConfig.ppcp_paypal_sort_order,
-            buttonLabel: storeConfig.ppcp_paypal_button_paypal_label,
-            buttonColor: storeConfig.ppcp_paypal_button_paypal_color,
-            buttonShape: storeConfig.ppcp_paypal_button_paypal_shape,
-            payLaterActive: storeConfig.ppcp_paypal_paylater_enable_paylater,
-            payLaterButtonColour: storeConfig.ppcp_paypal_paylater_button_paylater_color,
-            payLaterButtonShape: storeConfig.ppcp_paypal_paylater_button_paylater_shape,
-            payLaterMessageActive: storeConfig.ppcp_paypal_paylater_message_enable,
-            payLaterMessageLayout: storeConfig.ppcp_paypal_paylater_message_layout,
-            payLaterMessageLogoType: storeConfig.ppcp_paypal_paylater_message_logo_type,
-            payLaterMessageLogoPosition: storeConfig.ppcp_paypal_paylater_message_logo_position,
-            payLaterMessageColour: storeConfig.ppcp_paypal_paylater_message_text_color,
-            payLaterMessageTextSize: storeConfig.ppcp_paypal_paylater_message_text_size,
-            payLaterMessageTextAlign: storeConfig.ppcp_paypal_paylater_message_text_align,
+            enabled: storeconfig.ppcp_paypal_active === '1',
+            vaultActive: storeconfig.ppcp_paypal_vault_active,
+            title: storeconfig.ppcp_paypal_title,
+            paymentAction: storeconfig.ppcp_paypal_payment_action,
+            requireBillingAddress: storeconfig
+              .ppcp_paypal_require_billing_address,
+            sortOrder: storeconfig.ppcp_paypal_sort_order,
+            buttonLabel: storeconfig.ppcp_paypal_button_paypal_label,
+            buttonColor: storeconfig.ppcp_paypal_button_paypal_color,
+            buttonShape: storeconfig.ppcp_paypal_button_paypal_shape,
+            payLaterActive: storeconfig.ppcp_paypal_paylater_enable_paylater === '1',
+            payLaterButtonColour: storeconfig
+              .ppcp_paypal_paylater_button_paylater_color,
+            payLaterButtonShape: storeconfig
+              .ppcp_paypal_paylater_button_paylater_shape,
+            payLaterMessageActive: storeconfig
+              .ppcp_paypal_paylater_message_enable,
+            payLaterMessageLayout: storeconfig
+              .ppcp_paypal_paylater_message_layout,
+            payLaterMessageLogoType: storeconfig
+              .ppcp_paypal_paylater_message_logo_type,
+            payLaterMessageLogoPosition: storeconfig
+              .ppcp_paypal_paylater_message_logo_position,
+            payLaterMessageColour: storeconfig
+              .ppcp_paypal_paylater_message_text_color,
+            payLaterMessageTextSize: storeconfig
+              .ppcp_paypal_paylater_message_text_size,
+            payLaterMessageTextAlign: storeconfig
+              .ppcp_paypal_paylater_message_text_align,
           },
         });
       }
-    },
-
-    async createClientToken() {
-    
-    },
-
-    setClientInstance(clientInstance) {
-      this.setData({
-        clientInstance,
-      });
-    },
-
-    setThreeDSInstance(threeDSecureInstance) {
-      this.setData({
-        threeDSecureInstance,
-      });
-    },
-
-    setErrorMessage(errorMessage) {
-      this.setData({
-        errorMessage,
-      });
-    },
-
-    clearErrorMessage() {
-      this.setData({
-        errorMessage: null,
-      });
-    },
-
-    escapeNonAsciiCharacters(str) {
-      return str
-        .split('')
-        .map((c) => (
-          // Intentional disable to check for invisible characters.
-          // eslint-disable-next-line no-control-regex
-          /[^\x00-\x7F]$/.test(c) ? c : c.split('').map((a) => `\\u00${a.charCodeAt().toString(16)}`).join('')
-        ))
-        .join('');
-    },
-
-    async getVaultedMethods() {
-    
-    },
-
-    selectVaultedMethod(vaultedMethod) {
-      this.unselectVaultedMethods();
-      this.setData({
-        vaultedMethods: {
-          [vaultedMethod.publicHash]: {
-            selected: true,
-          },
-        },
-      });
-    },
-
-    mapCartTypes(cartType) {
-      switch (cartType) {
-        case 'AE':
-          return 'american-express';
-        case 'DI':
-          return 'discover';
-        case 'DN':
-          return 'diners-club';
-        case 'JCB':
-          return 'jcb';
-        case 'MC':
-          return 'master-card';
-        case 'MI':
-          return 'maestro';
-        case 'UPD':
-          return 'unionpay';
-        case 'VI':
-          return 'visa';
-        default:
-          return '';
-      }
-    },
-
-    unselectVaultedMethods() {
-      Object.keys(this.vaultedMethods).forEach((publicHash) => {
-        this.setData({
-          vaultedMethods: {
-            [publicHash]: {
-              selected: false,
-            },
-          },
-        });
-      });
     },
 
     getCachedResponse(request, cacheKey, args = {}) {
@@ -312,7 +232,7 @@ export default defineStore('ppcpStore', {
       });
       return data;
     },
-    
+
     clearCache(cacheKey) {
       if (cacheKey) {
         this.setData({
