@@ -1,3 +1,5 @@
+![CircleCI](https://dl.circleci.com/status-badge/img/gh/genecommerce/module-better-checkout-ppcp/tree/main.svg?style=svg&circle-token=CCIPRJ_shdRbwX6CZwdWayXko8Kf_fc053dfb47603a733a4b4265ff8be69118cffec9)
+
 ![Better Checkout Powered by GENE](./assets/logo.svg)
 
 # Better Checkout PPCP Module
