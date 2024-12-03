@@ -1,3 +1,5 @@
+import usePpcpStore from '../stores/PpcpStore';
+
 export default async (orderId, shippingAddress, method) => {
   const paymentStore = await window.geneCheckout.helpers.loadFromCheckout([
     'stores.usePaymentStore',
@@ -7,7 +9,9 @@ export default async (orderId, shippingAddress, method) => {
     'X-Requested-With': 'XMLHttpRequest',
   };
 
-  const url = 'ppcp/changeShippingAddress';
+  const { ppcpConfig } = usePpcpStore();
+  const url = ppcpConfig.changeShippingAddressUrl;
+
   const data = {
     orderId,
     shippingAddress,

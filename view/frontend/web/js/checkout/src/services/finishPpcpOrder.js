@@ -1,3 +1,5 @@
+import usePpcpStore from '../stores/PpcpStore';
+
 export default async (data) => {
   const paymentStore = await window.geneCheckout.helpers.loadFromCheckout([
     'stores.usePaymentStore',
@@ -7,7 +9,8 @@ export default async (data) => {
     'X-Requested-With': 'XMLHttpRequest',
   };
 
-  const url = 'ppcp/finishOrder';
+  const { ppcpConfig } = usePpcpStore();
+  const url = ppcpConfig.finishOrderUrl;
 
   try {
     const response = await window.geneCheckout.services.authenticatedRequest().post(
