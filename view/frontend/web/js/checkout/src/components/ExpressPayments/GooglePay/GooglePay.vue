@@ -71,7 +71,12 @@ export default {
     document.head.appendChild(googlePayScript);
   },
   methods: {
-    ...mapActions(usePpcpStore, ['getInitialConfigValues']),
+    ...mapActions(usePpcpStore, [
+      'getInitialConfigValues',
+      'getEnvironment',
+      'mapAddress',
+      'makePayment',
+    ]),
 
     async initGooglePay() {
       try {
@@ -173,12 +178,28 @@ export default {
         });
     },
 
-    createGooglePayButton(clientConfig) {
+    async createGooglePayButton(clientConfig) {
+      const [
+        loadingStore,
+        customerStore,
+      ] = await window.geneCheckout.helpers.loadFromCheckout([
+        'stores.useLoadingStore',
+        'stores.useCustomerStore',
+      ]);
+
       return this.googlePayClient.createButton({
         allowedPaymentMethods: clientConfig.allowedPaymentMethods,
         buttonColor: this.google.buttonColor.toLowerCase(),
         buttonSizeMode: 'fill',
         onClick: () => this.onClick(clientConfig),
+        onError: () => {
+          customerStore.createNewAddress('shipping');
+          loadingStore.setLoadingState(false);
+        },
+        onCancel: () => {
+          customerStore.createNewAddress('shipping');
+          loadingStore.setLoadingState(false);
+        },
       });
     },
 
@@ -186,6 +207,7 @@ export default {
       const [
         agreementStore,
         cartStore,
+        customerStore,
         configStore,
         loadingStore,
         shippingMethodsStore,
@@ -193,6 +215,7 @@ export default {
       ] = await window.geneCheckout.helpers.loadFromCheckout([
         'stores.useAgreementStore',
         'stores.useCartStore',
+        'stores.useCustomerStore',
         'stores.useConfigStore',
         'stores.useLoadingStore',
         'stores.useShippingMethodsStore',
@@ -206,7 +229,8 @@ export default {
       if (!agreementsValid) {
         return false;
       }
-      shippingMethodsStore.setNotClickAndCollect();
+
+      await shippingMethodsStore.setNotClickAndCollect();
 
       const paymentDataRequest = { ...googlePayConfig };
       const callbackIntents = ['PAYMENT_AUTHORIZATION'];
@@ -238,6 +262,8 @@ export default {
 
       return this.googlePayClient.loadPaymentData(paymentDataRequest)
         .catch((err) => {
+          loadingStore.setLoadingState(false);
+          customerStore.createNewAddress('shipping');
           console.warn(err);
         });
     },
@@ -427,7 +453,7 @@ export default {
       if (data.liabilityShift && data.liabilityShift !== 'POSSIBLE') {
         throw new Error('Cannot validate payment');
       } else {
-        return this.makePayment(paymentData)
+        return this.makePayment(paymentData.email, this.orderID, this.method, true)
           .then(() => window.geneCheckout.services.refreshCustomerData(['cart']))
           .then(() => {
             window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
@@ -443,54 +469,6 @@ export default {
             }
           });
       }
-    },
-
-    async makePayment(response) {
-      const payment = {
-        email: response.email,
-        paymentMethod: {
-          method: this.method,
-          additional_data: {
-            'express-payment': true,
-            'paypal-order-id': this.orderID,
-          },
-          extension_attributes: window.geneCheckout.helpers.getPaymentExtensionAttributes(),
-        },
-      };
-
-      return window.geneCheckout.services.createPaymentRest(payment);
-    },
-
-    getEnvironment() {
-      return this.environment === 'sandbox'
-        ? 'TEST'
-        : 'PRODUCTION';
-    },
-
-    async mapAddress(address, email, telephone) {
-      const configStore = await window.geneCheckout.helpers.loadFromCheckout([
-        'stores.useConfigStore',
-      ]);
-      const [firstname, ...lastname] = address.name.split(' ');
-      const regionId = configStore.getRegionId(address.countryCode, address.administrativeArea);
-      return {
-        street: [
-          address.address1,
-          address.address2,
-        ],
-        postcode: address.postalCode,
-        country_code: address.countryCode,
-        company: address.company || '',
-        email,
-        firstname,
-        lastname: lastname.length ? lastname.join(' ') : 'UNKNOWN',
-        city: address.locality,
-        telephone,
-        region: {
-          ...(address.administrativeArea ? { region: address.administrativeArea } : {}),
-          ...(regionId ? { region_id: regionId } : {}),
-        },
-      };
     },
   },
 };

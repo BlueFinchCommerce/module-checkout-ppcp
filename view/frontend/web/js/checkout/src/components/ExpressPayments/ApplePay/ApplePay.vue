@@ -79,7 +79,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions(usePpcpStore, ['getInitialConfigValues']),
+    ...mapActions(usePpcpStore, ['getInitialConfigValues', 'makePayment']),
 
     async addSdkScript() {
       const configStore = await window.geneCheckout.helpers.loadFromCheckout([
@@ -267,7 +267,7 @@ export default {
       }).then(async () => {
         try {
           window.geneCheckout.services.setAddressesOnCart(shippingAddress, billingAddress, email)
-            .then(() => this.makePayment(email))
+            .then(() => this.makePayment(email, this.orderID, this.method, true))
             .then(async () => {
               session.completePayment(window.ApplePaySession.STATUS_SUCCESS);
               await window.geneCheckout.services.refreshCustomerData(['cart']);
@@ -442,22 +442,6 @@ export default {
           carrierCode: shippingMethod.carrier_code,
         }
       ));
-    },
-
-    async makePayment(response) {
-      const payment = {
-        email: response,
-        paymentMethod: {
-          method: this.method,
-          additional_data: {
-            'express-payment': true,
-            'paypal-order-id': this.orderID,
-          },
-          extension_attributes: window.geneCheckout.helpers.getPaymentExtensionAttributes(),
-        },
-      };
-
-      return window.geneCheckout.services.createPaymentRest(payment);
     },
 
     async setApplePayError() {

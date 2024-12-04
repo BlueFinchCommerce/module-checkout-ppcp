@@ -5,6 +5,7 @@ import multiInput from 'rollup-plugin-multi-input';
 import commonjs from '@rollup/plugin-commonjs';
 import scss from 'rollup-plugin-scss';
 import svg from 'rollup-plugin-svg';
+import image from '@rollup/plugin-image';
 import terser from '@rollup/plugin-terser';
 import path from 'path';
 
@@ -27,6 +28,7 @@ export default {
     commonjs(),
     scss({ output: 'dist/styles.css' }),
     svg(),
+    image(),
     terser(),
   ],
 };
