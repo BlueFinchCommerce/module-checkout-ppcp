@@ -1,4 +1,4 @@
-![CircleCI](https://dl.circleci.com/status-badge/img/gh/genecommerce/module-better-checkout-ppcp/tree/main.svg?style=svg&circle-token=CCIPRJ_shdRbwX6CZwdWayXko8Kf_fc053dfb47603a733a4b4265ff8be69118cffec9)
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/genecommerce/module-better-checkout-ppcp/tree/main.svg?style=svg&circle-token=CCIPRJ_shdRbwX6CZwdWayXko8Kf_fc053dfb47603a733a4b4265ff8be69118cffec9)](https://dl.circleci.com/status-badge/redirect/gh/genecommerce/module-better-checkout-ppcp/tree/main)
 
 ![Better Checkout Powered by GENE](./assets/logo.svg)
 
@@ -24,7 +24,7 @@ For information about a module installation in Adobe Commerce, see [Enable or di
 
 Remember to clear any appropriate caches.
 
-Once installed the module follows the same configuration settings as prescribed by the official rvvup integration documentation, see [PPCP for Magento](https://commercemarketplace.adobe.com/media/catalog/product/paypal-module-ppcp-1-0-0-ece/user_guides.pdf?1732699597).
+Once installed the module follows the same configuration settings as prescribed by the official PPCP for Magento integration documentation, see [PPCP for Magento](https://commercemarketplace.adobe.com/media/catalog/product/paypal-module-ppcp-1-0-0-ece/user_guides.pdf?1732699597).
 
 ## CircleCi
 
