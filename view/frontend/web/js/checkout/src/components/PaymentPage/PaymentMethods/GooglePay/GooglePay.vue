@@ -31,7 +31,7 @@
       :attached="false"
     />
     <div
-      v-show="isMethodSelected"
+      :style="{ display: isMethodSelected ? 'block' : 'none' }"
       id="ppcp-google-pay"
       :class="!googlePayLoaded && isMethodSelected ? 'text-loading' : ''"
       :data-cy="'checkout-PPCPGooglePay'"
@@ -81,6 +81,12 @@ export default {
       isRecaptchaVisible: () => {},
       orderID: null,
     };
+  },
+  props: {
+    open: {
+      type: Boolean,
+      required: false,
+    },
   },
   computed: {
     ...mapState(usePpcpStore, [
@@ -155,8 +161,11 @@ export default {
 
     await configStore.getInitialConfig();
     await cartStore.getCart();
-    await this.getInitialConfigValues();
     await this.initGooglePay();
+
+    if (this.open) {
+      await this.selectPaymentMethod();
+    }
   },
   watch: {
     selectedMethod: {
@@ -171,10 +180,10 @@ export default {
   },
   methods: {
     ...mapActions(usePpcpStore, [
-      'getInitialConfigValues',
       'getEnvironment',
       'mapAddress',
       'makePayment',
+      'mapSelectedAddress',
     ]),
 
     async selectPaymentMethod() {
@@ -419,11 +428,9 @@ export default {
     async onApprove(data, paymentData) {
       const [
         loadingStore,
-        customerStore,
         paymentStore,
       ] = await window.geneCheckout.helpers.loadFromCheckout([
         'stores.useLoadingStore',
-        'stores.useCustomerStore',
         'stores.usePaymentStore',
       ]);
 
@@ -440,38 +447,10 @@ export default {
             try {
               window.geneCheckout.helpers.handleServiceError(err);
             } catch (formattedError) {
-              // clear shipping address form
-              customerStore.createNewAddress('shipping');
               paymentStore.setErrorMessage(formattedError);
             }
           });
       }
-    },
-
-    async mapSelectedAddress(address) {
-      const configStore = await window.geneCheckout.helpers.loadFromCheckout([
-        'stores.useConfigStore',
-      ]);
-
-      const regionId = configStore.getRegionId(
-        address.countryCode,
-        address.administrativeArea,
-      );
-
-      return {
-        street: address.street,
-        postcode: address.postcode,
-        country_code: address.country.code,
-        company: address.company || '',
-        firstname: address.firstname,
-        lastname: address.lastname,
-        city: address.city,
-        telephone: address.telephone,
-        region: {
-          ...(address.region.code ? { region: address.region.code } : {}),
-          ...(regionId ? { region_id: regionId } : {}),
-        },
-      };
     },
   },
 };

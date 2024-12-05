@@ -1,4 +1,6 @@
-.google-pay {
+.google-pay,
+.apple-pay,
+.pay-pal {
   &-container {
     background-color: var(--radio-input-wrapper__background-color);
     border: var(--radio-input-wrapper__border-weight) var(--base__border-style) var(--radio-input-wrapper__border-color);
@@ -10,6 +12,15 @@
 
     .selected {
       margin-bottom: var(--indent__base);
+    }
+
+    .ppcp-apple-pay-button {
+      apple-pay-button,
+      &.text-loading {
+        height:55px;
+        --apple-pay-button-height: var(--ppcp-express-button-height, 55px);
+        width: 100%;
+      }
     }
 
     #ppcp-google-pay {
