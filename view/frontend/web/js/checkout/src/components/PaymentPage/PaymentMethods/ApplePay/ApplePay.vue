@@ -96,6 +96,12 @@ export default {
       orderID: null,
     };
   },
+  props: {
+    open: {
+      type: Boolean,
+      required: false,
+    },
+  },
   computed: {
     ...mapState(usePpcpStore, [
       'apple',
@@ -156,13 +162,12 @@ export default {
 
     await configStore.getInitialConfig();
     await cartStore.getCart();
-
-    if (!this.apple.merchantName) {
-      await this.getInitialConfigValues();
-    }
-
     await this.addSdkScript();
     this.showApplePay();
+
+    if (this.open) {
+      await this.selectPaymentMethod();
+    }
   },
   watch: {
     selectedMethod: {
@@ -177,7 +182,6 @@ export default {
   },
   methods: {
     ...mapActions(usePpcpStore, [
-      'getInitialConfigValues',
       'makePayment',
       'mapSelectedAddress',
       'mapAppleAddress',

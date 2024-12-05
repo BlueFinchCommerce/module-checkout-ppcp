@@ -82,6 +82,12 @@ export default {
       orderID: null,
     };
   },
+  props: {
+    open: {
+      type: Boolean,
+      required: false,
+    },
+  },
   computed: {
     ...mapState(usePpcpStore, [
       'google',
@@ -155,8 +161,11 @@ export default {
 
     await configStore.getInitialConfig();
     await cartStore.getCart();
-    await this.getInitialConfigValues();
     await this.initGooglePay();
+
+    if (this.open) {
+      await this.selectPaymentMethod();
+    }
   },
   watch: {
     selectedMethod: {
@@ -171,7 +180,6 @@ export default {
   },
   methods: {
     ...mapActions(usePpcpStore, [
-      'getInitialConfigValues',
       'getEnvironment',
       'mapAddress',
       'makePayment',

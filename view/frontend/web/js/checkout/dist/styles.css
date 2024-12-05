@@ -1,5 +1,6 @@
 .google-pay-container,
-.apple-pay-container {
+.apple-pay-container,
+.pay-pal-container {
   background-color: var(--radio-input-wrapper__background-color);
   border: var(--radio-input-wrapper__border-weight) var(--base__border-style) var(--radio-input-wrapper__border-color);
   border-radius: var(--radio-input-wrapper__border-radius);
@@ -9,30 +10,37 @@
   padding: var(--indent__base);
 }
 .google-pay-container .selected,
-.apple-pay-container .selected {
+.apple-pay-container .selected,
+.pay-pal-container .selected {
   margin-bottom: var(--indent__base);
 }
 .google-pay-container .ppcp-apple-pay-button apple-pay-button, .google-pay-container .ppcp-apple-pay-button.text-loading,
 .apple-pay-container .ppcp-apple-pay-button apple-pay-button,
-.apple-pay-container .ppcp-apple-pay-button.text-loading {
+.apple-pay-container .ppcp-apple-pay-button.text-loading,
+.pay-pal-container .ppcp-apple-pay-button apple-pay-button,
+.pay-pal-container .ppcp-apple-pay-button.text-loading {
   height: 55px;
   --apple-pay-button-height: var(--ppcp-express-button-height, 55px);
   width: 100%;
 }
 .google-pay-container #ppcp-google-pay,
-.apple-pay-container #ppcp-google-pay {
+.apple-pay-container #ppcp-google-pay,
+.pay-pal-container #ppcp-google-pay {
   max-height: 55px;
 }
 .google-pay-container #ppcp-google-pay button,
-.apple-pay-container #ppcp-google-pay button {
+.apple-pay-container #ppcp-google-pay button,
+.pay-pal-container #ppcp-google-pay button {
   height: 55px;
 }
 .google-pay-content,
-.apple-pay-content {
+.apple-pay-content,
+.pay-pal-content {
   margin-top: var(--indent__base);
 }
 .google-pay-title,
-.apple-pay-title {
+.apple-pay-title,
+.pay-pal-title {
   display: flex;
   align-items: center;
   justify-content: space-between;
