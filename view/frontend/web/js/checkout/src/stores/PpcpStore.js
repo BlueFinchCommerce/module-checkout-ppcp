@@ -245,6 +245,54 @@ export default defineStore('ppcpStore', {
       }
     },
 
+    getEnvironment() {
+      return this.$state.environment === 'sandbox'
+        ? 'TEST'
+        : 'PRODUCTION';
+    },
+
+    async mapAddress(address, email, telephone) {
+      const configStore = await window.geneCheckout.helpers.loadFromCheckout([
+        'stores.useConfigStore',
+      ]);
+      const [firstname, ...lastname] = address.name.split(' ');
+      const regionId = configStore.getRegionId(address.countryCode, address.administrativeArea);
+      return {
+        street: [
+          address.address1,
+          address.address2,
+        ],
+        postcode: address.postalCode,
+        country_code: address.countryCode,
+        company: address.company || '',
+        email,
+        firstname,
+        lastname: lastname.length ? lastname.join(' ') : 'UNKNOWN',
+        city: address.locality,
+        telephone,
+        region: {
+          ...(address.administrativeArea ? { region: address.administrativeArea } : {}),
+          ...(regionId ? { region_id: regionId } : {}),
+        },
+      };
+    },
+
+    async makePayment(email, orderID, method, express) {
+      const payment = {
+        email,
+        paymentMethod: {
+          method,
+          additional_data: {
+            'express-payment': express,
+            'paypal-order-id': orderID,
+          },
+          extension_attributes: window.geneCheckout.helpers.getPaymentExtensionAttributes(),
+        },
+      };
+
+      return window.geneCheckout.services.createPaymentRest(payment);
+    },
+
     getCachedResponse(request, cacheKey, args = {}) {
       if (typeof this.$state.cache[cacheKey] !== 'undefined') {
         return this.$state.cache[cacheKey];

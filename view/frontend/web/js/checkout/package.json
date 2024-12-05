@@ -25,6 +25,7 @@
     "rollup-plugin-multi-input": "^1.4.1",
     "rollup-plugin-scss": "^3.0.0",
     "rollup-plugin-svg": "^2.0.0",
+    "@rollup/plugin-image": "^3.0.3",
     "rollup-plugin-vue": "^6.0.0",
     "sass": "^1.75.0",
     "vue": "^3.4.20"
