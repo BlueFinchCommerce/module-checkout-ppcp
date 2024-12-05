@@ -261,7 +261,11 @@ export default {
             : paypalConfig.FUNDING.PAYPAL,
           createOrder: async () => {
             try {
-              const data = await createPPCPPaymentRest(this.selectedMethod);
+              const data = await createPPCPPaymentRest(
+                this.selectedMethod,
+                this.paypal.vaultActive,
+                1,
+              );
               const orderData = JSON.parse(data);
 
               const [orderID] = orderData;
@@ -336,9 +340,9 @@ export default {
         // Render the PayPal button
         const paypalButtonData = {
           ...commonRenderData,
-          fundingSource: window[`paypal_${this.selectedMethod}`].FUNDING.PAYPAL,
+          fundingSource: paypalConfig.FUNDING.PAYPAL,
         };
-        await window[`paypal_${this.selectedMethod}`].Buttons(paypalButtonData).render(
+        await paypalConfig.Buttons(paypalButtonData).render(
           '#ppcp-paypal_ppcp_paypal',
         );
 
@@ -346,14 +350,14 @@ export default {
         if (this.paypal.payLaterActive) {
           const payLaterButtonData = {
             ...commonRenderData,
-            fundingSource: window[`paypal_${this.selectedMethod}`].FUNDING.PAYLATER,
+            fundingSource: paypalConfig.FUNDING.PAYLATER,
             style: {
               ...commonRenderData.style,
               color: this.paypal.payLaterButtonColour,
               shape: this.paypal.payLaterButtonShape,
             },
           };
-          await window[`paypal_${this.selectedMethod}`].Buttons(payLaterButtonData).render(
+          await paypalConfig.Buttons(payLaterButtonData).render(
             '#ppcp-paypal_ppcp_paylater',
           );
         }
@@ -376,7 +380,7 @@ export default {
 
         // Render the PayPal messages (if active)
         if (this.paypal.payLaterMessageActive) {
-          await window[`paypal_${this.selectedMethod}`].Messages(payLaterMessagingConfig).render(
+          await paypalConfig.Messages(payLaterMessagingConfig).render(
             '#ppcp-paypal_messages',
           );
         }
