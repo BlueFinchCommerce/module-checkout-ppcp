@@ -1,14 +1,63 @@
 <template>
   <div
     v-if="applePayAvailable"
-    class="ppcp-apple-pay-container"
-    :class='!applePayLoaded ? "text-loading" : "ppcp-apple-pay"'>
-    <apple-pay-button
-      v-if="applePayLoaded"
-      @click="onClick"
+    :class="{ active: isMethodSelected }"
+    class="apple-pay-container"
+  >
+    <div
+      class="apple-pay-title"
+      :class="isMethodSelected ? 'selected' : ''"
+      @click="selectPaymentMethod"
+      @keydown="selectPaymentMethod">
+      <component
+        :is="RadioButton"
+        id="apple-pay-select"
+        :text="apple.title"
+        :checked="isMethodSelected"
+        :data-cy="'apple-pay-radio'"
+        class="apple-pay-radio"
+        @click="selectPaymentMethod"
+        @keydown="selectPaymentMethod"
+      />
+      <img
+        width="48px"
+        class="apple-pay-logo"
+        :src="applePayLogo"
+        alt="apple-pay-logo">
+    </div>
+    <div
+      v-if="applePayAvailable && isMethodSelected"
+      class="ppcp-apple-pay-button"
+      :class='!applePayLoaded ? "text-loading" : "ppcp-apple-pay"'>
+      <apple-pay-button
+        v-if="applePayLoaded"
+        @click="onClick"
+        id="ppcp-apple-pay"
+        type="plain"
+        locale="en" />
+    </div>
+    <component
+      :is="ErrorMessage"
+      v-if="errorMessage"
+      :message="errorMessage"
+      :attached="false"
+    />
+    <div
+      v-show="isMethodSelected"
       id="ppcp-apple-pay"
-      type="buy"
-      locale="en" />
+      :class="!applePayLoaded && isMethodSelected ? 'text-loading' : ''"
+      :data-cy="'checkout-PPCPApplePay'"
+    />
+    <div class="apple-pay-content" v-if="isMethodSelected">
+      <component :is="PrivacyPolicy" />
+      <component
+        :is="Recaptcha"
+        v-if="isRecaptchaVisible('placeOrder')"
+        id="placeOrder"
+        location="ppcpPayment"
+      />
+      <component :is="Agreements" id="ppcp-checkout-apple-pay" />
+    </div>
   </div>
 </template>
 
@@ -22,20 +71,29 @@ import loadScript from '../../../../helpers/addScript';
 // Services
 import createPPCPPaymentRest from '../../../../services/createPPCPPaymentRest';
 
+// Icons
+import applePayImage from '../../icons/applepaymark.png';
+
 export default {
   name: 'PpcpApplePayPayment',
   data() {
     return {
+      isMethodSelected: false,
       applePayLoaded: false,
-      applePayConfig: null,
-      key: 'ppcpApplePay',
-      method: 'ppcp_applepay',
-      orderID: null,
       applePayAvailable: false,
-      applePayTotal: '',
-      dataCollectorInstance: null,
-      shippingMethods: [],
+      applePayConfig: null,
       isEligible: false,
+      errorMessage: '',
+      ErrorMessage: null,
+      PrivacyPolicy: null,
+      RadioButton: null,
+      Recaptcha: null,
+      Agreements: null,
+      paymentEmitter: null,
+      isPaymentMethodAvailable: null,
+      selectedMethod: 'ppcp_applepay',
+      isRecaptchaVisible: () => {},
+      orderID: null,
     };
   },
   computed: {
@@ -46,19 +104,56 @@ export default {
       'productionClientId',
       'sandboxClientId',
     ]),
+    applePayLogo() {
+      return applePayImage;
+    },
+  },
+  async mounted() {
+    const {
+      default: {
+        components: {
+          ErrorMessage,
+          PrivacyPolicy,
+          RadioButton,
+          Recaptcha,
+          Agreements,
+        },
+      },
+    } = await import(window.geneCheckout.main);
+
+    this.Agreements = Agreements;
+    this.ErrorMessage = ErrorMessage;
+    this.RadioButton = RadioButton;
+    this.Recaptcha = Recaptcha;
+    this.PrivacyPolicy = PrivacyPolicy;
   },
   async created() {
     const [
-      cartStore,
+      recaptchaStore,
       paymentStore,
       configStore,
+      cartStore,
     ] = await window.geneCheckout.helpers.loadFromCheckout([
-      'stores.useCartStore',
+      'stores.useRecaptchaStore',
       'stores.usePaymentStore',
       'stores.useConfigStore',
+      'stores.useCartStore',
     ]);
 
-    paymentStore.addExpressMethod(this.key);
+    this.paymentEmitter = paymentStore.paymentEmitter;
+    this.isPaymentMethodAvailable = paymentStore.isPaymentMethodAvailable;
+    this.isRecaptchaVisible = recaptchaStore.isRecaptchaVisible;
+
+    paymentStore.$subscribe((mutation) => {
+      if (typeof mutation.payload.selectedMethod !== 'undefined') {
+        this.selectedMethod = mutation.payload.selectedMethod;
+      }
+    });
+
+    this.paymentEmitter.on('changePaymentMethodDisplay', ({ visible }) => {
+      this.paymentVisible = visible;
+    });
+
     await configStore.getInitialConfig();
     await cartStore.getCart();
 
@@ -66,20 +161,35 @@ export default {
       await this.getInitialConfigValues();
     }
 
-    const applePayConfig = paymentStore.availableMethods.find((method) => (
-      method.code === this.method
-    ));
-
-    if (applePayConfig) {
-      await this.addSdkScript();
-      this.showApplePay();
-    } else {
-      paymentStore.removeExpressMethod(this.key);
-      this.applePayLoaded = true;
-    }
+    await this.addSdkScript();
+    this.showApplePay();
+  },
+  watch: {
+    selectedMethod: {
+      handler(newVal) {
+        if (newVal !== null && newVal !== 'ppcp_applepay') {
+          this.isMethodSelected = false;
+        }
+      },
+      immediate: true,
+      deep: true,
+    },
   },
   methods: {
-    ...mapActions(usePpcpStore, ['getInitialConfigValues']),
+    ...mapActions(usePpcpStore, [
+      'getInitialConfigValues',
+      'makePayment',
+      'mapSelectedAddress',
+      'mapAppleAddress',
+    ]),
+
+    async selectPaymentMethod() {
+      this.isMethodSelected = true;
+      const paymentStore = await window.geneCheckout.helpers.loadFromCheckout(
+        'stores.usePaymentStore',
+      );
+      paymentStore.selectPaymentMethod('ppcp_applepay');
+    },
 
     async addSdkScript() {
       const configStore = await window.geneCheckout.helpers.loadFromCheckout([
@@ -131,7 +241,7 @@ export default {
 
       this.applePayAvailable = true;
 
-      const applepay = window[`paypal_${this.method}`].Applepay();
+      const applepay = window[`paypal_${this.selectedMethod}`].Applepay();
 
       applepay.config()
         .then((applepayConfig) => {
@@ -148,14 +258,12 @@ export default {
       const [
         agreementStore,
         cartStore,
-        customerStore,
         configStore,
         loadingStore,
         paymentStore,
       ] = await window.geneCheckout.helpers.loadFromCheckout([
         'stores.useAgreementStore',
         'stores.useCartStore',
-        'stores.useCustomerStore',
         'stores.useConfigStore',
         'stores.useLoadingStore',
         'stores.usePaymentStore',
@@ -170,22 +278,21 @@ export default {
         return;
       }
 
-      const applepay = window[`paypal_${this.method}`].Applepay();
+      const applepay = window[`paypal_${this.selectedMethod}`].Applepay();
 
       try {
-        const requiredShippingContactFields = ['name', 'email', 'phone'];
-
-        if (!cartStore.cart.is_virtual) {
-          requiredShippingContactFields.push('postalAddress');
-        }
-
         const paymentRequest = {
           countryCode: configStore.countryCode,
           currencyCode: configStore.currencyCode,
           merchantCapabilities: this.applePayConfig.merchantCapabilities,
           supportedNetworks: this.applePayConfig.supportedNetworks,
-          requiredShippingContactFields,
-          requiredBillingContactFields: ['postalAddress', 'name'],
+          requiredBillingContactFields: [
+            'name',
+            'phone',
+            'email',
+            'postalAddress',
+          ],
+          requiredShippingContactFields: [],
           total: {
             label: this.apple.merchantName,
             amount: (cartStore.cartGrandTotal / 100).toString(),
@@ -201,31 +308,16 @@ export default {
           }).then((payload) => {
             session.completeMerchantValidation(payload.merchantSession);
           }).catch((err) => {
-            // clear shipping address form
-            customerStore.createNewAddress('shipping');
             console.error(err);
             session.abort();
             loadingStore.setLoadingState(false);
           });
         };
 
-        if (!cartStore.cart.is_virtual) {
-          session.onshippingcontactselected = (data) => this.onShippingContactSelect(data, session);
-          session.onshippingmethodselected = (data) => this.onShippingMethodSelect(data, session);
-        }
-
-        // Handle session cancellation
-        session.oncancel = () => {
-          // clear shipping address form
-          customerStore.createNewAddress('shipping');
-        };
-
         session.onpaymentauthorized = (data) => this.onAuthorized(data, session);
 
         session.begin();
       } catch (err) {
-        // clear shipping address form
-        customerStore.createNewAddress('shipping');
         await this.setApplePayError();
       }
     },
@@ -239,17 +331,18 @@ export default {
         'stores.useConfigStore',
       ]);
 
-      const applepay = window[`paypal_${this.method}`].Applepay();
+      const applepay = window[`paypal_${this.selectedMethod}`].Applepay();
 
-      const { shippingContact, billingContact } = data.payment;
-      const email = shippingContact.emailAddress;
-      const telephone = shippingContact.phoneNumber;
-      const billingAddress = await this.mapAddress(billingContact, email, telephone);
+      const { billingContact } = data.payment;
+      const billingAddress = await this.mapAppleAddress(
+        billingContact,
+        cartStore.cart.email,
+        cartStore.cart.shipping_addresses[0].telephone,
+      );
 
       let shippingAddress = null;
-
       if (!cartStore.cart.is_virtual) {
-        shippingAddress = await this.mapAddress(shippingContact, email, telephone);
+        shippingAddress = await this.mapSelectedAddress(cartStore.cart.shipping_addresses[0]);
       }
 
       if (!configStore.countries.some(({ id }) => id === billingAddress.country_code)) {
@@ -257,7 +350,7 @@ export default {
         return;
       }
 
-      const ppcpOrderId = await createPPCPPaymentRest(this.method);
+      const ppcpOrderId = await createPPCPPaymentRest(this.selectedMethod);
       [this.orderID] = JSON.parse(ppcpOrderId);
 
       applepay.confirmOrder({
@@ -266,13 +359,22 @@ export default {
         billingContact: data.payment.billingContact,
       }).then(async () => {
         try {
-          window.geneCheckout.services.setAddressesOnCart(shippingAddress, billingAddress, email)
-            .then(() => this.makePayment(email))
-            .then(async () => {
-              session.completePayment(window.ApplePaySession.STATUS_SUCCESS);
-              await window.geneCheckout.services.refreshCustomerData(['cart']);
-              window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
-            });
+          window.geneCheckout.services.setAddressesOnCart(
+            shippingAddress,
+            billingAddress,
+            cartStore.cart.email,
+          ).then(() => this.makePayment(
+            cartStore.cart.email,
+            this.orderID,
+            this.selectedMethod,
+            false,
+          )).then(async () => {
+            session.completePayment(window.ApplePaySession.STATUS_SUCCESS);
+            await window.geneCheckout.services.refreshCustomerData(
+              window.geneCheckout.helpers.getCartSectionNames(),
+            );
+            window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
+          });
         } catch (error) {
           console.log(error);
           session.completePayment(window.ApplePaySession.STATUS_FAILURE);
@@ -284,216 +386,6 @@ export default {
           session.completePayment(window.ApplePaySession.STATUS_FAILURE);
         }
       });
-    },
-
-    async onShippingContactSelect(data, session) {
-      const [
-        cartStore,
-        configStore,
-        shippingMethodsStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
-        'stores.useCartStore',
-        'stores.useConfigStore',
-        'stores.useShippingMethodsStore',
-      ]);
-
-      const address = {
-        city: data.shippingContact.locality,
-        company: '',
-        region: data.shippingContact.administrativeArea,
-        region_id: configStore.getRegionId(
-          data.shippingContact.countryCode,
-          data.shippingContact.administrativeArea,
-        ),
-        country_code: data.shippingContact.countryCode.toUpperCase(),
-        postcode: data.shippingContact.postalCode,
-        street: ['0'],
-        telephone: '000000000',
-        firstname: 'UNKNOWN',
-        lastname: 'UNKNOWN',
-      };
-
-      this.address = address;
-      const result = await window.geneCheckout.services.getShippingMethods(
-        address,
-        this.method,
-        true,
-      );
-      const methods = result.shipping_addresses[0].available_shipping_methods;
-
-      const filteredMethods = methods.filter(({ method_code: methodCode }) => (
-        methodCode !== 'nominated_delivery'
-      ));
-
-      this.shippingMethods = filteredMethods;
-
-      // If there are no shipping methods available show an error.
-      if (!filteredMethods.length) {
-        const errors = {
-          errors: [
-            new window.ApplePayError('addressUnserviceable', 'postalAddress', this.applePayNoShippingMethods),
-          ],
-          newTotal: {
-            label: configStore.websiteName,
-            amount: '0.00',
-            type: 'pending',
-          },
-        };
-        session.completeShippingContactSelection(errors);
-        return;
-      }
-
-      // Set the shipping method back to the first available method.
-      const selectedShipping = filteredMethods[0];
-
-      await shippingMethodsStore.submitShippingInfo(
-        selectedShipping.carrier_code,
-        selectedShipping.method_code,
-      );
-      const newShippingMethods = this.mapShippingMethods(filteredMethods);
-
-      const applePayShippingContactUpdate = {
-        newShippingMethods,
-        newTotal: {
-          label: this.applePayTotal,
-          amount: parseFloat(cartStore.cartGrandTotal / 100).toFixed(2),
-        },
-        newLineItems: [
-          {
-            type: 'final',
-            label: 'Subtotal',
-            amount: cartStore.cart.prices.subtotal_including_tax.value.toString(),
-          },
-          {
-            type: 'final',
-            label: 'Shipping',
-            amount: selectedShipping.amount.value.toString(),
-          },
-        ],
-      };
-
-      // Add discount price if available.
-      if (cartStore.cartDiscountTotal) {
-        applePayShippingContactUpdate.newLineItems.push({
-          type: 'final',
-          label: 'Discount',
-          amount: cartStore.cartDiscountTotal.toString(),
-        });
-      }
-
-      session.completeShippingContactSelection(applePayShippingContactUpdate);
-    },
-
-    async onShippingMethodSelect(data, session) {
-      const [
-        cartStore,
-        shippingMethodsStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
-        'stores.useCartStore',
-        'stores.useShippingMethodsStore',
-      ]);
-
-      const selectedShipping = this.shippingMethods.find(({ method_code: id }) => (
-        id === data.shippingMethod.identifier
-      ));
-
-      await shippingMethodsStore.submitShippingInfo(
-        selectedShipping.carrier_code,
-        selectedShipping.method_code,
-      );
-      const applePayShippingContactUpdate = {
-        newTotal: {
-          label: this.applePayTotal,
-          amount: parseFloat(cartStore.cartGrandTotal / 100).toFixed(2),
-        },
-        newLineItems: [
-          {
-            type: 'final',
-            label: 'Subtotal',
-            amount: cartStore.cart.prices.subtotal_including_tax.value.toString(),
-          },
-          {
-            type: 'final',
-            label: 'Shipping',
-            amount: selectedShipping.amount.value.toString(),
-          },
-        ],
-      };
-
-      // Add discount price if available.
-      if (cartStore.cartDiscountTotal) {
-        applePayShippingContactUpdate.newLineItems.push({
-          type: 'final',
-          label: 'Discount',
-          amount: cartStore.cartDiscountTotal.toString(),
-        });
-      }
-
-      session.completeShippingMethodSelection(applePayShippingContactUpdate);
-    },
-
-    mapShippingMethods(shippingMethods) {
-      return shippingMethods.map((shippingMethod) => (
-        {
-          label: shippingMethod.method_title,
-          detail: shippingMethod.carrier_title || '',
-          amount: shippingMethod.amount.value.toString(),
-          identifier: shippingMethod.method_code,
-          carrierCode: shippingMethod.carrier_code,
-        }
-      ));
-    },
-
-    async makePayment(response) {
-      const payment = {
-        email: response,
-        paymentMethod: {
-          method: this.method,
-          additional_data: {
-            'express-payment': true,
-            'paypal-order-id': this.orderID,
-          },
-          extension_attributes: window.geneCheckout.helpers.getPaymentExtensionAttributes(),
-        },
-      };
-
-      return window.geneCheckout.services.createPaymentRest(payment);
-    },
-
-    async setApplePayError() {
-      const paymentStore = await window.geneCheckout.helpers.loadFromCheckout([
-        'stores.usePaymentStore',
-      ]);
-
-      paymentStore.setErrorMessage(
-        "We're unable to take payments through Apple Pay at the moment. Please try an alternative payment method.",
-      );
-    },
-
-    async mapAddress(address, email, telephone) {
-      const configStore = await window.geneCheckout.helpers.loadFromCheckout([
-        'stores.useConfigStore',
-      ]);
-
-      const regionId = configStore.getRegionId(
-        address.countryCode.toUpperCase(),
-        address.administrativeArea,
-      );
-      return {
-        email,
-        telephone,
-        firstname: address.givenName,
-        lastname: address.familyName,
-        company: address.company || '',
-        street: address.addressLines,
-        city: address.locality,
-        country_code: address.countryCode.toUpperCase(),
-        postcode: address.postalCode,
-        region: {
-          ...(address.administrativeArea ? { region: address.administrativeArea } : {}),
-          ...(regionId ? { region_id: regionId } : {}),
-        },
-      };
     },
   },
 };

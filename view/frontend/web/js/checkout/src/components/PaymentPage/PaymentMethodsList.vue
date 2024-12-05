@@ -4,6 +4,10 @@
       v-if="google.enabled"
       :is="PpcpGooglePayPayment"
     />
+    <component
+      v-if="apple.enabled"
+      :is="PpcpApplePayPayment"
+    />
   </div>
 </template>
 
@@ -13,12 +17,14 @@ import usePpcpStore from '../../stores/PpcpStore';
 
 // Components
 import PpcpGooglePayPayment from './PaymentMethods/GooglePay/GooglePay.vue';
+import PpcpApplePayPayment from './PaymentMethods/ApplePay/ApplePay.vue';
 
 export default {
   name: 'PpcpPaymentPage',
   data() {
     return {
       PpcpGooglePayPayment: null,
+      PpcpApplePayPayment: null,
     };
   },
   computed: {
@@ -32,6 +38,7 @@ export default {
   },
   async created() {
     this.PpcpGooglePayPayment = PpcpGooglePayPayment;
+    this.PpcpApplePayPayment = PpcpApplePayPayment;
     const [
       cartStore,
       configStore,

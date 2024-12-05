@@ -1,11 +1,11 @@
 <template>
   <div>
-    <p>VENMO</p>
+    <p>CREDIT CARD</p>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'PpcpVenmoPayment',
+  name: 'PpcpCreditCardPayment',
 };
 </script>

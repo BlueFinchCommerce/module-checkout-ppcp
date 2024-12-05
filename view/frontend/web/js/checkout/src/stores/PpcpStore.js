@@ -277,6 +277,58 @@ export default defineStore('ppcpStore', {
       };
     },
 
+    async mapAppleAddress(address, email, telephone) {
+      const configStore = await window.geneCheckout.helpers.loadFromCheckout([
+        'stores.useConfigStore',
+      ]);
+
+      const regionId = configStore.getRegionId(
+        address.countryCode.toUpperCase(),
+        address.administrativeArea,
+      );
+      return {
+        email,
+        telephone,
+        firstname: address.givenName,
+        lastname: address.familyName,
+        company: address.company || '',
+        street: address.addressLines,
+        city: address.locality,
+        country_code: address.countryCode.toUpperCase(),
+        postcode: address.postalCode,
+        region: {
+          ...(address.administrativeArea ? { region: address.administrativeArea } : {}),
+          ...(regionId ? { region_id: regionId } : {}),
+        },
+      };
+    },
+
+    async mapSelectedAddress(address) {
+      const configStore = await window.geneCheckout.helpers.loadFromCheckout([
+        'stores.useConfigStore',
+      ]);
+
+      const regionId = configStore.getRegionId(
+        address.countryCode,
+        address.administrativeArea,
+      );
+
+      return {
+        street: address.street,
+        postcode: address.postcode,
+        country_code: address.country.code,
+        company: address.company || '',
+        firstname: address.firstname,
+        lastname: address.lastname,
+        city: address.city,
+        telephone: address.telephone,
+        region: {
+          ...(address.region.code ? { region: address.region.code } : {}),
+          ...(regionId ? { region_id: regionId } : {}),
+        },
+      };
+    },
+
     async makePayment(email, orderID, method, express) {
       const payment = {
         email,
