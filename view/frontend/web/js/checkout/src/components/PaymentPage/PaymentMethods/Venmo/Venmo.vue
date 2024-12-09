@@ -79,7 +79,7 @@ export default {
       paymentEmitter: null,
       isPaymentMethodAvailable: null,
       selectedMethod: 'ppcp_venmo',
-      namespace: 'paypal_ppcp_paypal',
+      method: 'ppcp_venmo',
       isRecaptchaVisible: () => {},
       orderID: null,
       venmoLoaded: false,
@@ -153,13 +153,6 @@ export default {
     await configStore.getInitialConfig();
     await cartStore.getCart();
     await this.addScripts();
-
-    this.namespace = `${this.namespace}`;
-
-    if (this.venmo.enabled) {
-      this.namespace = `${this.selectedMethod}_venmo`;
-    }
-
     await this.renderPaypalInstance();
 
     if (this.open) {
@@ -218,8 +211,7 @@ export default {
     },
 
     async renderPaypalInstance() {
-      const paypalConfig = window[`paypal_${this.selectedMethod}`];
-
+      const paypalConfig = window.paypal_ppcp_venmo;
       if (paypalConfig) {
         const commonRenderData = {
           env: this.environment,
@@ -235,7 +227,7 @@ export default {
           createOrder: async () => {
             try {
               const data = await createPPCPPaymentRest(
-                this.selectedMethod,
+                this.method,
                 this.venmo.vaultActive,
                 1,
               );
@@ -274,7 +266,7 @@ export default {
             try {
               await finishPpcpOrder({
                 orderId: this.orderID,
-                method: this.selectedMethod,
+                method: this.method,
               }).then(() => {
                 window.geneCheckout.services.refreshCustomerData(['cart']);
                 this.redirectToSuccess();

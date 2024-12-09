@@ -92,6 +92,7 @@ export default {
       paymentEmitter: null,
       isPaymentMethodAvailable: null,
       selectedMethod: 'ppcp_applepay',
+      method: 'ppcp_applepay',
       isRecaptchaVisible: () => {},
       orderID: null,
     };
@@ -245,7 +246,7 @@ export default {
 
       this.applePayAvailable = true;
 
-      const applepay = window[`paypal_${this.selectedMethod}`].Applepay();
+      const applepay = window[`paypal_${this.method}`].Applepay();
 
       applepay.config()
         .then((applepayConfig) => {
@@ -282,7 +283,7 @@ export default {
         return;
       }
 
-      const applepay = window[`paypal_${this.selectedMethod}`].Applepay();
+      const applepay = window[`paypal_${this.method}`].Applepay();
 
       try {
         const paymentRequest = {
@@ -335,7 +336,7 @@ export default {
         'stores.useConfigStore',
       ]);
 
-      const applepay = window[`paypal_${this.selectedMethod}`].Applepay();
+      const applepay = window[`paypal_${this.method}`].Applepay();
 
       const { billingContact } = data.payment;
       const billingAddress = await this.mapAppleAddress(
@@ -354,7 +355,7 @@ export default {
         return;
       }
 
-      const ppcpOrderId = await createPPCPPaymentRest(this.selectedMethod);
+      const ppcpOrderId = await createPPCPPaymentRest(this.method);
       [this.orderID] = JSON.parse(ppcpOrderId);
 
       applepay.confirmOrder({
@@ -370,7 +371,7 @@ export default {
           ).then(() => this.makePayment(
             cartStore.cart.email,
             this.orderID,
-            this.selectedMethod,
+            this.method,
             false,
           )).then(async () => {
             session.completePayment(window.ApplePaySession.STATUS_SUCCESS);

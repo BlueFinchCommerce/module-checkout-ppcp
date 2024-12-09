@@ -78,6 +78,7 @@ export default {
       paymentEmitter: null,
       isPaymentMethodAvailable: null,
       selectedMethod: 'ppcp_googlepay',
+      method: 'ppcp_googlepay',
       isRecaptchaVisible: () => {},
       orderID: null,
     };
@@ -396,7 +397,7 @@ export default {
             );
 
           // Create PPCP Payment and get the orderID
-          const ppcpOrderId = await createPPCPPaymentRest(this.selectedMethod);
+          const ppcpOrderId = await createPPCPPaymentRest(this.method);
           [this.orderID] = JSON.parse(ppcpOrderId);
 
           const confirmOrderData = {
@@ -437,7 +438,7 @@ export default {
       if (data.liabilityShift && data.liabilityShift !== 'POSSIBLE') {
         throw new Error('Cannot validate payment');
       } else {
-        return this.makePayment(paymentData.email, this.orderID, this.selectedMethod, false)
+        return this.makePayment(paymentData.email, this.orderID, this.method, false)
           .then(() => window.geneCheckout.services.refreshCustomerData(['cart']))
           .then(() => {
             window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();

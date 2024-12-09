@@ -1,7 +1,8 @@
 .google-pay,
 .apple-pay,
 .pay-pal,
-.venmo {
+.venmo,
+.card {
   &-container {
     background-color: var(--radio-input-wrapper__background-color);
     border: var(--radio-input-wrapper__border-weight) var(--base__border-style) var(--radio-input-wrapper__border-color);
@@ -41,5 +42,23 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+  }
+}
+
+.card-fieldset {
+  border: 0;
+  padding: 0;
+
+  .field {
+    margin-bottom: var(--indent__s);
+  }
+
+  label {
+    padding-left: var(--indent__xs);
+    margin-bottom: var(--indent__xs);
+
+    span {
+      font-size: var(--font__s) !important;
+    }
   }
 }

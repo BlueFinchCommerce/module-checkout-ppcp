@@ -1,6 +1,6 @@
 import buildPpcpCartUrl from '../helpers/buildPpcpCartUrl';
 
-export default async (method, vault = false, fromCheckout= 0) => {
+export default async (method, vault = false, fromCheckout = 0) => {
   const [
     paymentStore,
     customerStore,
@@ -33,7 +33,7 @@ export default async (method, vault = false, fromCheckout= 0) => {
 
   const url = vault && fromCheckout !== 0 ? `${await buildPpcpCartUrl()}?vault=${vault}&fromCheckout=1`
     : await buildPpcpCartUrl();
-  
+
   try {
     const response = await window.geneCheckout.services.authenticatedRequest().post(
       url,

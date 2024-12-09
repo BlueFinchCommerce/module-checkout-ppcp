@@ -94,6 +94,7 @@ export default {
       paymentEmitter: null,
       isPaymentMethodAvailable: null,
       selectedMethod: 'ppcp_paypal',
+      method: 'ppcp_paypal',
       namespace: 'paypal_ppcp_paypal',
       isRecaptchaVisible: () => {},
       orderID: null,
@@ -172,7 +173,7 @@ export default {
     this.namespace = `${this.namespace}`;
 
     if (this.paypal.payLaterActive) {
-      this.namespace = `${this.selectedMethod}_paylater`;
+      this.namespace = `${this.method}_paylater`;
     }
 
     await this.renderPaypalInstance();
@@ -243,8 +244,7 @@ export default {
         'stores.useCartStore',
       ]);
 
-      const paypalConfig = window[`paypal_${this.selectedMethod}`];
-
+      const paypalConfig = window[`paypal_${this.method}`];
       if (paypalConfig) {
         const commonRenderData = {
           env: this.environment,
@@ -262,7 +262,7 @@ export default {
           createOrder: async () => {
             try {
               const data = await createPPCPPaymentRest(
-                this.selectedMethod,
+                this.method,
                 this.paypal.vaultActive,
                 1,
               );
@@ -301,7 +301,7 @@ export default {
             try {
               await finishPpcpOrder({
                 orderId: this.orderID,
-                method: this.selectedMethod,
+                method: this.method,
               }).then(() => {
                 window.geneCheckout.services.refreshCustomerData(['cart']);
                 this.redirectToSuccess();
