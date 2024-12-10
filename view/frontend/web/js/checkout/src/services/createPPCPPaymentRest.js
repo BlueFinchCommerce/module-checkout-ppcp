@@ -1,6 +1,6 @@
 import buildPpcpCartUrl from '../helpers/buildPpcpCartUrl';
 
-export default async (method, vault = false, fromCheckout = 0) => {
+export default async (method, vault = null, fromCheckout = 0) => {
   const [
     paymentStore,
     customerStore,
@@ -31,7 +31,7 @@ export default async (method, vault = false, fromCheckout = 0) => {
     cartId = quote.id;
   }
 
-  const url = vault && fromCheckout !== 0 ? `${await buildPpcpCartUrl()}?vault=${vault}&fromCheckout=1`
+  const url = vault !== null && fromCheckout !== 0 ? `${await buildPpcpCartUrl()}?vault=${vault}&fromCheckout=1`
     : await buildPpcpCartUrl();
 
   try {

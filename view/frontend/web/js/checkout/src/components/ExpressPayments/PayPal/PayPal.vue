@@ -1,12 +1,12 @@
 <template>
   <div
-    class="paypal-button-container"
+    class="paypal-express--button-container"
     :id="`ppcp-paypal_ppcp_paypal`"
     :class="!paypalLoaded ? 'text-loading' : ''"
     :data-cy="'instant-checkout-ppcpPayPal'"
   />
   <div
-    class="paypal-button-container"
+    class="paypal-express--button-container"
     :id="`ppcp-paypal_ppcp_paylater`"
     :class="!paypalLoaded ? 'text-loading' : ''"
     :data-cy="'instant-checkout-ppcpPayLater'"

@@ -1,5 +1,5 @@
 <template>
-  <div class="ppcp-payment-methods-list" v-if="dataLoaded">
+  <div class="ppcp-payment-methods-list" v-if="dataLoaded && isPPCPenabled">
     <component
       v-for="(method, index) in sortedPaymentMethods"
       :key="index"
@@ -34,6 +34,7 @@ export default {
   },
   computed: {
     ...mapState(usePpcpStore, [
+      'isPPCPenabled',
       'apple',
       'google',
       'venmo',

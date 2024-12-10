@@ -281,20 +281,22 @@ export default {
               return null;
             }
           },
-          onApprove: async (data, paymentData) => {
+          onApprove: async (data) => {
             const [
               loadingStore,
               paymentStore,
+              cartStore,
             ] = await window.geneCheckout.helpers.loadFromCheckout([
               'stores.useLoadingStore',
               'stores.usePaymentStore',
+              'stores.useCartStore',
             ]);
 
             if (data.liabilityShift && (data.liabilityShift === 'NO'
               || data.liabilityShift === 'UNKNOWN')) {
               throw new Error('Cannot validate payment');
             } else {
-              return this.makePayment(paymentData.email, this.orderID, this.method, false)
+              return this.makePayment(cartStore.cart.email, this.orderID, this.method, false)
                 .then(() => window.geneCheckout.services.refreshCustomerData(['cart']))
                 .then(() => {
                   window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();

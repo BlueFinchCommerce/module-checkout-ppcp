@@ -60,7 +60,6 @@ import loadScript from '../../../../helpers/addScript';
 
 // Services
 import createPPCPPaymentRest from '../../../../services/createPPCPPaymentRest';
-import finishPpcpOrder from '../../../../services/finishPpcpOrder';
 
 // Icons
 import venmoImage from '../../icons/venmo_logo_blue.png';
@@ -171,7 +170,7 @@ export default {
     },
   },
   methods: {
-    ...mapActions(usePpcpStore, ['mapSelectedAddress']),
+    ...mapActions(usePpcpStore, ['makePayment']),
 
     async selectPaymentMethod() {
       this.isMethodSelected = true;
@@ -263,25 +262,28 @@ export default {
             return true;
           },
           onApprove: async () => {
-            try {
-              await finishPpcpOrder({
-                orderId: this.orderID,
-                method: this.method,
-              }).then(() => {
-                window.geneCheckout.services.refreshCustomerData(['cart']);
-                this.redirectToSuccess();
+            const [
+              paymentStore,
+              loadingStore,
+              cartStore,
+            ] = await window.geneCheckout.helpers.loadFromCheckout([
+              'stores.usePaymentStore',
+              'stores.useLoadingStore',
+              'stores.useCartStore',
+            ]);
+            return this.makePayment(cartStore.cart.email, this.orderID, this.method, false)
+              .then(() => window.geneCheckout.services.refreshCustomerData(['cart']))
+              .then(() => {
+                window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
+              })
+              .catch((err) => {
+                loadingStore.setLoadingState(false);
+                try {
+                  window.geneCheckout.helpers.handleServiceError(err);
+                } catch (formattedError) {
+                  paymentStore.setErrorMessage(formattedError);
+                }
               });
-            } catch (error) {
-              const [
-                paymentStore,
-                loadingStore,
-              ] = await window.geneCheckout.helpers.loadFromCheckout([
-                'stores.usePaymentStore',
-                'stores.useLoadingStore',
-              ]);
-              loadingStore.setLoadingState(false);
-              paymentStore.setErrorMessage(error);
-            }
           },
           onCancel: async () => {
             const loadingStore = await window.geneCheckout.helpers.loadFromCheckout([
