@@ -172,7 +172,7 @@ export default defineStore('ppcpStore', {
           },
           card: {
             enabled: storeconfig.ppcp_card_active === '1',
-            vaultActive: storeconfig.ppcp_card_vault_active,
+            vaultActive: !!storeconfig.ppcp_card_vault_active,
             title: storeconfig.ppcp_card_title,
             paymentAction: storeconfig.ppcp_card_payment_action
               === 'authorize_capture' ? 'capture' : storeconfig.ppcp_card_payment_action,
@@ -196,7 +196,7 @@ export default defineStore('ppcpStore', {
             title: storeconfig.ppcp_applepay_title,
           },
           venmo: {
-            vaultActive: storeconfig.ppcp_venmo_payment_action,
+            vaultActive: !!storeconfig.ppcp_venmo_payment_action,
             enabled: storeconfig.ppcp_venmo_active === '1',
             paymentAction: storeconfig.ppcp_venmo_payment_action
             === 'authorize_capture' ? 'capture' : storeconfig.ppcp_venmo_payment_action,
@@ -211,7 +211,7 @@ export default defineStore('ppcpStore', {
           },
           paypal: {
             enabled: storeconfig.ppcp_paypal_active === '1',
-            vaultActive: storeconfig.ppcp_paypal_vault_active,
+            vaultActive: !!storeconfig.ppcp_paypal_vault_active,
             title: storeconfig.ppcp_paypal_title,
             paymentAction: storeconfig.ppcp_paypal_payment_action
             === 'authorize_capture' ? 'capture' : storeconfig.ppcp_paypal_payment_action,
@@ -243,6 +243,106 @@ export default defineStore('ppcpStore', {
           },
         });
       }
+    },
+
+    getEnvironment() {
+      return this.$state.environment === 'sandbox'
+        ? 'TEST'
+        : 'PRODUCTION';
+    },
+
+    async mapAddress(address, email, telephone) {
+      const configStore = await window.geneCheckout.helpers.loadFromCheckout([
+        'stores.useConfigStore',
+      ]);
+      const [firstname, ...lastname] = address.name.split(' ');
+      const regionId = configStore.getRegionId(address.countryCode, address.administrativeArea);
+      return {
+        street: [
+          address.address1,
+          address.address2,
+        ],
+        postcode: address.postalCode,
+        country_code: address.countryCode,
+        company: address.company || '',
+        email,
+        firstname,
+        lastname: lastname.length ? lastname.join(' ') : 'UNKNOWN',
+        city: address.locality,
+        telephone,
+        region: {
+          ...(address.administrativeArea ? { region: address.administrativeArea } : {}),
+          ...(regionId ? { region_id: regionId } : {}),
+        },
+      };
+    },
+
+    async mapAppleAddress(address, email, telephone) {
+      const configStore = await window.geneCheckout.helpers.loadFromCheckout([
+        'stores.useConfigStore',
+      ]);
+
+      const regionId = configStore.getRegionId(
+        address.countryCode.toUpperCase(),
+        address.administrativeArea,
+      );
+      return {
+        email,
+        telephone,
+        firstname: address.givenName,
+        lastname: address.familyName,
+        company: address.company || '',
+        street: address.addressLines,
+        city: address.locality,
+        country_code: address.countryCode.toUpperCase(),
+        postcode: address.postalCode,
+        region: {
+          ...(address.administrativeArea ? { region: address.administrativeArea } : {}),
+          ...(regionId ? { region_id: regionId } : {}),
+        },
+      };
+    },
+
+    async mapSelectedAddress(address) {
+      const configStore = await window.geneCheckout.helpers.loadFromCheckout([
+        'stores.useConfigStore',
+      ]);
+
+      const regionId = configStore.getRegionId(
+        address.countryCode,
+        address.administrativeArea,
+      );
+
+      return {
+        street: address.street,
+        postcode: address.postcode,
+        country_code: address.country.code,
+        company: address.company || '',
+        firstname: address.firstname,
+        lastname: address.lastname,
+        city: address.city,
+        telephone: address.telephone,
+        region: {
+          ...(address.region.code ? { region: address.region.code } : {}),
+          ...(regionId ? { region_id: regionId } : {}),
+        },
+      };
+    },
+
+    async makePayment(email, orderID, method, express) {
+      const payment = {
+        email,
+        paymentMethod: {
+          method,
+          additional_data: {
+            'express-payment': express,
+            'paypal-order-id': orderID,
+          },
+          extension_attributes: window.geneCheckout.helpers.getPaymentExtensionAttributes(),
+        },
+      };
+
+      return window.geneCheckout.services.createPaymentRest(payment);
     },
 
     getCachedResponse(request, cacheKey, args = {}) {

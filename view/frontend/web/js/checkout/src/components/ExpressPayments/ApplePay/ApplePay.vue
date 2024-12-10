@@ -79,7 +79,7 @@ export default {
     }
   },
   methods: {
-    ...mapActions(usePpcpStore, ['getInitialConfigValues']),
+    ...mapActions(usePpcpStore, ['getInitialConfigValues', 'makePayment', 'mapAppleAddress']),
 
     async addSdkScript() {
       const configStore = await window.geneCheckout.helpers.loadFromCheckout([
@@ -244,12 +244,12 @@ export default {
       const { shippingContact, billingContact } = data.payment;
       const email = shippingContact.emailAddress;
       const telephone = shippingContact.phoneNumber;
-      const billingAddress = await this.mapAddress(billingContact, email, telephone);
+      const billingAddress = await this.mapAppleAddress(billingContact, email, telephone);
 
       let shippingAddress = null;
 
       if (!cartStore.cart.is_virtual) {
-        shippingAddress = await this.mapAddress(shippingContact, email, telephone);
+        shippingAddress = await this.mapAppleAddress(shippingContact, email, telephone);
       }
 
       if (!configStore.countries.some(({ id }) => id === billingAddress.country_code)) {
@@ -267,10 +267,12 @@ export default {
       }).then(async () => {
         try {
           window.geneCheckout.services.setAddressesOnCart(shippingAddress, billingAddress, email)
-            .then(() => this.makePayment(email))
+            .then(() => this.makePayment(email, this.orderID, this.method, true))
             .then(async () => {
               session.completePayment(window.ApplePaySession.STATUS_SUCCESS);
-              await window.geneCheckout.services.refreshCustomerData(['cart']);
+              await window.geneCheckout.services.refreshCustomerData(
+                window.geneCheckout.helpers.getCartSectionNames(),
+              );
               window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
             });
         } catch (error) {
@@ -444,22 +446,6 @@ export default {
       ));
     },
 
-    async makePayment(response) {
-      const payment = {
-        email: response,
-        paymentMethod: {
-          method: this.method,
-          additional_data: {
-            'express-payment': true,
-            'paypal-order-id': this.orderID,
-          },
-          extension_attributes: window.geneCheckout.helpers.getPaymentExtensionAttributes(),
-        },
-      };
-
-      return window.geneCheckout.services.createPaymentRest(payment);
-    },
-
     async setApplePayError() {
       const paymentStore = await window.geneCheckout.helpers.loadFromCheckout([
         'stores.usePaymentStore',
@@ -468,32 +454,6 @@ export default {
       paymentStore.setErrorMessage(
         "We're unable to take payments through Apple Pay at the moment. Please try an alternative payment method.",
       );
-    },
-
-    async mapAddress(address, email, telephone) {
-      const configStore = await window.geneCheckout.helpers.loadFromCheckout([
-        'stores.useConfigStore',
-      ]);
-
-      const regionId = configStore.getRegionId(
-        address.countryCode.toUpperCase(),
-        address.administrativeArea,
-      );
-      return {
-        email,
-        telephone,
-        firstname: address.givenName,
-        lastname: address.familyName,
-        company: address.company || '',
-        street: address.addressLines,
-        city: address.locality,
-        country_code: address.countryCode.toUpperCase(),
-        postcode: address.postalCode,
-        region: {
-          ...(address.administrativeArea ? { region: address.administrativeArea } : {}),
-          ...(regionId ? { region_id: regionId } : {}),
-        },
-      };
     },
   },
 };

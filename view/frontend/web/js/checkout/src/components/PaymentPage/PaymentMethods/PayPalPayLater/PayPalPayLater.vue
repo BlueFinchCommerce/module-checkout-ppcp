@@ -1,12 +1,12 @@
 <template>
   <div
-    class="paypal-express--button-container"
+    class="paypal-button-container"
     :id="`ppcp-paypal_ppcp_paypal`"
     :class="!paypalLoaded ? 'text-loading' : ''"
     :data-cy="'instant-checkout-ppcpPayPal'"
   />
   <div
-    class="paypal-express--button-container"
+    class="paypal-button-container"
     :id="`ppcp-paypal_ppcp_paylater`"
     :class="!paypalLoaded ? 'text-loading' : ''"
     :data-cy="'instant-checkout-ppcpPayLater'"
@@ -21,20 +21,20 @@
 
 <script>
 import { mapActions, mapState } from 'pinia';
-import usePpcpStore from '../../../stores/PpcpStore';
+import usePpcpStore from '../../../../stores/PpcpStore';
 
 // Helpers
-import loadScript from '../../../helpers/addScript';
+import loadScript from '../../../../helpers/addScript';
 
 // Services
-import createPPCPPaymentRest from '../../../services/createPPCPPaymentRest';
-import changeShippingMethod from '../../../services/changeShippingMethod';
-import changeShippingAddress from '../../../services/changeShippingAddress';
-import finishPpcpOrder from '../../../services/finishPpcpOrder';
-import getTotals from '../../../services/getTotals';
+import createPPCPPaymentRest from '../../../../services/createPPCPPaymentRest';
+import changeShippingMethod from '../../../../services/changeShippingMethod';
+import changeShippingAddress from '../../../../services/changeShippingAddress';
+import finishPpcpOrder from '../../../../services/finishPpcpOrder';
+import getTotals from '../../../../services/getTotals';
 
 export default {
-  name: 'PpcpPayPal',
+  name: 'PpcpPayPalPayLaterPayment',
   data() {
     return {
       key: 'ppcpPayPal',
@@ -349,7 +349,3 @@ export default {
   },
 };
 </script>
-
-<style lang="scss">
-@import "../expressPayments.scss";
-</style>

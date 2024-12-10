@@ -20,7 +20,7 @@
 
                 <!-- PPCP Card Payments Config -->
                 <item name="ppcp_card_active" xsi:type="string">payment/ppcp_card/active</item>
-                <item name="ppcp_card_vault_active" xsi:type="string">payment/ppcp_card/ppcp_card_vault_active</item>
+                <item name="ppcp_card_vault_active" xsi:type="string">payment/ppcp_card_vault/active</item>
                 <item name="ppcp_card_title" xsi:type="string">payment/ppcp_card/title</item>
                 <item name="ppcp_card_payment_action" xsi:type="string">payment/ppcp_card/payment_action</item>
                 <item name="ppcp_card_three_d_secure" xsi:type="string">payment/ppcp_card/three_d_secure</item>
@@ -35,7 +35,7 @@
 
                 <!-- PPCP PayPal Config -->
                 <item name="ppcp_paypal_active" xsi:type="string">payment/ppcp_paypal/active</item>
-                <item name="ppcp_paypal_vault_active" xsi:type="string">payment/ppcp_paypal/ppcp_paypal_vault_active</item>
+                <item name="ppcp_paypal_vault_active" xsi:type="string">payment/ppcp_paypal_vault/active</item>
                 <item name="ppcp_paypal_title" xsi:type="string">payment/ppcp_paypal/title</item>
                 <item name="ppcp_paypal_payment_action" xsi:type="string">payment/ppcp_paypal/payment_action</item>
                 <item name="ppcp_paypal_require_billing_address" xsi:type="string">payment/ppcp_paypal/require_billing_address</item>
@@ -58,7 +58,7 @@
                 <item name="ppcp_venmo_active" xsi:type="string">payment/ppcp_venmo/active</item>
                 <item name="ppcp_venmo_title" xsi:type="string">payment/ppcp_venmo/title</item>
                 <item name="ppcp_venmo_payment_action" xsi:type="string">payment/ppcp_venmo/payment_action</item>
-                <item name="ppcp_venmo_vault_active" xsi:type="string">payment/ppcp_venmo/ppcp_venmo_vault_active</item>
+                <item name="ppcp_venmo_vault_active" xsi:type="string">payment/ppcp_venmo_vault/active</item>
                 <item name="ppcp_venmo_sort_order" xsi:type="string">payment/ppcp_venmo/sort_order</item>
 
                 <!-- PPCP APM Config -->
