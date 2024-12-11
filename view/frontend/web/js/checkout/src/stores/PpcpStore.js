@@ -136,7 +136,7 @@ export default defineStore('ppcpStore', {
           ppcp_venmo_payment_action
           ppcp_venmo_vault_active
           ppcp_venmo_sort_order
-          
+
           ppcp_apm_active
           ppcp_apm_title
           ppcp_apm_allowed_methods
@@ -149,7 +149,7 @@ export default defineStore('ppcpStore', {
           ppcp_card_three_d_secure
           ppcp_card_sort_order
         }
-      }`).then(this.handleInitialConfig);
+      }`, {}, {}, 'BetterCheckoutStoreConfig').then(this.handleInitialConfig);
 
       await this.getCachedResponse(request, 'getInitialConfig');
     },
