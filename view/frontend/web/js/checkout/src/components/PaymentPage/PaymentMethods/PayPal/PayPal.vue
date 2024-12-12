@@ -57,8 +57,8 @@
       <component
         :is="checkboxComponent"
         v-if="isLoggedIn && (
-        (selectedMethod === 'ppcp_paypal' && paypal.vaultActive)
-      )"
+          (selectedMethod === 'ppcp_paypal' && paypal.vaultActive)
+        )"
         id="ppcp-store-method"
         class="ppcp-store-method"
         :checked="storeMethod"
@@ -334,8 +334,8 @@ export default {
               false,
               this.storeMethod,
             ).then(() => {
-                window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
-              })
+              window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
+            })
               .catch((err) => {
                 loadingStore.setLoadingState(false);
                 try {

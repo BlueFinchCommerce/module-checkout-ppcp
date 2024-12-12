@@ -337,7 +337,7 @@ export default defineStore('ppcpStore', {
           additional_data: {
             'express-payment': express,
             'paypal-order-id': orderID,
-            'is_active_payment_token_enabler': vault,
+            is_active_payment_token_enabler: vault,
           },
           extension_attributes: window.geneCheckout.helpers.getPaymentExtensionAttributes(),
         },

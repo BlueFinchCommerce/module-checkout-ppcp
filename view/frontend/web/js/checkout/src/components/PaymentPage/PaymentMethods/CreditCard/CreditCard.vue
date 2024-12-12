@@ -93,8 +93,8 @@
       <component
         :is="checkboxComponent"
         v-if="isLoggedIn && (
-        (selectedMethod === 'ppcp_card' && card.vaultActive)
-      )"
+          (selectedMethod === 'ppcp_card' && card.vaultActive)
+        )"
         id="ppcp-store-method"
         class="ppcp-store-method"
         :checked="storeMethod"
@@ -301,7 +301,7 @@ export default {
               return null;
             }
           },
-          onApprove: async (data) => {
+          onApprove: async () => {
             const [
               loadingStore,
               paymentStore,

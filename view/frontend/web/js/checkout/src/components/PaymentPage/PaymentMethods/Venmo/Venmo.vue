@@ -42,8 +42,8 @@
       <component
         :is="checkboxComponent"
         v-if="isLoggedIn && (
-        (selectedMethod === 'ppcp_venmo' && venmo.vaultActive)
-      )"
+          (selectedMethod === 'ppcp_venmo' && venmo.vaultActive)
+        )"
         id="ppcp-store-method"
         class="ppcp-store-method"
         :checked="storeMethod"
@@ -300,8 +300,8 @@ export default {
               false,
               this.storeMethod,
             ).then(() => {
-                window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
-              })
+              window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
+            })
               .catch((err) => {
                 loadingStore.setLoadingState(false);
                 try {
