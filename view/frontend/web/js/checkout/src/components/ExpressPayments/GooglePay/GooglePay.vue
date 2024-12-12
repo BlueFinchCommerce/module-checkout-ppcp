@@ -454,7 +454,6 @@ export default {
         throw new Error('Cannot validate payment');
       } else {
         return this.makePayment(paymentData.email, this.orderID, this.method, true)
-          .then(() => window.geneCheckout.services.refreshCustomerData(['cart']))
           .then(() => {
             window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
           })

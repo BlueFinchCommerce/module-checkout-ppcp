@@ -90,6 +90,18 @@
         id="placeOrder"
         location="ppcpPayment"
       />
+      <component
+        :is="checkboxComponent"
+        v-if="isLoggedIn && (
+          (selectedMethod === 'ppcp_card' && card.vaultActive)
+        )"
+        id="ppcp-store-method"
+        class="ppcp-store-method"
+        :checked="storeMethod"
+        :change-handler="({ currentTarget }) => storeMethod = currentTarget.checked"
+        text="Save for later use."
+        :data-cy="'ppcp-save-payment-card-checkbox'"
+      />
       <component :is="Agreements" id="ppcp-checkout-card" />
     </div>
   </div>
@@ -120,6 +132,7 @@ export default {
       Recaptcha: null,
       Agreements: null,
       MyButton: null,
+      checkboxComponent: null,
       paymentEmitter: null,
       isPaymentMethodAvailable: null,
       selectedMethod: 'ppcp_card',
@@ -130,6 +143,8 @@ export default {
       isRecaptchaVisible: () => {
       },
       orderID: null,
+      storeMethod: false,
+      isLoggedIn: false,
     };
   },
   props: {
@@ -157,6 +172,7 @@ export default {
           Recaptcha,
           Agreements,
           MyButton,
+          Checkbox,
         },
       },
     } = await import(window.geneCheckout.main);
@@ -167,6 +183,7 @@ export default {
     this.Recaptcha = Recaptcha;
     this.PrivacyPolicy = PrivacyPolicy;
     this.MyButton = MyButton;
+    this.checkboxComponent = Checkbox;
   },
   async created() {
     const [
@@ -174,16 +191,19 @@ export default {
       paymentStore,
       configStore,
       cartStore,
+      customerStore,
     ] = await window.geneCheckout.helpers.loadFromCheckout([
       'stores.useRecaptchaStore',
       'stores.usePaymentStore',
       'stores.useConfigStore',
       'stores.useCartStore',
+      'stores.useCustomerStore',
     ]);
 
     this.paymentEmitter = paymentStore.paymentEmitter;
     this.isPaymentMethodAvailable = paymentStore.isPaymentMethodAvailable;
     this.isRecaptchaVisible = recaptchaStore.isRecaptchaVisible;
+    this.isLoggedIn = customerStore.isLoggedIn;
 
     paymentStore.$subscribe((mutation) => {
       if (typeof mutation.payload.selectedMethod !== 'undefined') {
@@ -281,7 +301,7 @@ export default {
               return null;
             }
           },
-          onApprove: async (data) => {
+          onApprove: async () => {
             const [
               loadingStore,
               paymentStore,
@@ -292,24 +312,19 @@ export default {
               'stores.useCartStore',
             ]);
 
-            if (data.liabilityShift && (data.liabilityShift === 'NO'
-              || data.liabilityShift === 'UNKNOWN')) {
-              throw new Error('Cannot validate payment');
-            } else {
-              return this.makePayment(cartStore.cart.email, this.orderID, this.method, false)
-                .then(() => window.geneCheckout.services.refreshCustomerData(['cart']))
-                .then(() => {
-                  window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
-                })
-                .catch((err) => {
-                  loadingStore.setLoadingState(false);
-                  try {
-                    window.geneCheckout.helpers.handleServiceError(err);
-                  } catch (formattedError) {
-                    paymentStore.setErrorMessage(formattedError);
-                  }
-                });
-            }
+            return this.makePayment(
+              cartStore.cart.email,
+              this.orderID,
+              this.method,
+              false,
+              this.storeMethod,
+            ).then(() => {
+              window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
+            })
+              .catch((err) => {
+                loadingStore.setLoadingState(false);
+                paymentStore.setErrorMessage(err.message);
+              });
           },
           onError: async (error) => {
             const [

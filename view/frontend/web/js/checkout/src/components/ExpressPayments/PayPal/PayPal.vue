@@ -1,20 +1,20 @@
 <template>
   <div
     class="paypal-express--button-container"
-    :id="`ppcp-paypal_ppcp_paypal`"
+    :id="`ppcp-express-paypal_ppcp_paypal`"
     :class="!paypalLoaded ? 'text-loading' : ''"
     :data-cy="'instant-checkout-ppcpPayPal'"
   />
   <div
     class="paypal-express--button-container"
-    :id="`ppcp-paypal_ppcp_paylater`"
+    :id="`ppcp-express-paypal_ppcp_paylater`"
     :class="!paypalLoaded ? 'text-loading' : ''"
     :data-cy="'instant-checkout-ppcpPayLater'"
   />
   <div
     :class="!paypalLoaded ? 'text-loading' : ''"
     class="paypal-messages-container"
-    :id="`ppcp-paypal_messages`"
+    :id="`ppcp-express-paypal_messages`"
     :data-cy="'instant-checkout-ppcpMessages'"
   />
 </template>
@@ -238,7 +238,6 @@ export default {
               orderId: this.orderID,
               method: this.method,
             }).then(() => {
-              window.geneCheckout.services.refreshCustomerData(['cart']);
               this.redirectToSuccess();
             });
           } catch (error) {
@@ -284,7 +283,7 @@ export default {
         fundingSource: window[`paypal_${this.method}`].FUNDING.PAYPAL,
       };
       await window[`paypal_${this.method}`].Buttons(paypalButtonData).render(
-        '#ppcp-paypal_ppcp_paypal',
+        '#ppcp-express-paypal_ppcp_paypal',
       );
 
       // Render the PayPal Pay Later button (if active)
@@ -299,7 +298,7 @@ export default {
           },
         };
         await window[`paypal_${this.method}`].Buttons(payLaterButtonData).render(
-          '#ppcp-paypal_ppcp_paylater',
+          '#ppcp-express-paypal_ppcp_paylater',
         );
       }
 
@@ -322,7 +321,7 @@ export default {
       // Render the PayPal messages (if active)
       if (this.paypal.payLaterMessageActive) {
         await window[`paypal_${this.method}`].Messages(payLaterMessagingConfig).render(
-          '#ppcp-paypal_messages',
+          '#ppcp-express-paypal_messages',
         );
       }
 

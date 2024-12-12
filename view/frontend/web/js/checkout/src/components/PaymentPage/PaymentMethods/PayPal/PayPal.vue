@@ -54,6 +54,18 @@
     />
 
     <div class="pay-pal-content" v-if="isMethodSelected">
+      <component
+        :is="checkboxComponent"
+        v-if="isLoggedIn && (
+          (selectedMethod === 'ppcp_paypal' && paypal.vaultActive)
+        )"
+        id="ppcp-store-method"
+        class="ppcp-store-method"
+        :checked="storeMethod"
+        :change-handler="({ currentTarget }) => storeMethod = currentTarget.checked"
+        text="Save for later use."
+        :data-cy="'ppcp-save-payment-paypal-checkbox'"
+      />
       <component :is="PrivacyPolicy" />
       <component
         :is="Recaptcha"
@@ -99,6 +111,9 @@ export default {
       orderID: null,
       paypalLoaded: false,
       address: {},
+      checkboxComponent: null,
+      storeMethod: false,
+      isLoggedIn: false,
     };
   },
   props: {
@@ -128,6 +143,7 @@ export default {
           RadioButton,
           Recaptcha,
           Agreements,
+          Checkbox,
         },
       },
     } = await import(window.geneCheckout.main);
@@ -137,6 +153,7 @@ export default {
     this.RadioButton = RadioButton;
     this.Recaptcha = Recaptcha;
     this.PrivacyPolicy = PrivacyPolicy;
+    this.checkboxComponent = Checkbox;
   },
   async created() {
     const [
@@ -144,16 +161,19 @@ export default {
       paymentStore,
       configStore,
       cartStore,
+      customerStore,
     ] = await window.geneCheckout.helpers.loadFromCheckout([
       'stores.useRecaptchaStore',
       'stores.usePaymentStore',
       'stores.useConfigStore',
       'stores.useCartStore',
+      'stores.useCustomerStore',
     ]);
 
     this.paymentEmitter = paymentStore.paymentEmitter;
     this.isPaymentMethodAvailable = paymentStore.isPaymentMethodAvailable;
     this.isRecaptchaVisible = recaptchaStore.isRecaptchaVisible;
+    this.isLoggedIn = customerStore.isLoggedIn;
 
     paymentStore.$subscribe((mutation) => {
       if (typeof mutation.payload.selectedMethod !== 'undefined') {
@@ -167,7 +187,9 @@ export default {
 
     await configStore.getInitialConfig();
     await cartStore.getCart();
-    await this.addScripts();
+    if (!window[`paypal_${this.method}`]) {
+      await this.addScripts();
+    }
 
     this.namespace = `${this.namespace}`;
 
@@ -305,11 +327,15 @@ export default {
               'stores.useLoadingStore',
             ]);
 
-            return this.makePayment(cartStore.cart.email, this.orderID, this.method, false)
-              .then(() => window.geneCheckout.services.refreshCustomerData(['cart']))
-              .then(() => {
-                window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
-              })
+            return this.makePayment(
+              cartStore.cart.email,
+              this.orderID,
+              this.method,
+              false,
+              this.storeMethod,
+            ).then(() => {
+              window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
+            })
               .catch((err) => {
                 loadingStore.setLoadingState(false);
                 try {
