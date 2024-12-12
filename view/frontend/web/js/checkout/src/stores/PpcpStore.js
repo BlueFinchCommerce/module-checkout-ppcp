@@ -329,7 +329,7 @@ export default defineStore('ppcpStore', {
       };
     },
 
-    async makePayment(email, orderID, method, express) {
+    async makePayment(email, orderID, method, express, vault = false) {
       const payment = {
         email,
         paymentMethod: {
@@ -337,6 +337,7 @@ export default defineStore('ppcpStore', {
           additional_data: {
             'express-payment': express,
             'paypal-order-id': orderID,
+            'is_active_payment_token_enabler': vault,
           },
           extension_attributes: window.geneCheckout.helpers.getPaymentExtensionAttributes(),
         },

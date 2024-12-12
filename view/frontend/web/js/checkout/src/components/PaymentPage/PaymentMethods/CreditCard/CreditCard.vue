@@ -292,23 +292,23 @@ export default {
               'stores.useCartStore',
             ]);
 
-            if (data.liabilityShift && (data.liabilityShift === 'NO'
-              || data.liabilityShift === 'UNKNOWN')) {
-              throw new Error('Cannot validate payment');
-            } else {
-              return this.makePayment(cartStore.cart.email, this.orderID, this.method, false)
-                .then(() => {
-                  window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
-                })
-                .catch((err) => {
-                  loadingStore.setLoadingState(false);
-                  try {
-                    window.geneCheckout.helpers.handleServiceError(err);
-                  } catch (formattedError) {
-                    paymentStore.setErrorMessage(formattedError);
-                  }
-                });
-            }
+            return this.makePayment(
+              cartStore.cart.email,
+              this.orderID,
+              this.method,
+              false,
+              this.card.vaultActive,
+            ).then(() => {
+              window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
+            })
+              .catch((err) => {
+                loadingStore.setLoadingState(false);
+                try {
+                  window.geneCheckout.helpers.handleServiceError(err);
+                } catch (formattedError) {
+                  paymentStore.setErrorMessage(formattedError);
+                }
+              });
           },
           onError: async (error) => {
             const [
