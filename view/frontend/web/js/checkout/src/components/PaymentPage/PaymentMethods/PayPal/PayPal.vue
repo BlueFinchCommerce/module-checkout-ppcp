@@ -167,7 +167,9 @@ export default {
 
     await configStore.getInitialConfig();
     await cartStore.getCart();
-    await this.addScripts();
+    if (!window[`paypal_${this.method}`]) {
+      await this.addScripts();
+    }
 
     this.namespace = `${this.namespace}`;
 
@@ -306,7 +308,6 @@ export default {
             ]);
 
             return this.makePayment(cartStore.cart.email, this.orderID, this.method, false)
-              .then(() => window.geneCheckout.services.refreshCustomerData(['cart']))
               .then(() => {
                 window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
               })

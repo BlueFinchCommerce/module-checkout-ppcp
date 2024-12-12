@@ -270,9 +270,6 @@ export default {
             .then(() => this.makePayment(email, this.orderID, this.method, true))
             .then(async () => {
               session.completePayment(window.ApplePaySession.STATUS_SUCCESS);
-              await window.geneCheckout.services.refreshCustomerData(
-                window.geneCheckout.helpers.getCartSectionNames(),
-              );
               window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
             });
         } catch (error) {

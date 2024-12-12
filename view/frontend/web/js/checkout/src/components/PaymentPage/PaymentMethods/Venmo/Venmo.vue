@@ -151,7 +151,9 @@ export default {
 
     await configStore.getInitialConfig();
     await cartStore.getCart();
-    await this.addScripts();
+    if (!window.paypal_ppcp_venmo) {
+      await this.addScripts();
+    }
     await this.renderPaypalInstance();
 
     if (this.open) {
@@ -272,7 +274,6 @@ export default {
               'stores.useCartStore',
             ]);
             return this.makePayment(cartStore.cart.email, this.orderID, this.method, false)
-              .then(() => window.geneCheckout.services.refreshCustomerData(['cart']))
               .then(() => {
                 window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
               })

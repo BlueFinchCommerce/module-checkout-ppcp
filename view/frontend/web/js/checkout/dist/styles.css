@@ -99,7 +99,7 @@
 .paypal-express--button-container {
   max-height: var(--ppcp-express-button-height, 45px);
 }
-.paypal-express--button-container#ppcp-paypal_ppcp_paylater {
+.paypal-express--button-container#ppcp-express-paypal_ppcp_paylater {
   margin: var(--indent__s) 0;
 }
 .paypal-express--button-container.text-loading {
@@ -125,7 +125,7 @@
 .paypal-express--button-container {
   max-height: var(--ppcp-express-button-height, 45px);
 }
-.paypal-express--button-container#ppcp-paypal_ppcp_paylater {
+.paypal-express--button-container#ppcp-express-paypal_ppcp_paylater {
   margin: var(--indent__s) 0;
 }
 .paypal-express--button-container.text-loading {
@@ -151,7 +151,7 @@
 .paypal-express--button-container {
   max-height: var(--ppcp-express-button-height, 45px);
 }
-.paypal-express--button-container#ppcp-paypal_ppcp_paylater {
+.paypal-express--button-container#ppcp-express-paypal_ppcp_paylater {
   margin: var(--indent__s) 0;
 }
 .paypal-express--button-container.text-loading {
