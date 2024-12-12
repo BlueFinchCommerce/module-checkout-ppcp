@@ -79,6 +79,9 @@
 .ppcp-payment-methods-list .card-fieldset label span {
   font-size: var(--font__s) !important;
 }
+.ppcp-payment-methods-list .ppcp-store-method {
+  margin-bottom: var(--indent__m);
+}
 
 #ppcp-google-pay {
   max-height: var(--ppcp-express-button-height, 45px);
