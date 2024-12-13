@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import getVaultedMethods from '../services/getVaultedMethods';
 
 export default defineStore('ppcpStore', {
   state: () => ({
@@ -9,6 +10,7 @@ export default defineStore('ppcpStore', {
     productionClientId: '',
     buyerCountry: '',
     errorMessage: null,
+    vaultedMethods: [],
     apple: {
       merchantName: '',
       enabled: false,
@@ -73,6 +75,11 @@ export default defineStore('ppcpStore', {
       finishOrderUrl: '',
     },
   }),
+  getters: {
+    selectedVaultMethod: (state) => (
+      Object.values(state.vaultedMethods).find(({ selected }) => selected)
+    ),
+  },
   actions: {
     setData(data) {
       this.$patch(data);
@@ -329,7 +336,7 @@ export default defineStore('ppcpStore', {
       };
     },
 
-    async makePayment(email, orderID, method, express) {
+    async makePayment(email, orderID, method, express, vault = false) {
       const payment = {
         email,
         paymentMethod: {
@@ -337,12 +344,52 @@ export default defineStore('ppcpStore', {
           additional_data: {
             'express-payment': express,
             'paypal-order-id': orderID,
+            is_active_payment_token_enabler: vault,
           },
           extension_attributes: window.geneCheckout.helpers.getPaymentExtensionAttributes(),
         },
       };
 
       return window.geneCheckout.services.createPaymentRest(payment);
+    },
+
+    selectVaultedMethod(vaultedMethod) {
+      this.unselectVaultedMethods();
+      this.setData({
+        vaultedMethods: {
+          [vaultedMethod.publicHash]: {
+            selected: true,
+          },
+        },
+      });
+    },
+
+    unselectVaultedMethods() {
+      Object.keys(this.vaultedMethods).forEach((publicHash) => {
+        this.setData({
+          vaultedMethods: {
+            [publicHash]: {
+              selected: false,
+            },
+          },
+        });
+      });
+    },
+
+    async getVaultedMethodsData() {
+      const paymentStore = await window.geneCheckout.helpers.loadFromCheckout([
+        'stores.usePaymentStore',
+      ]);
+
+      const result = await getVaultedMethods();
+
+      this.setData({
+        vaultedMethods: result,
+      });
+
+      if (Object.keys(result).length) {
+        paymentStore.setHasVaultedMethods(true);
+      }
     },
 
     getCachedResponse(request, cacheKey, args = {}) {

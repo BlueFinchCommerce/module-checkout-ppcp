@@ -203,7 +203,9 @@ export default {
 
     async initGooglePay() {
       try {
-        await this.addSdkScript();
+        if (!window.paypal_ppcp_googlepay) {
+          await this.addSdkScript();
+        }
         const googlePayConfig = await this.deviceSupported();
         const clientConfig = await this.createGooglePayClient(googlePayConfig);
         this.button = await this.createGooglePayButton(clientConfig);
@@ -439,7 +441,6 @@ export default {
         throw new Error('Cannot validate payment');
       } else {
         return this.makePayment(paymentData.email, this.orderID, this.method, false)
-          .then(() => window.geneCheckout.services.refreshCustomerData(['cart']))
           .then(() => {
             window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
           })

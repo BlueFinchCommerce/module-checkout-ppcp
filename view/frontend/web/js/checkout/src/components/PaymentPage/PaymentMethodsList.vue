@@ -77,11 +77,12 @@ export default {
     await configStore.getInitialConfig();
     await cartStore.getCart();
     await this.getInitialConfigValues();
+    await this.getVaultedMethodsData();
     this.dataLoaded = true;
     loadingStore.setLoadingState(false);
   },
   methods: {
-    ...mapActions(usePpcpStore, ['getInitialConfigValues']),
+    ...mapActions(usePpcpStore, ['getInitialConfigValues', 'getVaultedMethodsData']),
   },
 };
 </script>

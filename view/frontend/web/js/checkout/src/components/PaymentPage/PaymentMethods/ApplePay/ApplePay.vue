@@ -163,7 +163,9 @@ export default {
 
     await configStore.getInitialConfig();
     await cartStore.getCart();
-    await this.addSdkScript();
+    if (!window[`paypal_${this.method}`]) {
+      await this.addSdkScript();
+    }
     this.showApplePay();
 
     if (this.open) {
@@ -375,9 +377,6 @@ export default {
             false,
           )).then(async () => {
             session.completePayment(window.ApplePaySession.STATUS_SUCCESS);
-            await window.geneCheckout.services.refreshCustomerData(
-              window.geneCheckout.helpers.getCartSectionNames(),
-            );
             window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
           });
         } catch (error) {
