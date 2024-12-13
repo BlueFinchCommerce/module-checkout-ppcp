@@ -75,11 +75,6 @@ export default defineStore('ppcpStore', {
       finishOrderUrl: '',
     },
   }),
-  getters: {
-    selectedVaultMethod: (state) => (
-      Object.values(state.vaultedMethods).find(({ selected }) => selected)
-    ),
-  },
   actions: {
     setData(data) {
       this.$patch(data);
