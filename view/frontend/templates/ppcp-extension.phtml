@@ -9,6 +9,7 @@ $expressGooglePay = $block->getViewFileUrl('Gene_BetterCheckoutPPCP::js/checkout
 $expressApplePay = $block->getViewFileUrl('Gene_BetterCheckoutPPCP::js/checkout/dist/components/ExpressPayments/ApplePay/ApplePay.min.js');
 $expressPayPal = $block->getViewFileUrl('Gene_BetterCheckoutPPCP::js/checkout/dist/components/ExpressPayments/PayPal/PayPal.min.js');
 $paymentMethods = $block->getViewFileUrl('Gene_BetterCheckoutPPCP::js/checkout/dist/components/PaymentPage/PaymentMethodsList.min.js');
+$vaultedPaymentMethods = $block->getViewFileUrl('Gene_BetterCheckoutPPCP::js/checkout/dist/components/PaymentPage/VaultedPayments/VaultedMethodsList.min.js');
 
 $styles = $block->getViewFileUrl('Gene_BetterCheckoutPPCP::js/checkout/dist/styles.css');
 ?>
@@ -17,6 +18,7 @@ $styles = $block->getViewFileUrl('Gene_BetterCheckoutPPCP::js/checkout/dist/styl
     window.geneCheckout = window.geneCheckout || {};
     window.geneCheckout.expressPaymentMethods = window.geneCheckout.expressPaymentMethods || {};
     window.geneCheckout.paymentMethods = window.geneCheckout.paymentMethods || {};
+    window.geneCheckout.additionalVaultedMethods = window.geneCheckout.additionalVaultedMethods || {};
 
     // Express Payments
     window.geneCheckout.expressPaymentMethods.PpcpGooglePay = "<?= $escaper->escapeJs($expressGooglePay) ?>";
@@ -25,6 +27,9 @@ $styles = $block->getViewFileUrl('Gene_BetterCheckoutPPCP::js/checkout/dist/styl
 
     // Payment Methods
     window.geneCheckout.paymentMethods.PPCP = "<?= $escaper->escapeJs($paymentMethods) ?>";
+
+    // Vaulted Payment Methods
+    window.geneCheckout.additionalVaultedMethods.vaultedPpcp = "<?= $escaper->escapeJs($vaultedPaymentMethods) ?>";
 </script>
 
 <link rel="stylesheet" href="<?= $escaper->escapeHtmlAttr($styles) ?>" />

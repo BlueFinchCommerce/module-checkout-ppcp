@@ -282,9 +282,12 @@ export default {
             : paypalConfig.FUNDING.PAYPAL,
           createOrder: async () => {
             try {
+              const isPayLater = commonRenderData.fundingSource === paypalConfig.FUNDING.PAYLATER;
+              const vault = !isPayLater && this.paypal.vaultActive;
+
               const data = await createPPCPPaymentRest(
                 this.method,
-                this.paypal.vaultActive,
+                vault,
                 1,
               );
               const orderData = JSON.parse(data);
