@@ -74,6 +74,10 @@
   .ppcp-payment__payment-method {
     border: none;
 
+    .email {
+      max-width: 120px;
+    }
+
     &__header__title {
       background: var(--selectable__background-color-active);
       border: var(--selectable__border-weight-active) var(--base__border-style) var(--selectable__border-color-active);

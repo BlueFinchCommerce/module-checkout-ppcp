@@ -35,8 +35,8 @@ export default async (method, vault = null, fromCheckout = 0, hash = '') => {
 
   if (vault !== null && fromCheckout !== 0) {
     url = `${await buildPpcpCartUrl()}?vault=${vault}&fromCheckout=${fromCheckout}`;
-  } else if (hash !== '') {
-    url = `${await buildPpcpCartUrl()}?public_hash=${hash}`;
+  } else if (hash !== '' && fromCheckout !== 0) {
+    url = `${await buildPpcpCartUrl()}?public_hash=${hash}&fromCheckout=${fromCheckout}`;
   } else {
     url = await buildPpcpCartUrl();
   }

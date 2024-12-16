@@ -151,7 +151,7 @@ export default defineStore('ppcpStore', {
           ppcp_card_three_d_secure
           ppcp_card_sort_order
         }
-      }`).then(this.handleInitialConfig);
+      }`, {}, {}, 'BetterCheckoutStoreConfigPpcp').then(this.handleInitialConfig);
 
       await this.getCachedResponse(request, 'getInitialConfig');
     },
