@@ -113,7 +113,7 @@
       <div v-if="selectedVault.payment_method_code === 'ppcp_paypal'">
         <div
           class="paypal-button-container"
-          :id="`ppcp_paypal_vault_placeholder`"
+          :id="`ppcp_paypal_vault_${selectedVault.id}_placeholder`"
           :class="!paypalLoaded ? 'text-loading' : ''"
           :data-cy="'vaulted-checkout-ppcpPayPal'"
         />
@@ -346,7 +346,7 @@ export default {
         setTimeout(async () => {
           const userIdToken = await getPayPalUserIdToken();
           await this.addScripts(userIdToken, 'ppcp_paypal_vault');
-          await this.renderPayPalVaultButton();
+          await this.renderPayPalVaultButton(this.selectedVault.id);
         }, 0);
       }
     },
@@ -473,7 +473,7 @@ export default {
       }
     },
 
-    async renderPayPalVaultButton() {
+    async renderPayPalVaultButton(id) {
       const cartStore = await window.geneCheckout.helpers.loadFromCheckout([
         'stores.useCartStore',
       ]);
@@ -490,9 +490,7 @@ export default {
             color: this.paypal.buttonColor,
             tagline: false,
           },
-          fundingSource: this.paypal.payLaterActive
-            ? paypalConfig.FUNDING.PAYLATER
-            : paypalConfig.FUNDING.PAYPAL,
+          fundingSource: paypalConfig.FUNDING.PAYPAL,
           createOrder: async () => {
             try {
               const data = await createPPCPPaymentRest(
@@ -555,13 +553,14 @@ export default {
         };
         // Render the PayPal button
         await paypalConfig.Buttons(commonRenderData).render(
-          '#ppcp_paypal_vault_placeholder',
+          `#ppcp_paypal_vault_${id}_placeholder`,
         );
 
         // Render the PayPal Pay Later button (if active)
         if (this.paypal.payLaterActive) {
           const payLaterButtonData = {
             ...commonRenderData,
+            fundingSource: paypalConfig.FUNDING.PAYLATER,
             style: {
               ...commonRenderData.style,
               color: this.paypal.payLaterButtonColour,
@@ -573,24 +572,24 @@ export default {
           );
         }
 
-        const payLaterMessagingConfig = {
-          amount: cartStore.cart.total,
-          style: {
-            layout: this.paypal.payLaterMessageLayout,
-            logo: {
-              type: this.paypal.payLaterMessageLogoType,
-              position: this.paypal.payLaterMessageLogoPosition,
-            },
-            text: {
-              size: this.paypal.payLaterMessageTextSize,
-              color: this.paypal.payLaterMessageColour,
-              align: this.paypal.payLaterMessageTextAlign,
-            },
-          },
-        };
-
         // Render the PayPal messages (if active)
         if (this.paypal.payLaterMessageActive) {
+          const payLaterMessagingConfig = {
+            amount: cartStore.cart.total,
+            style: {
+              layout: this.paypal.payLaterMessageLayout,
+              logo: {
+                type: this.paypal.payLaterMessageLogoType,
+                position: this.paypal.payLaterMessageLogoPosition,
+              },
+              text: {
+                size: this.paypal.payLaterMessageTextSize,
+                color: this.paypal.payLaterMessageColour,
+                align: this.paypal.payLaterMessageTextAlign,
+              },
+            },
+          };
+
           await paypalConfig.Messages(payLaterMessagingConfig).render(
             '#ppcp-paypal_messages_vaulted',
           );
