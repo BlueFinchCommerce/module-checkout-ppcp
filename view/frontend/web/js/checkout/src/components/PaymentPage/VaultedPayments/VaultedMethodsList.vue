@@ -1,14 +1,14 @@
 <template>
   <div
-    v-if="Object.values(vaultedMethods).length"
+    v-if="filteredVaultedMethods.length"
     class="ppcp-vault"
   >
     <div
       class="ppcp-vaulted-methods-container"
-      :class="`ppcp-vaulted-methods-container-${Object.values(vaultedMethods).length}`"
+      :class="`ppcp-vaulted-methods-container-${filteredVaultedMethods.length}`"
     >
       <div
-        v-for="vaultedMethod in Object.values(vaultedMethods)"
+        v-for="vaultedMethod in filteredVaultedMethods"
         :key="vaultedMethod.publicHash"
       >
         <button
@@ -191,6 +191,7 @@ export default {
       type: '',
       selectedVault: null,
       orderData: [],
+      filteredVaultedMethods: [],
     };
   },
   computed: {
@@ -271,12 +272,39 @@ export default {
     this.TextField = TextField;
     this.Tick = Tick;
     this.MyButton = MyButton;
+
+    this.filteredVaultedMethods = await this.getFilteredVaultedMethods();
   },
   methods: {
     ...mapActions(PpcpStore, [
       'selectVaultedMethod',
       'unselectVaultedMethods',
     ]),
+
+    async getFilteredVaultedMethods() {
+      const paymentStore = await window.geneCheckout.helpers.loadFromCheckout([
+        'stores.usePaymentStore',
+      ]);
+
+      const methods = Object.values(this.vaultedMethods).filter((method) => {
+        if (method.payment_method_code === 'ppcp_card' && !this.card.vaultActive) {
+          return false;
+        }
+        if (method.payment_method_code === 'ppcp_paypal' && !this.paypal.vaultActive) {
+          return false;
+        }
+        if (method.payment_method_code === 'ppcp_venmo' && !this.venmo.vaultActive) {
+          return false;
+        }
+        return true;
+      });
+
+      if (methods.length === 0) {
+        paymentStore.setHasVaultedMethods(false);
+      }
+
+      return methods;
+    },
 
     async selectPaymentCard(vaultedMethod) {
       const paymentStore = await window.geneCheckout.helpers.loadFromCheckout([
