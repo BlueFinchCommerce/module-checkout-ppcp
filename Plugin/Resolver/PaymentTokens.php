@@ -30,7 +30,7 @@ class PaymentTokens
         array $value = null,
         array $args = null
     ) {
-        if (!$this->configProvider->isExtensionActive() || 1==1) {
+        if (!$this->configProvider->isExtensionActive()) {
             return $proceed($field, $context, $info, $value, $args);
         } else {
             /** @var ContextInterface $context */
