@@ -9,8 +9,12 @@ export default async () => {
       }
     }
   }`;
-  const methods = await window.geneCheckout.services.graphQlRequest(request)
-    .then((response) => response.data.customerPaymentTokens?.items || []);
+  const methods = await window.geneCheckout.services.graphQlRequest(
+    request,
+    {},
+    {},
+    'BetterCheckoutVaultedPPCP',
+  ).then((response) => response.data.customerPaymentTokens?.items || []);
 
   return methods
     // Remove methods that aren't Braintree cards.

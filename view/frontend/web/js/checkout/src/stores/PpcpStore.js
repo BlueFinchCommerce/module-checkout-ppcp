@@ -179,7 +179,7 @@ export default defineStore('ppcpStore', {
           },
           card: {
             enabled: storeconfig.ppcp_card_active === '1',
-            vaultActive: !!storeconfig.ppcp_card_vault_active,
+            vaultActive: storeconfig.ppcp_card_vault_active === '1',
             title: storeconfig.ppcp_card_title,
             paymentAction: storeconfig.ppcp_card_payment_action
               === 'authorize_capture' ? 'capture' : storeconfig.ppcp_card_payment_action,
@@ -203,7 +203,7 @@ export default defineStore('ppcpStore', {
             title: storeconfig.ppcp_applepay_title,
           },
           venmo: {
-            vaultActive: !!storeconfig.ppcp_venmo_payment_action,
+            vaultActive: storeconfig.ppcp_venmo_vault_active === '1',
             enabled: storeconfig.ppcp_venmo_active === '1',
             paymentAction: storeconfig.ppcp_venmo_payment_action
             === 'authorize_capture' ? 'capture' : storeconfig.ppcp_venmo_payment_action,
@@ -218,7 +218,7 @@ export default defineStore('ppcpStore', {
           },
           paypal: {
             enabled: storeconfig.ppcp_paypal_active === '1',
-            vaultActive: !!storeconfig.ppcp_paypal_vault_active,
+            vaultActive: storeconfig.ppcp_paypal_vault_active === '1',
             title: storeconfig.ppcp_paypal_title,
             paymentAction: storeconfig.ppcp_paypal_payment_action
             === 'authorize_capture' ? 'capture' : storeconfig.ppcp_paypal_payment_action,
