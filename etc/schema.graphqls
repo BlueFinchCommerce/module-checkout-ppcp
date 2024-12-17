@@ -55,3 +55,7 @@ type StoreConfig {
     ppcp_apm_allowed_methods: String @doc(description: "APM allowed methods.")
     ppcp_apm_sort_order: String @doc(description: "APM sort order.")
 }
+
+type PaymentToken {
+    id: String @doc(description: "Payment Token Entity Id.")
+}
