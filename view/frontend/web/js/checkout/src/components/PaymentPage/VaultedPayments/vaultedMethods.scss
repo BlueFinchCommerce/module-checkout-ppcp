@@ -153,6 +153,11 @@
       grid-row: 2;
     }
   }
+
+  .ppcp-store-method,
+  .recaptcha {
+    margin-bottom: var(--indent__m);
+  }
 }
 
 @media screen and (min-width: 1024px) {

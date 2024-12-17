@@ -39,6 +39,14 @@
       :data-cy="'instant-checkout-ppcpPayPalVenmo'"
     />
     <div class="venmo-content" v-if="isMethodSelected">
+      <div class="recaptcha">
+        <component
+          :is="Recaptcha"
+          v-if="getTypeByPlacement('placeOrder')"
+          id="placeOrder"
+          location="ppcpPaymentVenmo"
+        />
+      </div>
       <component
         :is="checkboxComponent"
         v-if="isLoggedIn && (
@@ -52,12 +60,6 @@
         :data-cy="'ppcp-save-payment-venmo-checkbox'"
       />
       <component :is="PrivacyPolicy" />
-      <component
-        :is="Recaptcha"
-        v-if="isRecaptchaVisible('placeOrder')"
-        id="placeOrder"
-        location="ppcpPayment"
-      />
       <component :is="Agreements" id="ppcp-checkout-venmo" />
     </div>
   </div>
@@ -91,7 +93,7 @@ export default {
       isPaymentMethodAvailable: null,
       selectedMethod: 'ppcp_venmo',
       method: 'ppcp_venmo',
-      isRecaptchaVisible: () => {},
+      getTypeByPlacement: () => {},
       orderID: null,
       venmoLoaded: false,
       checkboxComponent: null,
@@ -156,7 +158,7 @@ export default {
 
     this.paymentEmitter = paymentStore.paymentEmitter;
     this.isPaymentMethodAvailable = paymentStore.isPaymentMethodAvailable;
-    this.isRecaptchaVisible = recaptchaStore.isRecaptchaVisible;
+    this.getTypeByPlacement = recaptchaStore.getTypeByPlacement;
     this.isLoggedIn = customerStore.isLoggedIn;
 
     paymentStore.$subscribe((mutation) => {

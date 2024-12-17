@@ -84,12 +84,14 @@
 
     <div class="card-content" v-if="isMethodSelected">
       <component :is="PrivacyPolicy" />
-      <component
-        :is="Recaptcha"
-        v-if="isRecaptchaVisible('placeOrder')"
-        id="placeOrder"
-        location="ppcpPayment"
-      />
+      <div class="recaptcha">
+        <component
+          :is="Recaptcha"
+          v-if="getTypeByPlacement('placeOrder')"
+          id="placeOrder"
+          location="ppcpPaymentCredit"
+        />
+      </div>
       <component
         :is="checkboxComponent"
         v-if="isLoggedIn && (
@@ -140,8 +142,7 @@ export default {
       numberField: '#card-number-field-container',
       cvvField: '#card-cvv-field-container',
       expiryField: '#card-expiry-field-container',
-      isRecaptchaVisible: () => {
-      },
+      getTypeByPlacement: () => {},
       orderID: null,
       storeMethod: false,
       isLoggedIn: false,
@@ -202,7 +203,7 @@ export default {
 
     this.paymentEmitter = paymentStore.paymentEmitter;
     this.isPaymentMethodAvailable = paymentStore.isPaymentMethodAvailable;
-    this.isRecaptchaVisible = recaptchaStore.isRecaptchaVisible;
+    this.getTypeByPlacement = recaptchaStore.getTypeByPlacement;
     this.isLoggedIn = customerStore.isLoggedIn;
 
     paymentStore.$subscribe((mutation) => {

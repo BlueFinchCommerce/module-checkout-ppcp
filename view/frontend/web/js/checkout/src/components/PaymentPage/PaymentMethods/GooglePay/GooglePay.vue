@@ -38,12 +38,14 @@
     />
     <div class="google-pay-content" v-if="isMethodSelected">
       <component :is="PrivacyPolicy" />
-      <component
-        :is="Recaptcha"
-        v-if="isRecaptchaVisible('placeOrder')"
-        id="placeOrder"
-        location="ppcpPayment"
-      />
+      <div class="recaptcha">
+        <component
+          :is="Recaptcha"
+          v-if="getTypeByPlacement('placeOrder')"
+          id="placeOrder"
+          location="ppcpPaymentGoogle"
+        />
+      </div>
       <component :is="Agreements" id="ppcp-checkout-google-pay" />
     </div>
   </div>
@@ -79,7 +81,7 @@ export default {
       isPaymentMethodAvailable: null,
       selectedMethod: 'ppcp_googlepay',
       method: 'ppcp_googlepay',
-      isRecaptchaVisible: () => {},
+      getTypeByPlacement: () => {},
       orderID: null,
     };
   },
@@ -148,7 +150,7 @@ export default {
 
     this.paymentEmitter = paymentStore.paymentEmitter;
     this.isPaymentMethodAvailable = paymentStore.isPaymentMethodAvailable;
-    this.isRecaptchaVisible = recaptchaStore.isRecaptchaVisible;
+    this.getTypeByPlacement = recaptchaStore.getTypeByPlacement;
 
     paymentStore.$subscribe((mutation) => {
       if (typeof mutation.payload.selectedMethod !== 'undefined') {

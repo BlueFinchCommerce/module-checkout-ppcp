@@ -95,12 +95,14 @@
       />
       <component :is="Agreements" id="ppcpVault" />
       <component :is="PrivacyPolicy" />
-      <!--      <component-->
-      <!--        :is="Recaptcha"-->
-      <!--        v-if="isRecaptchaVisible('placeOrder')"-->
-      <!--        id="placeOrder"-->
-      <!--        location="ppcpVaultedMethods"-->
-      <!--      />-->
+      <div class="recaptcha">
+        <component
+          :is="Recaptcha"
+          v-if="getTypeByPlacement('placeOrder')"
+          id="placeOrder"
+          location="ppcpVaultedMethods"
+        />
+      </div>
       <component
         v-if="selectedVault.payment_method_code === 'ppcp_card'"
         :is="MyButton"
@@ -192,6 +194,7 @@ export default {
       selectedVault: null,
       orderData: [],
       filteredVaultedMethods: [],
+      getTypeByPlacement: () => {},
     };
   },
   computed: {
@@ -238,8 +241,12 @@ export default {
     },
   },
   async created() {
-    const paymentStore = await window.geneCheckout.helpers.loadFromCheckout([
+    const [
+      paymentStore,
+      recaptchaStore,
+    ] = await window.geneCheckout.helpers.loadFromCheckout([
       'stores.usePaymentStore',
+      'stores.useRecaptchaStore',
     ]);
 
     paymentStore.$subscribe((mutation) => {
@@ -247,6 +254,8 @@ export default {
         this.selectedMethod = mutation.payload.selectedMethod;
       }
     });
+
+    this.getTypeByPlacement = recaptchaStore.getTypeByPlacement;
   },
   async mounted() {
     const {

@@ -54,6 +54,14 @@
     />
 
     <div class="pay-pal-content" v-if="isMethodSelected">
+      <div class="recaptcha">
+        <component
+          :is="Recaptcha"
+          v-if="getTypeByPlacement('placeOrder')"
+          id="placeOrder"
+          location="ppcpPaymentPayPal"
+        />
+      </div>
       <component
         :is="checkboxComponent"
         v-if="isLoggedIn && (
@@ -67,12 +75,6 @@
         :data-cy="'ppcp-save-payment-paypal-checkbox'"
       />
       <component :is="PrivacyPolicy" />
-      <component
-        :is="Recaptcha"
-        v-if="isRecaptchaVisible('placeOrder')"
-        id="placeOrder"
-        location="ppcpPayment"
-      />
       <component :is="Agreements" id="ppcp-checkout-pay-pal" />
     </div>
   </div>
@@ -107,7 +109,7 @@ export default {
       selectedMethod: 'ppcp_paypal',
       method: 'ppcp_paypal',
       namespace: 'paypal_ppcp_paypal',
-      isRecaptchaVisible: () => {},
+      getTypeByPlacement: () => {},
       orderID: null,
       paypalLoaded: false,
       address: {},
@@ -172,7 +174,7 @@ export default {
 
     this.paymentEmitter = paymentStore.paymentEmitter;
     this.isPaymentMethodAvailable = paymentStore.isPaymentMethodAvailable;
-    this.isRecaptchaVisible = recaptchaStore.isRecaptchaVisible;
+    this.getTypeByPlacement = recaptchaStore.getTypeByPlacement;
     this.isLoggedIn = customerStore.isLoggedIn;
 
     paymentStore.$subscribe((mutation) => {
