@@ -60,10 +60,12 @@ export default {
       cartStore,
       configStore,
       loadingStore,
+      customerStore,
     ] = await window.geneCheckout.helpers.loadFromCheckout([
       'stores.useCartStore',
       'stores.useConfigStore',
       'stores.useLoadingStore',
+      'stores.useCustomerStore',
     ]);
 
     loadingStore.setLoadingState(true);
@@ -77,7 +79,9 @@ export default {
     await configStore.getInitialConfig();
     await cartStore.getCart();
     await this.getInitialConfigValues();
-    await this.getVaultedMethodsData();
+    if (customerStore.isLoggedIn) {
+      await this.getVaultedMethodsData();
+    }
     this.dataLoaded = true;
     loadingStore.setLoadingState(false);
   },
