@@ -50,12 +50,14 @@
     />
     <div class="apple-pay-content" v-if="isMethodSelected">
       <component :is="PrivacyPolicy" />
-      <component
-        :is="Recaptcha"
-        v-if="isRecaptchaVisible('placeOrder')"
-        id="placeOrder"
-        location="ppcpPayment"
-      />
+      <div class="recaptcha">
+        <component
+          :is="Recaptcha"
+          v-if="isRecaptchaVisible('placeOrder')"
+          id="placeOrder"
+          location="ppcpPaymentApple"
+        />
+      </div>
       <component :is="Agreements" id="ppcp-checkout-apple-pay" />
     </div>
   </div>
@@ -268,20 +270,23 @@ export default {
         configStore,
         loadingStore,
         paymentStore,
+        recaptchaStore,
       ] = await window.geneCheckout.helpers.loadFromCheckout([
         'stores.useAgreementStore',
         'stores.useCartStore',
         'stores.useConfigStore',
         'stores.useLoadingStore',
         'stores.usePaymentStore',
+        'stores.useRecaptchaStore',
       ]);
 
       paymentStore.setErrorMessage('');
 
       // Check that the agreements (if any) is valid.
       const agreementsValid = agreementStore.validateAgreements();
+      const captchaValid = await recaptchaStore.validateToken('placeOrder');
 
-      if (!agreementsValid) {
+      if (!agreementsValid || !captchaValid) {
         return;
       }
 
@@ -325,7 +330,9 @@ export default {
 
         session.begin();
       } catch (err) {
-        await this.setApplePayError();
+        console.log(err);
+        paymentStore.setErrorMessage('We`re unable to take payments through Apple Pay at the moment. '
+          + 'Please try an alternative payment method.');
       }
     },
 

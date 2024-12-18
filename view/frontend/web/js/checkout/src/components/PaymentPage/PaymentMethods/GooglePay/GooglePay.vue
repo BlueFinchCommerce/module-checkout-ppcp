@@ -38,12 +38,14 @@
     />
     <div class="google-pay-content" v-if="isMethodSelected">
       <component :is="PrivacyPolicy" />
-      <component
-        :is="Recaptcha"
-        v-if="isRecaptchaVisible('placeOrder')"
-        id="placeOrder"
-        location="ppcpPayment"
-      />
+      <div class="recaptcha">
+        <component
+          :is="Recaptcha"
+          v-if="isRecaptchaVisible('placeOrder')"
+          id="placeOrder"
+          location="ppcpPaymentGoogle"
+        />
+      </div>
       <component :is="Agreements" id="ppcp-checkout-google-pay" />
     </div>
   </div>
@@ -315,19 +317,22 @@ export default {
         configStore,
         loadingStore,
         paymentStore,
+        recaptchaStore,
       ] = await window.geneCheckout.helpers.loadFromCheckout([
         'stores.useAgreementStore',
         'stores.useCartStore',
         'stores.useConfigStore',
         'stores.useLoadingStore',
         'stores.usePaymentStore',
+        'stores.useRecaptchaStore',
       ]);
 
       paymentStore.setErrorMessage('');
       // Check that the agreements (if any) is valid.
       const agreementsValid = agreementStore.validateAgreements();
+      const captchaValid = await recaptchaStore.validateToken('placeOrder');
 
-      if (!agreementsValid) {
+      if (!agreementsValid || !captchaValid) {
         return false;
       }
 

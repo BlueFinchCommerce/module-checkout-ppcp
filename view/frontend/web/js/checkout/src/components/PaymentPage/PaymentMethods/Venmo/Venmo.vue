@@ -39,6 +39,14 @@
       :data-cy="'instant-checkout-ppcpPayPalVenmo'"
     />
     <div class="venmo-content" v-if="isMethodSelected">
+      <div class="recaptcha">
+        <component
+          :is="Recaptcha"
+          v-if="isRecaptchaVisible('placeOrder')"
+          id="placeOrder"
+          location="ppcpPaymentVenmo"
+        />
+      </div>
       <component
         :is="checkboxComponent"
         v-if="isLoggedIn && (
@@ -52,12 +60,6 @@
         :data-cy="'ppcp-save-payment-venmo-checkbox'"
       />
       <component :is="PrivacyPolicy" />
-      <component
-        :is="Recaptcha"
-        v-if="isRecaptchaVisible('placeOrder')"
-        id="placeOrder"
-        location="ppcpPayment"
-      />
       <component :is="Agreements" id="ppcp-checkout-venmo" />
     </div>
   </div>
@@ -268,16 +270,19 @@ export default {
               paymentStore,
               agreementStore,
               loadingStore,
+              recaptchaStore,
             ] = await window.geneCheckout.helpers.loadFromCheckout([
               'stores.usePaymentStore',
               'stores.useAgreementStore',
               'stores.useLoadingStore',
+              'stores.useRecaptchaStore',
             ]);
 
             paymentStore.setErrorMessage('');
             const agreementsValid = agreementStore.validateAgreements();
+            const captchaValid = await recaptchaStore.validateToken('placeOrder');
 
-            if (!agreementsValid) {
+            if (!agreementsValid || !captchaValid) {
               return false;
             }
             loadingStore.setLoadingState(true);

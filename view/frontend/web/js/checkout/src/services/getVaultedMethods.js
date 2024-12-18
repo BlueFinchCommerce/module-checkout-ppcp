@@ -2,6 +2,7 @@ export default async () => {
   const request = `{
     customerPaymentTokens {
       items {
+        id
         public_hash
         payment_method_code
         type

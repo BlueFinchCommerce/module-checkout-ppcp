@@ -93,14 +93,16 @@
         :message="errorMessage"
         :attached="false"
       />
+      <div class="recaptcha">
+        <component
+          :is="Recaptcha"
+          v-if="isRecaptchaVisible('placeOrder')"
+          id="placeOrder"
+          location="ppcpVaultedMethods"
+        />
+      </div>
       <component :is="Agreements" id="ppcpVault" />
       <component :is="PrivacyPolicy" />
-      <!--      <component-->
-      <!--        :is="Recaptcha"-->
-      <!--        v-if="isRecaptchaVisible('placeOrder')"-->
-      <!--        id="placeOrder"-->
-      <!--        location="ppcpVaultedMethods"-->
-      <!--      />-->
       <component
         v-if="selectedVault.payment_method_code === 'ppcp_card'"
         :is="MyButton"
@@ -113,7 +115,7 @@
       <div v-if="selectedVault.payment_method_code === 'ppcp_paypal'">
         <div
           class="paypal-button-container"
-          :id="`ppcp_paypal_vault_placeholder`"
+          :id="`ppcp_paypal_vault_${selectedVault.id}_placeholder`"
           :class="!paypalLoaded ? 'text-loading' : ''"
           :data-cy="'vaulted-checkout-ppcpPayPal'"
         />
@@ -192,6 +194,7 @@ export default {
       selectedVault: null,
       orderData: [],
       filteredVaultedMethods: [],
+      isRecaptchaVisible: () => {},
     };
   },
   computed: {
@@ -238,8 +241,12 @@ export default {
     },
   },
   async created() {
-    const paymentStore = await window.geneCheckout.helpers.loadFromCheckout([
+    const [
+      paymentStore,
+      recaptchaStore,
+    ] = await window.geneCheckout.helpers.loadFromCheckout([
       'stores.usePaymentStore',
+      'stores.useRecaptchaStore',
     ]);
 
     paymentStore.$subscribe((mutation) => {
@@ -247,6 +254,8 @@ export default {
         this.selectedMethod = mutation.payload.selectedMethod;
       }
     });
+
+    this.isRecaptchaVisible = recaptchaStore.isRecaptchaVisible;
   },
   async mounted() {
     const {
@@ -307,8 +316,12 @@ export default {
     },
 
     async selectPaymentCard(vaultedMethod) {
-      const paymentStore = await window.geneCheckout.helpers.loadFromCheckout([
+      const [
+        paymentStore,
+        loadingStore,
+      ] = await window.geneCheckout.helpers.loadFromCheckout([
         'stores.usePaymentStore',
+        'stores.useLoadingStore',
       ]);
 
       // If the method is the same as the one already selected then we can return early.
@@ -337,16 +350,20 @@ export default {
 
       // delay added to render buttons on select event first into dom
       if (this.selectedVault.payment_method_code === 'ppcp_venmo') {
+        loadingStore.setLoadingState(true);
         setTimeout(async () => {
-          const userIdToken = await getPayPalUserIdToken();
+          const userIdToken = await getPayPalUserIdToken(this.selectedVault.details.customerId);
           await this.addScripts(userIdToken, 'ppcp_venmo_vault');
           await this.renderVenmoInstance();
+          loadingStore.setLoadingState(false);
         }, 0);
       } else if (this.selectedVault.payment_method_code === 'ppcp_paypal') {
+        loadingStore.setLoadingState(true);
         setTimeout(async () => {
-          const userIdToken = await getPayPalUserIdToken();
+          const userIdToken = await getPayPalUserIdToken(this.selectedVault.details.customerId);
           await this.addScripts(userIdToken, 'ppcp_paypal_vault');
-          await this.renderPayPalVaultButton();
+          await this.renderPayPalVaultButton(this.selectedVault.id);
+          loadingStore.setLoadingState(false);
         }, 0);
       }
     },
@@ -426,16 +443,19 @@ export default {
               paymentStore,
               agreementStore,
               loadingStore,
+              recaptchaStore,
             ] = await window.geneCheckout.helpers.loadFromCheckout([
               'stores.usePaymentStore',
               'stores.useAgreementStore',
               'stores.useLoadingStore',
+              'stores.useRecaptchaStore',
             ]);
 
             paymentStore.setErrorMessage('');
             const agreementsValid = agreementStore.validateAgreements();
+            const captchaValid = await recaptchaStore.validateToken('placeOrder');
 
-            if (!agreementsValid) {
+            if (!agreementsValid || !captchaValid) {
               return false;
             }
             loadingStore.setLoadingState(true);
@@ -473,7 +493,7 @@ export default {
       }
     },
 
-    async renderPayPalVaultButton() {
+    async renderPayPalVaultButton(id) {
       const cartStore = await window.geneCheckout.helpers.loadFromCheckout([
         'stores.useCartStore',
       ]);
@@ -490,9 +510,7 @@ export default {
             color: this.paypal.buttonColor,
             tagline: false,
           },
-          fundingSource: this.paypal.payLaterActive
-            ? paypalConfig.FUNDING.PAYLATER
-            : paypalConfig.FUNDING.PAYPAL,
+          fundingSource: paypalConfig.FUNDING.PAYPAL,
           createOrder: async () => {
             try {
               const data = await createPPCPPaymentRest(
@@ -503,7 +521,6 @@ export default {
               );
 
               this.orderData = JSON.parse(data);
-              console.log(this.orderData);
               return this.orderData[0];
             } catch (error) {
               console.error('Error during createOrder:', error);
@@ -515,16 +532,19 @@ export default {
               paymentStore,
               agreementStore,
               loadingStore,
+              recaptchaStore,
             ] = await window.geneCheckout.helpers.loadFromCheckout([
               'stores.usePaymentStore',
               'stores.useAgreementStore',
               'stores.useLoadingStore',
+              'stores.useRecaptchaStore',
             ]);
 
             paymentStore.setErrorMessage('');
             const agreementsValid = agreementStore.validateAgreements();
+            const captchaValid = await recaptchaStore.validateToken('placeOrder');
 
-            if (!agreementsValid) {
+            if (!agreementsValid || !captchaValid) {
               return false;
             }
             loadingStore.setLoadingState(true);
@@ -555,13 +575,14 @@ export default {
         };
         // Render the PayPal button
         await paypalConfig.Buttons(commonRenderData).render(
-          '#ppcp_paypal_vault_placeholder',
+          `#ppcp_paypal_vault_${id}_placeholder`,
         );
 
         // Render the PayPal Pay Later button (if active)
         if (this.paypal.payLaterActive) {
           const payLaterButtonData = {
             ...commonRenderData,
+            fundingSource: paypalConfig.FUNDING.PAYLATER,
             style: {
               ...commonRenderData.style,
               color: this.paypal.payLaterButtonColour,
@@ -573,24 +594,24 @@ export default {
           );
         }
 
-        const payLaterMessagingConfig = {
-          amount: cartStore.cart.total,
-          style: {
-            layout: this.paypal.payLaterMessageLayout,
-            logo: {
-              type: this.paypal.payLaterMessageLogoType,
-              position: this.paypal.payLaterMessageLogoPosition,
-            },
-            text: {
-              size: this.paypal.payLaterMessageTextSize,
-              color: this.paypal.payLaterMessageColour,
-              align: this.paypal.payLaterMessageTextAlign,
-            },
-          },
-        };
-
         // Render the PayPal messages (if active)
         if (this.paypal.payLaterMessageActive) {
+          const payLaterMessagingConfig = {
+            amount: cartStore.cart.total,
+            style: {
+              layout: this.paypal.payLaterMessageLayout,
+              logo: {
+                type: this.paypal.payLaterMessageLogoType,
+                position: this.paypal.payLaterMessageLogoPosition,
+              },
+              text: {
+                size: this.paypal.payLaterMessageTextSize,
+                color: this.paypal.payLaterMessageColour,
+                align: this.paypal.payLaterMessageTextAlign,
+              },
+            },
+          };
+
           await paypalConfig.Messages(payLaterMessagingConfig).render(
             '#ppcp-paypal_messages_vaulted',
           );
@@ -605,17 +626,19 @@ export default {
         paymentStore,
         agreementStore,
         loadingStore,
+        recaptchaStore,
       ] = await window.geneCheckout.helpers.loadFromCheckout([
         'stores.usePaymentStore',
         'stores.useAgreementStore',
         'stores.useLoadingStore',
+        'stores.useRecaptchaStore',
       ]);
 
       paymentStore.setErrorMessage('');
+      const agreementsValid = agreementStore.validateAgreements();
+      const captchaValid = await recaptchaStore.validateToken('placeOrder');
 
-      // !captchaStore.validateToken('placeOrder') to add
-
-      if (!agreementStore.validateAgreements()) {
+      if (!agreementsValid || !captchaValid) {
         return;
       }
 
