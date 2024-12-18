@@ -41,7 +41,7 @@
       <div class="recaptcha">
         <component
           :is="Recaptcha"
-          v-if="getTypeByPlacement('placeOrder')"
+          v-if="isRecaptchaVisible('placeOrder')"
           id="placeOrder"
           location="ppcpPaymentGoogle"
         />
@@ -81,7 +81,7 @@ export default {
       isPaymentMethodAvailable: null,
       selectedMethod: 'ppcp_googlepay',
       method: 'ppcp_googlepay',
-      getTypeByPlacement: () => {},
+      isRecaptchaVisible: () => {},
       orderID: null,
     };
   },
@@ -150,7 +150,7 @@ export default {
 
     this.paymentEmitter = paymentStore.paymentEmitter;
     this.isPaymentMethodAvailable = paymentStore.isPaymentMethodAvailable;
-    this.getTypeByPlacement = recaptchaStore.getTypeByPlacement;
+    this.isRecaptchaVisible = recaptchaStore.isRecaptchaVisible;
 
     paymentStore.$subscribe((mutation) => {
       if (typeof mutation.payload.selectedMethod !== 'undefined') {
@@ -317,19 +317,22 @@ export default {
         configStore,
         loadingStore,
         paymentStore,
+        recaptchaStore,
       ] = await window.geneCheckout.helpers.loadFromCheckout([
         'stores.useAgreementStore',
         'stores.useCartStore',
         'stores.useConfigStore',
         'stores.useLoadingStore',
         'stores.usePaymentStore',
+        'stores.useRecaptchaStore',
       ]);
 
       paymentStore.setErrorMessage('');
       // Check that the agreements (if any) is valid.
       const agreementsValid = agreementStore.validateAgreements();
+      const captchaValid = await recaptchaStore.validateToken('placeOrder');
 
-      if (!agreementsValid) {
+      if (!agreementsValid || !captchaValid) {
         return false;
       }
 

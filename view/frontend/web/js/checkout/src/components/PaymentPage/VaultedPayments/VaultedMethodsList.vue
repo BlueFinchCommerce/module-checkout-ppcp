@@ -93,16 +93,16 @@
         :message="errorMessage"
         :attached="false"
       />
-      <component :is="Agreements" id="ppcpVault" />
-      <component :is="PrivacyPolicy" />
       <div class="recaptcha">
         <component
           :is="Recaptcha"
-          v-if="getTypeByPlacement('placeOrder')"
+          v-if="isRecaptchaVisible('placeOrder')"
           id="placeOrder"
           location="ppcpVaultedMethods"
         />
       </div>
+      <component :is="Agreements" id="ppcpVault" />
+      <component :is="PrivacyPolicy" />
       <component
         v-if="selectedVault.payment_method_code === 'ppcp_card'"
         :is="MyButton"
@@ -194,7 +194,7 @@ export default {
       selectedVault: null,
       orderData: [],
       filteredVaultedMethods: [],
-      getTypeByPlacement: () => {},
+      isRecaptchaVisible: () => {},
     };
   },
   computed: {
@@ -255,7 +255,7 @@ export default {
       }
     });
 
-    this.getTypeByPlacement = recaptchaStore.getTypeByPlacement;
+    this.isRecaptchaVisible = recaptchaStore.isRecaptchaVisible;
   },
   async mounted() {
     const {
@@ -316,8 +316,12 @@ export default {
     },
 
     async selectPaymentCard(vaultedMethod) {
-      const paymentStore = await window.geneCheckout.helpers.loadFromCheckout([
+      const [
+        paymentStore,
+        loadingStore,
+      ] = await window.geneCheckout.helpers.loadFromCheckout([
         'stores.usePaymentStore',
+        'stores.useLoadingStore',
       ]);
 
       // If the method is the same as the one already selected then we can return early.
@@ -346,16 +350,20 @@ export default {
 
       // delay added to render buttons on select event first into dom
       if (this.selectedVault.payment_method_code === 'ppcp_venmo') {
+        loadingStore.setLoadingState(true);
         setTimeout(async () => {
-          const userIdToken = await getPayPalUserIdToken();
+          const userIdToken = await getPayPalUserIdToken(this.selectedVault.details.customerId);
           await this.addScripts(userIdToken, 'ppcp_venmo_vault');
           await this.renderVenmoInstance();
+          loadingStore.setLoadingState(false);
         }, 0);
       } else if (this.selectedVault.payment_method_code === 'ppcp_paypal') {
+        loadingStore.setLoadingState(true);
         setTimeout(async () => {
-          const userIdToken = await getPayPalUserIdToken();
+          const userIdToken = await getPayPalUserIdToken(this.selectedVault.details.customerId);
           await this.addScripts(userIdToken, 'ppcp_paypal_vault');
           await this.renderPayPalVaultButton(this.selectedVault.id);
+          loadingStore.setLoadingState(false);
         }, 0);
       }
     },
@@ -435,16 +443,19 @@ export default {
               paymentStore,
               agreementStore,
               loadingStore,
+              recaptchaStore,
             ] = await window.geneCheckout.helpers.loadFromCheckout([
               'stores.usePaymentStore',
               'stores.useAgreementStore',
               'stores.useLoadingStore',
+              'stores.useRecaptchaStore',
             ]);
 
             paymentStore.setErrorMessage('');
             const agreementsValid = agreementStore.validateAgreements();
+            const captchaValid = await recaptchaStore.validateToken('placeOrder');
 
-            if (!agreementsValid) {
+            if (!agreementsValid || !captchaValid) {
               return false;
             }
             loadingStore.setLoadingState(true);
@@ -510,7 +521,6 @@ export default {
               );
 
               this.orderData = JSON.parse(data);
-              console.log(this.orderData);
               return this.orderData[0];
             } catch (error) {
               console.error('Error during createOrder:', error);
@@ -522,16 +532,19 @@ export default {
               paymentStore,
               agreementStore,
               loadingStore,
+              recaptchaStore,
             ] = await window.geneCheckout.helpers.loadFromCheckout([
               'stores.usePaymentStore',
               'stores.useAgreementStore',
               'stores.useLoadingStore',
+              'stores.useRecaptchaStore',
             ]);
 
             paymentStore.setErrorMessage('');
             const agreementsValid = agreementStore.validateAgreements();
+            const captchaValid = await recaptchaStore.validateToken('placeOrder');
 
-            if (!agreementsValid) {
+            if (!agreementsValid || !captchaValid) {
               return false;
             }
             loadingStore.setLoadingState(true);
@@ -613,17 +626,19 @@ export default {
         paymentStore,
         agreementStore,
         loadingStore,
+        recaptchaStore,
       ] = await window.geneCheckout.helpers.loadFromCheckout([
         'stores.usePaymentStore',
         'stores.useAgreementStore',
         'stores.useLoadingStore',
+        'stores.useRecaptchaStore',
       ]);
 
       paymentStore.setErrorMessage('');
+      const agreementsValid = agreementStore.validateAgreements();
+      const captchaValid = await recaptchaStore.validateToken('placeOrder');
 
-      // !captchaStore.validateToken('placeOrder') to add
-
-      if (!agreementStore.validateAgreements()) {
+      if (!agreementsValid || !captchaValid) {
         return;
       }
 

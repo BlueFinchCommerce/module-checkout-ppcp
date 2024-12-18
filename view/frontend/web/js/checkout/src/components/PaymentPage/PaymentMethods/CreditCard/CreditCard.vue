@@ -87,7 +87,7 @@
       <div class="recaptcha">
         <component
           :is="Recaptcha"
-          v-if="getTypeByPlacement('placeOrder')"
+          v-if="isRecaptchaVisible('placeOrder')"
           id="placeOrder"
           location="ppcpPaymentCredit"
         />
@@ -142,7 +142,7 @@ export default {
       numberField: '#card-number-field-container',
       cvvField: '#card-cvv-field-container',
       expiryField: '#card-expiry-field-container',
-      getTypeByPlacement: () => {},
+      isRecaptchaVisible: () => {},
       orderID: null,
       storeMethod: false,
       isLoggedIn: false,
@@ -203,7 +203,7 @@ export default {
 
     this.paymentEmitter = paymentStore.paymentEmitter;
     this.isPaymentMethodAvailable = paymentStore.isPaymentMethodAvailable;
-    this.getTypeByPlacement = recaptchaStore.getTypeByPlacement;
+    this.isRecaptchaVisible = recaptchaStore.isRecaptchaVisible;
     this.isLoggedIn = customerStore.isLoggedIn;
 
     paymentStore.$subscribe((mutation) => {
@@ -351,10 +351,12 @@ export default {
         paymentStore,
         agreementStore,
         loadingStore,
+        recaptchaStore,
       ] = await window.geneCheckout.helpers.loadFromCheckout([
         'stores.usePaymentStore',
         'stores.useAgreementStore',
         'stores.useLoadingStore',
+        'stores.useRecaptchaStore',
       ]);
 
       paymentStore.setErrorMessage('');
@@ -411,10 +413,11 @@ export default {
           expiryField.render(expiryContainer);
         }
 
-        document.getElementById('card-field-submit-button').addEventListener('click', () => {
+        document.getElementById('card-field-submit-button').addEventListener('click', async () => {
           const agreementsValid = agreementStore.validateAgreements();
+          const captchaValid = await recaptchaStore.validateToken('placeOrder');
 
-          if (agreementsValid) {
+          if (agreementsValid && captchaValid) {
             loadingStore.setLoadingState(true);
 
             cardFields.getState().then((data) => {

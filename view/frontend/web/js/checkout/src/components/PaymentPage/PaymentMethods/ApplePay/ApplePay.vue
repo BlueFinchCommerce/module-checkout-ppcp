@@ -53,7 +53,7 @@
       <div class="recaptcha">
         <component
           :is="Recaptcha"
-          v-if="getTypeByPlacement('placeOrder')"
+          v-if="isRecaptchaVisible('placeOrder')"
           id="placeOrder"
           location="ppcpPaymentApple"
         />
@@ -95,7 +95,7 @@ export default {
       isPaymentMethodAvailable: null,
       selectedMethod: 'ppcp_applepay',
       method: 'ppcp_applepay',
-      getTypeByPlacement: () => {},
+      isRecaptchaVisible: () => {},
       orderID: null,
     };
   },
@@ -151,7 +151,7 @@ export default {
 
     this.paymentEmitter = paymentStore.paymentEmitter;
     this.isPaymentMethodAvailable = paymentStore.isPaymentMethodAvailable;
-    this.getTypeByPlacement = recaptchaStore.getTypeByPlacement;
+    this.isRecaptchaVisible = recaptchaStore.isRecaptchaVisible;
 
     paymentStore.$subscribe((mutation) => {
       if (typeof mutation.payload.selectedMethod !== 'undefined') {
@@ -270,20 +270,23 @@ export default {
         configStore,
         loadingStore,
         paymentStore,
+        recaptchaStore,
       ] = await window.geneCheckout.helpers.loadFromCheckout([
         'stores.useAgreementStore',
         'stores.useCartStore',
         'stores.useConfigStore',
         'stores.useLoadingStore',
         'stores.usePaymentStore',
+        'stores.useRecaptchaStore',
       ]);
 
       paymentStore.setErrorMessage('');
 
       // Check that the agreements (if any) is valid.
       const agreementsValid = agreementStore.validateAgreements();
+      const captchaValid = await recaptchaStore.validateToken('placeOrder');
 
-      if (!agreementsValid) {
+      if (!agreementsValid || !captchaValid) {
         return;
       }
 
@@ -327,7 +330,9 @@ export default {
 
         session.begin();
       } catch (err) {
-        await this.setApplePayError();
+        console.log(err);
+        paymentStore.setErrorMessage('We`re unable to take payments through Apple Pay at the moment. '
+          + 'Please try an alternative payment method.');
       }
     },
 

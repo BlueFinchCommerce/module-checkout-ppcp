@@ -57,7 +57,7 @@
       <div class="recaptcha">
         <component
           :is="Recaptcha"
-          v-if="getTypeByPlacement('placeOrder')"
+          v-if="isRecaptchaVisible('placeOrder')"
           id="placeOrder"
           location="ppcpPaymentPayPal"
         />
@@ -109,7 +109,7 @@ export default {
       selectedMethod: 'ppcp_paypal',
       method: 'ppcp_paypal',
       namespace: 'paypal_ppcp_paypal',
-      getTypeByPlacement: () => {},
+      isRecaptchaVisible: () => {},
       orderID: null,
       paypalLoaded: false,
       address: {},
@@ -174,7 +174,7 @@ export default {
 
     this.paymentEmitter = paymentStore.paymentEmitter;
     this.isPaymentMethodAvailable = paymentStore.isPaymentMethodAvailable;
-    this.getTypeByPlacement = recaptchaStore.getTypeByPlacement;
+    this.isRecaptchaVisible = recaptchaStore.isRecaptchaVisible;
     this.isLoggedIn = customerStore.isLoggedIn;
 
     paymentStore.$subscribe((mutation) => {
@@ -279,9 +279,6 @@ export default {
             color: this.paypal.buttonColor,
             tagline: false,
           },
-          fundingSource: this.paypal.payLaterActive
-            ? paypalConfig.FUNDING.PAYLATER
-            : paypalConfig.FUNDING.PAYPAL,
           createOrder: async () => {
             try {
               const isPayLater = commonRenderData.fundingSource === paypalConfig.FUNDING.PAYLATER;
@@ -308,16 +305,19 @@ export default {
               paymentStore,
               agreementStore,
               loadingStore,
+              recaptchaStore,
             ] = await window.geneCheckout.helpers.loadFromCheckout([
               'stores.usePaymentStore',
               'stores.useAgreementStore',
               'stores.useLoadingStore',
+              'stores.useRecaptchaStore',
             ]);
 
             paymentStore.setErrorMessage('');
             const agreementsValid = agreementStore.validateAgreements();
+            const captchaValid = await recaptchaStore.validateToken('placeOrder');
 
-            if (!agreementsValid) {
+            if (!agreementsValid || !captchaValid) {
               return false;
             }
             loadingStore.setLoadingState(true);

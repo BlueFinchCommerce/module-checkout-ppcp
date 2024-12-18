@@ -42,7 +42,7 @@
       <div class="recaptcha">
         <component
           :is="Recaptcha"
-          v-if="getTypeByPlacement('placeOrder')"
+          v-if="isRecaptchaVisible('placeOrder')"
           id="placeOrder"
           location="ppcpPaymentVenmo"
         />
@@ -93,7 +93,7 @@ export default {
       isPaymentMethodAvailable: null,
       selectedMethod: 'ppcp_venmo',
       method: 'ppcp_venmo',
-      getTypeByPlacement: () => {},
+      isRecaptchaVisible: () => {},
       orderID: null,
       venmoLoaded: false,
       checkboxComponent: null,
@@ -158,7 +158,7 @@ export default {
 
     this.paymentEmitter = paymentStore.paymentEmitter;
     this.isPaymentMethodAvailable = paymentStore.isPaymentMethodAvailable;
-    this.getTypeByPlacement = recaptchaStore.getTypeByPlacement;
+    this.isRecaptchaVisible = recaptchaStore.isRecaptchaVisible;
     this.isLoggedIn = customerStore.isLoggedIn;
 
     paymentStore.$subscribe((mutation) => {
@@ -270,16 +270,19 @@ export default {
               paymentStore,
               agreementStore,
               loadingStore,
+              recaptchaStore,
             ] = await window.geneCheckout.helpers.loadFromCheckout([
               'stores.usePaymentStore',
               'stores.useAgreementStore',
               'stores.useLoadingStore',
+              'stores.useRecaptchaStore',
             ]);
 
             paymentStore.setErrorMessage('');
             const agreementsValid = agreementStore.validateAgreements();
+            const captchaValid = await recaptchaStore.validateToken('placeOrder');
 
-            if (!agreementsValid) {
+            if (!agreementsValid || !captchaValid) {
               return false;
             }
             loadingStore.setLoadingState(true);
