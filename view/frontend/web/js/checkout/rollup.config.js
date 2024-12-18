@@ -9,10 +9,12 @@ import svg from 'rollup-plugin-svg';
 import image from '@rollup/plugin-image';
 import terser from '@rollup/plugin-terser';
 
+const dir = process.argv.includes('--watch') ? './dist-dev' : './dist';
+
 export default {
   input: ['src/callbacks/**/*.js', 'src/components/**/*.vue'],
   output: {
-    dir: 'dist',
+    dir,
     chunkFileNames: '[name]-[hash].min.js',
   },
   plugins: [
@@ -26,8 +28,8 @@ export default {
       transformOutputPath: (output, input) => `${output.replace(/(.+)+(.js|.vue)/, '$1.min$2')}`,
     }),
     commonjs(),
-    del({ targets: 'dist/*' }),
-    scss({ output: 'dist/styles.css' }),
+    del({ targets: `${dir}/*` }),
+    scss({ watch: 'src', output: `${dir}/styles.css` }),
     svg(),
     image(),
     terser(),

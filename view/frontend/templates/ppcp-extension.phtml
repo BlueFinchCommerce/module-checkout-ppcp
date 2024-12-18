@@ -5,13 +5,15 @@
  * @var \Gene\BetterCheckout\ViewModel\Assets $assetViewModel
  */
 
-$expressGooglePay = $block->getViewFileUrl('Gene_BetterCheckoutPPCP::js/checkout/dist/components/ExpressPayments/GooglePay/GooglePay.min.js');
-$expressApplePay = $block->getViewFileUrl('Gene_BetterCheckoutPPCP::js/checkout/dist/components/ExpressPayments/ApplePay/ApplePay.min.js');
-$expressPayPal = $block->getViewFileUrl('Gene_BetterCheckoutPPCP::js/checkout/dist/components/ExpressPayments/PayPal/PayPal.min.js');
-$paymentMethods = $block->getViewFileUrl('Gene_BetterCheckoutPPCP::js/checkout/dist/components/PaymentPage/PaymentMethodsList.min.js');
-$vaultedPaymentMethods = $block->getViewFileUrl('Gene_BetterCheckoutPPCP::js/checkout/dist/components/PaymentPage/VaultedPayments/VaultedMethodsList.min.js');
+$assetViewModel = $block->getAssetViewModel();
 
-$styles = $block->getViewFileUrl('Gene_BetterCheckoutPPCP::js/checkout/dist/styles.css');
+$expressGooglePay = $assetViewModel->getDistViewFileUrl('Gene_BetterCheckoutPPCP::js/checkout/dist/components/ExpressPayments/GooglePay/GooglePay.min.js');
+$expressApplePay = $assetViewModel->getDistViewFileUrl('Gene_BetterCheckoutPPCP::js/checkout/dist/components/ExpressPayments/ApplePay/ApplePay.min.js');
+$expressPayPal = $assetViewModel->getDistViewFileUrl('Gene_BetterCheckoutPPCP::js/checkout/dist/components/ExpressPayments/PayPal/PayPal.min.js');
+$paymentMethods = $assetViewModel->getDistViewFileUrl('Gene_BetterCheckoutPPCP::js/checkout/dist/components/PaymentPage/PaymentMethodsList.min.js');
+$vaultedPaymentMethods = $assetViewModel->getDistViewFileUrl('Gene_BetterCheckoutPPCP::js/checkout/dist/components/PaymentPage/VaultedPayments/VaultedMethodsList.min.js');
+
+$styles = $assetViewModel->getDistViewFileUrl('Gene_BetterCheckoutPPCP::js/checkout/dist/styles.css');
 ?>
 
 <script>
