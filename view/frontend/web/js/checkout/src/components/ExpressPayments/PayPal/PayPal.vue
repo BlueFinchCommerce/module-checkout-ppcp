@@ -1,26 +1,27 @@
 <template>
   <div
+    :id="`ppcp-express-paypal`"
     class="paypal-express--button-container"
-    :id="`ppcp-express-paypal_ppcp_paypal`"
     :class="!paypalLoaded ? 'text-loading' : ''"
     :data-cy="'instant-checkout-ppcpPayPal'"
   />
   <div
+    :id="`ppcp-express-paylater`"
     class="paypal-express--button-container"
-    :id="`ppcp-express-paypal_ppcp_paylater`"
     :class="!paypalLoaded ? 'text-loading' : ''"
     :data-cy="'instant-checkout-ppcpPayLater'"
   />
   <div
+    :id="`ppcp-express-messages`"
     :class="!paypalLoaded ? 'text-loading' : ''"
     class="paypal-messages-container"
-    :id="`ppcp-express-paypal_messages`"
     :data-cy="'instant-checkout-ppcpMessages'"
   />
 </template>
 
 <script>
 import { mapActions, mapState } from 'pinia';
+import ppcp from 'ppcp-web';
 import usePpcpStore from '../../../stores/PpcpStore';
 
 // Helpers
@@ -75,14 +76,6 @@ export default {
 
     if (paypalPayConfig) {
       await this.getInitialConfigValues();
-      await this.addScripts();
-
-      this.namespace = `${this.namespace}`;
-
-      if (this.paypal.payLaterActive) {
-        this.namespace = `${this.method}_paylater`;
-      }
-
       await this.renderPaypalInstance();
     } else {
       paymentStore.removeExpressMethod(this.key);
@@ -92,219 +85,31 @@ export default {
   methods: {
     ...mapActions(usePpcpStore, ['getInitialConfigValues']),
 
-    async addScripts() {
+    // START PPCP WEB //
+    async renderPaypalInstance() {
       const configStore = await window.geneCheckout.helpers.loadFromCheckout([
         'stores.useConfigStore',
       ]);
-
-      const loadPayPalScript = loadScript();
-      const params = {
-        intent: this.paypal.paymentAction,
-        currency: configStore.currencyCode,
-        components: 'buttons',
-      };
-
-      if (this.environment === 'sandbox') {
-        params['buyer-country'] = this.buyerCountry;
-        params['client-id'] = this.sandboxClientId;
-      } else {
-        params['client-id'] = this.productionClientId;
-      }
-
-      if (this.paypal.payLaterMessageActive) {
-        params.components += ',messages';
-      }
-
-      if (this.paypal.payLaterActive) {
-        params['enable-funding'] = 'paylater';
-      }
-
-      return loadPayPalScript(
-        'https://www.paypal.com/sdk/js',
-        params,
-        'ppcp_paypal',
-      );
-    },
-
-    async renderPaypalInstance() {
       const cartStore = await window.geneCheckout.helpers.loadFromCheckout([
         'stores.useCartStore',
       ]);
 
-      const commonRenderData = {
-        env: this.environment,
+      const self = this;
+      const element = 'ppcp-express';
+
+      const configuration = {
+        sandboxClientId: this.sandboxClientId,
+        productionClientId: this.productionClientId,
+        intent: this.paypal.paymentAction,
+        pageType: 'checkout',
+        environment: this.environment,
         commit: true,
-        style: {
-          label: this.paypal.buttonLabel,
-          size: 'responsive',
-          shape: this.paypal.buttonShape,
-          color: this.paypal.buttonColor,
-          tagline: false,
-        },
-        fundingSource: this.paypal.payLaterActive
-          ? window[`paypal_${this.method}`].FUNDING.PAYLATER
-          : window[`paypal_${this.method}`].FUNDING.PAYPAL,
-        createOrder: async () => {
-          try {
-            const data = await createPPCPPaymentRest(this.method);
-            const orderData = JSON.parse(data);
-
-            const [orderID] = orderData;
-            this.orderID = orderID;
-
-            return this.orderID;
-          } catch (error) {
-            console.error('Error during createOrder:', error);
-            return null;
-          }
-        },
-        onClick: async () => {
-          const [
-            paymentStore,
-            shippingMethodsStore,
-            agreementStore,
-            loadingStore,
-          ] = await window.geneCheckout.helpers.loadFromCheckout([
-            'stores.usePaymentStore',
-            'stores.useShippingMethodsStore',
-            'stores.useAgreementStore',
-            'stores.useLoadingStore',
-          ]);
-
-          paymentStore.setErrorMessage('');
-          const agreementsValid = agreementStore.validateAgreements();
-
-          if (!agreementsValid) {
-            return false;
-          }
-
-          await shippingMethodsStore.setNotClickAndCollect();
-          loadingStore.setLoadingState(true);
-          return true;
-        },
-        onShippingAddressChange: async (data) => {
-          this.address = await this.mapAddress(data.shippingAddress);
-
-          return getTotals(
-            this.address,
-            '',
-            '',
-            false,
-          ).then(async () => changeShippingAddress(
-            this.orderID,
-            JSON.stringify(data.shippingAddress),
-            this.method,
-          )).catch(async (error) => {
-            const [
-              paymentStore,
-              loadingStore,
-            ] = await window.geneCheckout.helpers.loadFromCheckout([
-              'stores.usePaymentStore',
-              'stores.useLoadingStore',
-            ]);
-
-            loadingStore.setLoadingState(false);
-            paymentStore.setErrorMessage(error);
-          });
-        },
-        onShippingOptionsChange: async (data) => {
-          const [carrierCode, ...methodCode] = data.selectedShippingOption.id.split('_');
-
-          return getTotals(
-            this.address,
-            carrierCode,
-            methodCode.join('_'),
-            true,
-          ).then(async () => changeShippingMethod(
-            this.orderID,
-            JSON.stringify(data.selectedShippingOption),
-            this.method,
-          )).catch(async (error) => {
-            const [
-              paymentStore,
-              loadingStore,
-            ] = await window.geneCheckout.helpers.loadFromCheckout([
-              'stores.usePaymentStore',
-              'stores.useLoadingStore',
-            ]);
-
-            loadingStore.setLoadingState(false);
-            paymentStore.setErrorMessage(error);
-          });
-        },
-        onApprove: async () => {
-          try {
-            await finishPpcpOrder({
-              orderId: this.orderID,
-              method: this.method,
-            }).then(() => {
-              this.redirectToSuccess();
-            });
-          } catch (error) {
-            const [
-              paymentStore,
-              loadingStore,
-            ] = await window.geneCheckout.helpers.loadFromCheckout([
-              'stores.usePaymentStore',
-              'stores.useLoadingStore',
-            ]);
-            loadingStore.setLoadingState(false);
-            paymentStore.setErrorMessage(error);
-          }
-        },
-        onCancel: async () => {
-          const [
-            customerStore,
-            loadingStore,
-          ] = await window.geneCheckout.helpers.loadFromCheckout([
-            'stores.useCustomerStore',
-            'stores.useLoadingStore',
-          ]);
-
-          loadingStore.setLoadingState(false);
-          customerStore.createNewAddress('shipping');
-        },
-        onError: async (err) => {
-          const [
-            paymentStore,
-            loadingStore,
-          ] = await window.geneCheckout.helpers.loadFromCheckout([
-            'stores.usePaymentStore',
-            'stores.useLoadingStore',
-          ]);
-          loadingStore.setLoadingState(false);
-          paymentStore.setErrorMessage(err);
-        },
-      };
-
-      // Render the PayPal button
-      const paypalButtonData = {
-        ...commonRenderData,
-        fundingSource: window[`paypal_${this.method}`].FUNDING.PAYPAL,
-      };
-      await window[`paypal_${this.method}`].Buttons(paypalButtonData).render(
-        '#ppcp-express-paypal_ppcp_paypal',
-      );
-
-      // Render the PayPal Pay Later button (if active)
-      if (this.paypal.payLaterActive) {
-        const payLaterButtonData = {
-          ...commonRenderData,
-          fundingSource: window[`paypal_${this.method}`].FUNDING.PAYLATER,
-          style: {
-            ...commonRenderData.style,
-            color: this.paypal.payLaterButtonColour,
-            shape: this.paypal.payLaterButtonShape,
-          },
-        };
-        await window[`paypal_${this.method}`].Buttons(payLaterButtonData).render(
-          '#ppcp-express-paypal_ppcp_paylater',
-        );
-      }
-
-      const payLaterMessagingConfig = {
-        amount: cartStore.cart.total,
-        style: {
+        amount: cartStore.cart.prices.grand_total.value,
+        buyerCountry: this.buyerCountry,
+        currency: configStore.currencyCode,
+        isPayLaterEnabled: this.paypal.payLaterActive,
+        isPayLaterMessagingEnabled: this.paypal.payLaterMessageActive,
+        messageStyles: {
           layout: this.paypal.payLaterMessageLayout,
           logo: {
             type: this.paypal.payLaterMessageLogoType,
@@ -316,17 +121,181 @@ export default {
             align: this.paypal.payLaterMessageTextAlign,
           },
         },
+        buttonStyles: {
+          paypal: {
+            buttonLabel: this.paypal.buttonLabel,
+            buttonSize: 'responsive',
+            buttonShape: this.paypal.buttonShape,
+            buttonColor: this.paypal.buttonColor,
+            buttonTagline: false,
+          },
+          paylater: {
+            buttonShape: this.paypal.payLaterButtonShape,
+            buttonColor: this.paypal.payLaterButtonColour,
+          },
+        },
+        buttonHeight: 40,
       };
 
-      // Render the PayPal messages (if active)
-      if (this.paypal.payLaterMessageActive) {
-        await window[`paypal_${this.method}`].Messages(payLaterMessagingConfig).render(
-          '#ppcp-express-paypal_messages',
-        );
+      const callbacks = {
+        createOrder: () => this.createOrder(self),
+        onApprove: () => this.onApprove(self),
+        onClick: () => this.onClick(),
+        onCancel: () => this.onCancel(),
+        onError: (err) => this.onError(err),
+        onShippingAddressChange: (data) => this.onShippingAddressChange(self, data),
+        onShippingOptionsChange: (data) => this.onShippingOptionsChange(self, data),
+      };
+
+      const options = { ...configuration, ...callbacks };
+
+      ppcp.paypalButtons(options, element);
+    },
+
+    createOrder: async (self) => {
+      try {
+        const data = await createPPCPPaymentRest(self.method);
+        const orderData = JSON.parse(data);
+
+        const [orderID] = orderData;
+
+        self.orderID = orderID;
+
+        return self.orderID;
+      } catch (error) {
+        console.error('Error during createOrder:', error);
+        return null;
+      }
+    },
+
+    onClick: async () => {
+      const [
+        paymentStore,
+        shippingMethodsStore,
+        agreementStore,
+        loadingStore,
+      ] = await window.geneCheckout.helpers.loadFromCheckout([
+        'stores.usePaymentStore',
+        'stores.useShippingMethodsStore',
+        'stores.useAgreementStore',
+        'stores.useLoadingStore',
+      ]);
+
+      paymentStore.setErrorMessage('');
+      const agreementsValid = agreementStore.validateAgreements();
+
+      if (!agreementsValid) {
+        return false;
       }
 
-      this.paypalLoaded = true;
+      await shippingMethodsStore.setNotClickAndCollect();
+      loadingStore.setLoadingState(true);
+      return true;
     },
+
+    onShippingAddressChange: async (self, data) => {
+      self.address = await self.mapAddress(data.shippingAddress);
+
+      return getTotals(
+        self.address,
+        '',
+        '',
+        false,
+      ).then(async () => changeShippingAddress(
+        self.orderID,
+        JSON.stringify(data.shippingAddress),
+        self.method,
+      )).catch(async (error) => {
+        const [
+          paymentStore,
+          loadingStore,
+        ] = await window.geneCheckout.helpers.loadFromCheckout([
+          'stores.usePaymentStore',
+          'stores.useLoadingStore',
+        ]);
+
+        loadingStore.setLoadingState(false);
+        paymentStore.setErrorMessage(error);
+      });
+    },
+
+    onShippingOptionsChange: async (self, data) => {
+      const [carrierCode, ...methodCode] = data.selectedShippingOption.id.split('_');
+
+      return getTotals(
+        self.address,
+        carrierCode,
+        methodCode.join('_'),
+        true,
+      ).then(async () => changeShippingMethod(
+        self.orderID,
+        JSON.stringify(data.selectedShippingOption),
+        self.method,
+      )).catch(async (error) => {
+        const [
+          paymentStore,
+          loadingStore,
+        ] = await window.geneCheckout.helpers.loadFromCheckout([
+          'stores.usePaymentStore',
+          'stores.useLoadingStore',
+        ]);
+
+        loadingStore.setLoadingState(false);
+        paymentStore.setErrorMessage(error);
+      });
+    },
+
+    onApprove: async (self) => {
+      const [
+        paymentStore,
+        loadingStore,
+      ] = await window.geneCheckout.helpers.loadFromCheckout([
+        'stores.usePaymentStore',
+        'stores.useLoadingStore',
+      ]);
+      try {
+        const finishOrderResponse = await finishPpcpOrder({
+          orderId: self.orderID,
+          method: self.method,
+        });
+        if (finishOrderResponse !== null) {
+          self.redirectToSuccess();
+        } else {
+          loadingStore.setLoadingState(false);
+          paymentStore.setErrorMessage('Something went wrong. Please check your address.');
+        }
+      } catch (error) {
+        loadingStore.setLoadingState(false);
+        paymentStore.setErrorMessage(error);
+      }
+    },
+
+    onCancel: async () => {
+      const [
+        customerStore,
+        loadingStore,
+      ] = await window.geneCheckout.helpers.loadFromCheckout([
+        'stores.useCustomerStore',
+        'stores.useLoadingStore',
+      ]);
+
+      loadingStore.setLoadingState(false);
+      customerStore.createNewAddress('shipping');
+    },
+
+    onError: async (err) => {
+      const [
+        paymentStore,
+        loadingStore,
+      ] = await window.geneCheckout.helpers.loadFromCheckout([
+        'stores.usePaymentStore',
+        'stores.useLoadingStore',
+      ]);
+      loadingStore.setLoadingState(false);
+      paymentStore.setErrorMessage(err);
+    },
+
+    // END PPCP WEB //
 
     async mapAddress(shippingAddress) {
       const configStore = await window.geneCheckout.helpers.loadFromCheckout([
