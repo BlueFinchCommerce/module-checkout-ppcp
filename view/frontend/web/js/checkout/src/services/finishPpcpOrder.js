@@ -21,7 +21,7 @@ export default async (data) => {
 
     return response.data;
   } catch (error) {
-    paymentStore.setPaymentErrorMessage(error.response.data.message);
+    paymentStore.setPaymentErrorMessage(error.message);
     return null;
   }
 };
