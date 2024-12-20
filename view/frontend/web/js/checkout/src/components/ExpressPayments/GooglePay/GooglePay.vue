@@ -1,6 +1,12 @@
 <template>
   <div
     v-if="google.enabled"
+    id="ppcp-google-pay-new"
+    :class="!googlePayLoaded ? 'text-loading' : ''"
+    :data-cy="'instant-checkout-PPCPGooglePay'"
+  />
+  <div
+    v-if="google.enabled"
     id="ppcp-google-pay"
     :class="!googlePayLoaded ? 'text-loading' : ''"
     :data-cy="'instant-checkout-PPCPGooglePay'"
@@ -10,6 +16,7 @@
 <script>
 import { mapActions, mapState } from 'pinia';
 import usePpcpStore from '../../../stores/PpcpStore';
+import ppcp from 'ppcp-web';
 
 // Helpers
 import loadScript from '../../../helpers/addScript';
@@ -60,6 +67,7 @@ export default {
 
     if (googlePayConfig) {
       await this.initGooglePay();
+      await this.renderGooglePayButton();
     } else {
       paymentStore.removeExpressMethod(this.key);
       this.googlePayLoaded = true;
@@ -77,6 +85,49 @@ export default {
       'mapAddress',
       'makePayment',
     ]),
+
+    async renderGooglePayButton() {
+      // START PPCP WEB //
+      const [
+        cartStore,
+        configStore,
+      ] = await window.geneCheckout.helpers.loadFromCheckout([
+        'stores.useCartStore',
+        'stores.useConfigStore',
+      ]);
+
+      const element = 'ppcp-google-pay-new';
+      const configuration = {
+        sandboxClientId: this.sandboxClientId,
+        productionClientId: this.productionClientId,
+        intent: this.google.paymentAction,
+        pageType: 'checkout',
+        environment: this.environment,
+        buyerCountry: this.buyerCountry,
+        googlePayVersion: 2,
+        transactionInfo: {
+          currencyCode: configStore.currencyCode,
+          totalPriceStatus: 'FINAL',
+          totalPrice: (cartStore.cartGrandTotal / 100).toString(),
+        },
+        button: {
+          buttonColor: this.google.buttonColor.toLowerCase(),
+        },
+      };
+
+      const callbacks = {
+        placeOrder: (paymentData) => this.placeOrder(paymentData),
+        onPaymentAuthorized: (paymentData) => this.onPaymentAuthorized(paymentData),
+        onPaymentDataChanged: (paymentData, googlePayConfig) => this.onPaymentDataChanged(paymentData, googlePayConfig),
+        onClick: (googlepayConfig) => this.onClick(googlepayConfig),
+      };
+
+      const options = { ...configuration, ...callbacks };
+
+      ppcp.googlePayment(options, element);
+      this.googlePayLoaded = true;
+      // END PPCP WEB //
+    },
 
     async initGooglePay() {
       try {
@@ -440,6 +491,14 @@ export default {
     },
 
     async onApprove(data, paymentData) {
+      if (data.liabilityShift && data.liabilityShift !== 'POSSIBLE') {
+        throw new Error('Cannot validate payment');
+      } else {
+        this.placeOrder(paymentData);
+      }
+    },
+
+    async placeOrder(paymentData) {
       const [
         loadingStore,
         customerStore,
@@ -449,25 +508,20 @@ export default {
         'stores.useCustomerStore',
         'stores.usePaymentStore',
       ]);
-
-      if (data.liabilityShift && data.liabilityShift !== 'POSSIBLE') {
-        throw new Error('Cannot validate payment');
-      } else {
-        return this.makePayment(paymentData.email, this.orderID, this.method, true)
-          .then(() => {
-            window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
-          })
-          .catch((err) => {
-            loadingStore.setLoadingState(false);
-            try {
-              window.geneCheckout.helpers.handleServiceError(err);
-            } catch (formattedError) {
-              // clear shipping address form
-              customerStore.createNewAddress('shipping');
-              paymentStore.setErrorMessage(formattedError);
-            }
-          });
-      }
+      return this.makePayment(paymentData.email, this.orderID, this.method, true)
+        .then(() => {
+          window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
+        })
+        .catch((err) => {
+          loadingStore.setLoadingState(false);
+          try {
+            window.geneCheckout.helpers.handleServiceError(err);
+          } catch (formattedError) {
+            // clear shipping address form
+            customerStore.createNewAddress('shipping');
+            paymentStore.setErrorMessage(formattedError);
+          }
+        });
     },
   },
 };
