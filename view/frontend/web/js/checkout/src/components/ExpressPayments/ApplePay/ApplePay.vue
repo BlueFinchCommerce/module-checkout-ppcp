@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="applePayAvailable"
-    id="ppcp-apple-pay-new"
+    id="ppcp-apple-pay"
     class="ppcp-apple-pay-container"
     :class="!applePayLoaded ? 'text-loading' : 'ppcp-apple-pay'"
   />
