@@ -78,7 +78,7 @@ export default {
         'stores.useConfigStore',
       ]);
 
-      const element = 'ppcp-apple-pay-new';
+      const element = 'ppcp-apple-pay';
       const configuration = {
         sandboxClientId: this.sandboxClientId,
         productionClientId: this.productionClientId,
