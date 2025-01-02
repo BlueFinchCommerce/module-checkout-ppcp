@@ -20,8 +20,9 @@
 </template>
 
 <script>
-import { mapActions, mapState } from 'pinia';
+/* eslint-disable import/no-extraneous-dependencies */
 import ppcp from 'ppcp-web';
+import { mapActions, mapState } from 'pinia';
 import usePpcpStore from '../../../stores/PpcpStore';
 
 // Services
@@ -147,7 +148,6 @@ export default {
       const options = { ...configuration, ...callbacks };
 
       ppcp.paypalButtons(options, element);
-      this.paypalLoaded = true;
     },
 
     createOrder: async (self) => {
@@ -157,6 +157,7 @@ export default {
 
         const [orderID] = orderData;
 
+        /* eslint-disable no-param-reassign */
         self.orderID = orderID;
 
         return self.orderID;
@@ -192,6 +193,7 @@ export default {
     },
 
     onShippingAddressChange: async (self, data) => {
+      /* eslint-disable no-param-reassign */
       self.address = await self.mapAddress(data.shippingAddress);
 
       return getTotals(

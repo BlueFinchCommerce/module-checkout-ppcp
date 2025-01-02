@@ -8,9 +8,10 @@
 </template>
 
 <script>
+/* eslint-disable import/no-extraneous-dependencies */
+import ppcp from 'ppcp-web';
 import { mapActions, mapState } from 'pinia';
 import usePpcpStore from '../../../stores/PpcpStore';
-import ppcp from 'ppcp-web';
 
 // Services
 import createPPCPPaymentRest from '../../../services/createPPCPPaymentRest';
@@ -99,7 +100,6 @@ export default {
       const options = { ...configuration, ...callbacks };
 
       ppcp.applePayment(options, element);
-      this.applePayLoaded = true;
     },
 
     async getPaymentRequest(applePayConfig) {
