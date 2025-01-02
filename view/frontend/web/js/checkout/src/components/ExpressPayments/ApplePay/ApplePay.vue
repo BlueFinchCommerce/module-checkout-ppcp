@@ -1,23 +1,16 @@
 <template>
   <div
     v-if="applePayAvailable"
+    id="ppcp-apple-pay"
     class="ppcp-apple-pay-container"
-    :class='!applePayLoaded ? "text-loading" : "ppcp-apple-pay"'>
-    <apple-pay-button
-      v-if="applePayLoaded"
-      @click="onClick"
-      id="ppcp-apple-pay"
-      type="buy"
-      locale="en" />
-  </div>
+    :class="!applePayLoaded ? 'text-loading' : 'ppcp-apple-pay'"
+  />
 </template>
 
 <script>
 import { mapActions, mapState } from 'pinia';
 import usePpcpStore from '../../../stores/PpcpStore';
-
-// Helpers
-import loadScript from '../../../helpers/addScript';
+import ppcp from 'ppcp-web';
 
 // Services
 import createPPCPPaymentRest from '../../../services/createPPCPPaymentRest';
@@ -71,8 +64,7 @@ export default {
     ));
 
     if (applePayConfig) {
-      await this.addSdkScript();
-      this.showApplePay();
+      this.renderApplePayButton();
     } else {
       paymentStore.removeExpressMethod(this.key);
       this.applePayLoaded = true;
@@ -81,156 +73,37 @@ export default {
   methods: {
     ...mapActions(usePpcpStore, ['getInitialConfigValues', 'makePayment', 'mapAppleAddress']),
 
-    async addSdkScript() {
+    async renderApplePayButton() {
       const configStore = await window.geneCheckout.helpers.loadFromCheckout([
         'stores.useConfigStore',
       ]);
 
-      const loadPayPalScript = loadScript();
-      const params = {
+      const element = 'ppcp-apple-pay';
+      const configuration = {
+        sandboxClientId: this.sandboxClientId,
+        productionClientId: this.productionClientId,
         intent: this.apple.paymentAction,
+        pageType: 'checkout',
+        environment: this.environment,
         currency: configStore.currencyCode,
-        components: 'applepay',
+        buyerCountry: this.buyerCountry,
       };
 
-      if (this.environment === 'sandbox') {
-        params['buyer-country'] = this.buyerCountry;
-        params['client-id'] = this.sandboxClientId;
-      } else {
-        params['client-id'] = this.productionClientId;
-      }
+      const callbacks = {
+        getPaymentRequest: (applePayConfig) => this.getPaymentRequest(applePayConfig),
+        onShippingContactSelect: (data, session) => this.onShippingContactSelect(data, session),
+        onShippingMethodSelect: (data, session) => this.onShippingMethodSelect(data, session),
+        onPaymentAuthorized: (data, session, applepay) => this.onPaymentAuthorized(data, session, applepay),
+      };
 
-      try {
-        await Promise.all([
-          loadPayPalScript(
-            'https://www.paypal.com/sdk/js',
-            params,
-            'ppcp_applepay',
-          ),
-          loadPayPalScript(
-            'https://applepay.cdn-apple.com/jsapi/v1.1.0/apple-pay-sdk.js',
-            {},
-            '',
-          ),
-        ]);
-      } catch (error) {
-        console.error('Error loading SDK scripts:', error);
-        throw new Error('Failed to load required SDK scripts.');
-      }
+      const options = { ...configuration, ...callbacks };
+
+      ppcp.applePayment(options, element);
+      this.applePayLoaded = true;
     },
 
-    showApplePay() {
-      // If the browser doesn't support Apple Pay then return early.
-      if (
-        !window.ApplePaySession
-        || !window.ApplePaySession.canMakePayments
-        || window.location.protocol !== 'https:'
-      ) {
-        return;
-      }
-
+    async getPaymentRequest(applePayConfig) {
       this.applePayAvailable = true;
-
-      const applepay = window[`paypal_${this.method}`].Applepay();
-
-      applepay.config()
-        .then((applepayConfig) => {
-          this.applePayConfig = applepayConfig;
-          this.isEligible = !!applepayConfig.isEligible;
-          this.applePayLoaded = true;
-        })
-        .catch(() => {
-          console.error('Error while fetching Apple Pay configuration.');
-        });
-    },
-
-    async onClick() {
-      const [
-        agreementStore,
-        cartStore,
-        customerStore,
-        configStore,
-        loadingStore,
-        paymentStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
-        'stores.useAgreementStore',
-        'stores.useCartStore',
-        'stores.useCustomerStore',
-        'stores.useConfigStore',
-        'stores.useLoadingStore',
-        'stores.usePaymentStore',
-      ]);
-
-      paymentStore.setErrorMessage('');
-
-      // Check that the agreements (if any) is valid.
-      const agreementsValid = agreementStore.validateAgreements();
-
-      if (!agreementsValid) {
-        return;
-      }
-
-      const applepay = window[`paypal_${this.method}`].Applepay();
-
-      try {
-        const requiredShippingContactFields = ['name', 'email', 'phone'];
-
-        if (!cartStore.cart.is_virtual) {
-          requiredShippingContactFields.push('postalAddress');
-        }
-
-        const paymentRequest = {
-          countryCode: configStore.countryCode,
-          currencyCode: configStore.currencyCode,
-          merchantCapabilities: this.applePayConfig.merchantCapabilities,
-          supportedNetworks: this.applePayConfig.supportedNetworks,
-          requiredShippingContactFields,
-          requiredBillingContactFields: ['postalAddress', 'name'],
-          total: {
-            label: this.apple.merchantName,
-            amount: (cartStore.cartGrandTotal / 100).toString(),
-            type: 'final',
-          },
-        };
-
-        const session = new window.ApplePaySession(4, paymentRequest);
-
-        session.onvalidatemerchant = (event) => {
-          applepay.validateMerchant({
-            validationUrl: event.validationURL,
-          }).then((payload) => {
-            session.completeMerchantValidation(payload.merchantSession);
-          }).catch((err) => {
-            // clear shipping address form
-            customerStore.createNewAddress('shipping');
-            console.error(err);
-            session.abort();
-            loadingStore.setLoadingState(false);
-          });
-        };
-
-        if (!cartStore.cart.is_virtual) {
-          session.onshippingcontactselected = (data) => this.onShippingContactSelect(data, session);
-          session.onshippingmethodselected = (data) => this.onShippingMethodSelect(data, session);
-        }
-
-        // Handle session cancellation
-        session.oncancel = () => {
-          // clear shipping address form
-          customerStore.createNewAddress('shipping');
-        };
-
-        session.onpaymentauthorized = (data) => this.onAuthorized(data, session);
-
-        session.begin();
-      } catch (err) {
-        // clear shipping address form
-        customerStore.createNewAddress('shipping');
-        await this.setApplePayError();
-      }
-    },
-
-    async onAuthorized(data, session) {
       const [
         cartStore,
         configStore,
@@ -238,8 +111,40 @@ export default {
         'stores.useCartStore',
         'stores.useConfigStore',
       ]);
+      const {
+        countryCode,
+        merchantCapabilities,
+        supportedNetworks,
+      } = applePayConfig;
+      const requiredShippingContactFields = ['name', 'email', 'phone'];
 
-      const applepay = window[`paypal_${this.method}`].Applepay();
+      if (!cartStore.cart.is_virtual) {
+        requiredShippingContactFields.push('postalAddress');
+      }
+
+      return {
+        countryCode,
+        currencyCode: configStore.currencyCode,
+        merchantCapabilities,
+        supportedNetworks,
+        requiredShippingContactFields,
+        requiredBillingContactFields: ['postalAddress', 'name'],
+        total: {
+          label: this.apple.merchantName,
+          amount: (cartStore.cartGrandTotal / 100).toString(),
+          type: 'final',
+        },
+      };
+    },
+
+    async onPaymentAuthorized(data, session, applepay) {
+      const [
+        cartStore,
+        configStore,
+      ] = await window.geneCheckout.helpers.loadFromCheckout([
+        'stores.useCartStore',
+        'stores.useConfigStore',
+      ]);
 
       const { shippingContact, billingContact } = data.payment;
       const email = shippingContact.emailAddress;
@@ -313,11 +218,13 @@ export default {
       };
 
       this.address = address;
+
       const result = await window.geneCheckout.services.getShippingMethods(
         address,
         this.method,
         true,
       );
+
       const methods = result.shipping_addresses[0].available_shipping_methods;
 
       const filteredMethods = methods.filter(({ method_code: methodCode }) => (
@@ -441,16 +348,6 @@ export default {
           carrierCode: shippingMethod.carrier_code,
         }
       ));
-    },
-
-    async setApplePayError() {
-      const paymentStore = await window.geneCheckout.helpers.loadFromCheckout([
-        'stores.usePaymentStore',
-      ]);
-
-      paymentStore.setErrorMessage(
-        "We're unable to take payments through Apple Pay at the moment. Please try an alternative payment method.",
-      );
     },
   },
 };
