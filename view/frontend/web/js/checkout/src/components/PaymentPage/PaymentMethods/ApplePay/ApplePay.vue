@@ -126,15 +126,6 @@ export default {
     this.PrivacyPolicy = PrivacyPolicy;
   },
   async created() {
-    if (window.location.protocol !== 'https:') {
-      console.warn('PPCP Apple Pay requires your checkout be served over HTTPS');
-      return;
-    }
-    if ((window.ApplePaySession && window.ApplePaySession.canMakePayments()) !== true) {
-      console.warn('PPCP Apple Pay is not supported on this device/browser');
-      return;
-    }
-
     const [
       recaptchaStore,
       paymentStore,
