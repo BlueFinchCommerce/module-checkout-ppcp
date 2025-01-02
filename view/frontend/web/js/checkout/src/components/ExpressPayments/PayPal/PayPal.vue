@@ -75,6 +75,8 @@ export default {
     if (paypalPayConfig) {
       await this.getInitialConfigValues();
       await this.renderPaypalInstance();
+      await this.waitForButtonsToRender();
+      this.paypalLoaded = true;
     } else {
       paymentStore.removeExpressMethod(this.key);
       this.paypalLoaded = true;
@@ -82,6 +84,20 @@ export default {
   },
   methods: {
     ...mapActions(usePpcpStore, ['getInitialConfigValues']),
+
+    async waitForButtonsToRender() {
+      const buttonContainers = document.querySelectorAll('.paypal-express--button-container');
+      const isRendered = () => Array.from(buttonContainers).every((container) => container.children.length > 0);
+
+      return new Promise((resolve) => {
+        const interval = setInterval(() => {
+          if (isRendered()) {
+            clearInterval(interval);
+            resolve();
+          }
+        }, 100);
+      });
+    },
 
     async renderPaypalInstance() {
       const [

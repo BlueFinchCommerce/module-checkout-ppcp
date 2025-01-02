@@ -95,11 +95,24 @@ export default {
         onShippingContactSelect: (data, session) => this.onShippingContactSelect(data, session),
         onShippingMethodSelect: (data, session) => this.onShippingMethodSelect(data, session),
         onPaymentAuthorized: (data, session, applepay) => this.onPaymentAuthorized(data, session, applepay),
+        onValidate: () => this.onValidate(),
       };
 
       const options = { ...configuration, ...callbacks };
 
       ppcp.applePayment(options, element);
+    },
+
+    async onValidate() {
+      const [
+        agreementStore,
+        paymentStore,
+      ] = await window.geneCheckout.helpers.loadFromCheckout([
+        'stores.useAgreementStore',
+        'stores.usePaymentStore',
+      ]);
+      paymentStore.setErrorMessage('');
+      return agreementStore.validateAgreements();
     },
 
     async getPaymentRequest(applePayConfig) {
@@ -219,25 +232,86 @@ export default {
 
       this.address = address;
 
-      const result = await window.geneCheckout.services.getShippingMethods(
-        address,
-        this.method,
-        true,
-      );
+      try {
+        const result = await window.geneCheckout.services.getShippingMethods(
+          address,
+          this.method,
+          true,
+        );
 
-      const methods = result.shipping_addresses[0].available_shipping_methods;
+        const methods = result.shipping_addresses[0].available_shipping_methods;
 
-      const filteredMethods = methods.filter(({ method_code: methodCode }) => (
-        methodCode !== 'nominated_delivery'
-      ));
+        const filteredMethods = methods.filter(({ method_code: methodCode }) => (
+          methodCode !== 'nominated_delivery'
+        ));
 
-      this.shippingMethods = filteredMethods;
+        this.shippingMethods = filteredMethods;
 
-      // If there are no shipping methods available show an error.
-      if (!filteredMethods.length) {
+        // If there are no shipping methods available show an error.
+        if (!filteredMethods.length) {
+          const errors = {
+            errors: [
+              new window.ApplePayError('addressUnserviceable', 'postalAddress', this.applePayNoShippingMethods),
+            ],
+            newTotal: {
+              label: configStore.websiteName,
+              amount: '0.00',
+              type: 'pending',
+            },
+          };
+          session.completeShippingContactSelection(errors);
+          return;
+        }
+
+        // Set the shipping method back to the first available method.
+        const selectedShipping = filteredMethods[0];
+
+        await shippingMethodsStore.submitShippingInfo(
+          selectedShipping.carrier_code,
+          selectedShipping.method_code,
+        );
+        const newShippingMethods = this.mapShippingMethods(filteredMethods);
+
+        const applePayShippingContactUpdate = {
+          newShippingMethods,
+          newTotal: {
+            label: this.applePayTotal,
+            amount: parseFloat(cartStore.cartGrandTotal / 100).toFixed(2),
+          },
+          newLineItems: [
+            {
+              type: 'final',
+              label: 'Subtotal',
+              amount: cartStore.cart.prices.subtotal_including_tax.value.toString(),
+            },
+            {
+              type: 'final',
+              label: 'Shipping',
+              amount: selectedShipping.amount.value.toString(),
+            },
+          ],
+        };
+
+        // Add discount price if available.
+        if (cartStore.cartDiscountTotal) {
+          applePayShippingContactUpdate.newLineItems.push({
+            type: 'final',
+            label: 'Discount',
+            amount: cartStore.cartDiscountTotal.toString(),
+          });
+        }
+
+        session.completeShippingContactSelection(applePayShippingContactUpdate);
+      } catch (error) {
+        console.error('Error fetching shipping methods:', error);
+
         const errors = {
           errors: [
-            new window.ApplePayError('addressUnserviceable', 'postalAddress', this.applePayNoShippingMethods),
+            new window.ApplePayError(
+              'addressUnserviceable',
+              'postalAddress',
+              'Unable to fetch shipping methods. Please try again later.',
+            ),
           ],
           newTotal: {
             label: configStore.websiteName,
@@ -246,48 +320,7 @@ export default {
           },
         };
         session.completeShippingContactSelection(errors);
-        return;
       }
-
-      // Set the shipping method back to the first available method.
-      const selectedShipping = filteredMethods[0];
-
-      await shippingMethodsStore.submitShippingInfo(
-        selectedShipping.carrier_code,
-        selectedShipping.method_code,
-      );
-      const newShippingMethods = this.mapShippingMethods(filteredMethods);
-
-      const applePayShippingContactUpdate = {
-        newShippingMethods,
-        newTotal: {
-          label: this.applePayTotal,
-          amount: parseFloat(cartStore.cartGrandTotal / 100).toFixed(2),
-        },
-        newLineItems: [
-          {
-            type: 'final',
-            label: 'Subtotal',
-            amount: cartStore.cart.prices.subtotal_including_tax.value.toString(),
-          },
-          {
-            type: 'final',
-            label: 'Shipping',
-            amount: selectedShipping.amount.value.toString(),
-          },
-        ],
-      };
-
-      // Add discount price if available.
-      if (cartStore.cartDiscountTotal) {
-        applePayShippingContactUpdate.newLineItems.push({
-          type: 'final',
-          label: 'Discount',
-          amount: cartStore.cartDiscountTotal.toString(),
-        });
-      }
-
-      session.completeShippingContactSelection(applePayShippingContactUpdate);
     },
 
     async onShippingMethodSelect(data, session) {
