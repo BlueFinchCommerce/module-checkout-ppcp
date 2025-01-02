@@ -83,9 +83,10 @@
 </template>
 
 <script>
+/* eslint-disable import/no-extraneous-dependencies */
+import ppcp from 'ppcp-web';
 import { mapActions, mapState } from 'pinia';
 import usePpcpStore from '../../../../stores/PpcpStore';
-import ppcp from 'ppcp-web';
 
 // Services
 import createPPCPPaymentRest from '../../../../services/createPPCPPaymentRest';
@@ -297,6 +298,7 @@ export default {
         const orderData = JSON.parse(data);
 
         const [orderID] = orderData;
+        /* eslint-disable no-param-reassign */
         self.orderID = orderID;
 
         return self.orderID;
