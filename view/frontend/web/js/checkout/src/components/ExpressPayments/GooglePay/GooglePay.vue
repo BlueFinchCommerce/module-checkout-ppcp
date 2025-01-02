@@ -8,9 +8,10 @@
 </template>
 
 <script>
+/* eslint-disable import/no-extraneous-dependencies */
+import ppcp from 'ppcp-web';
 import { mapActions, mapState } from 'pinia';
 import usePpcpStore from '../../../stores/PpcpStore';
-import ppcp from 'ppcp-web';
 
 // Services
 import createPPCPPaymentRest from '../../../services/createPPCPPaymentRest';
@@ -103,8 +104,9 @@ export default {
         placeOrder: (paymentData) => this.placeOrder(paymentData),
         onPaymentAuthorized: (paymentData, googlepay) => this.onPaymentAuthorized(paymentData, googlepay),
         onPaymentDataChanged: (paymentData, googlePayConfig) => this.onPaymentDataChanged(paymentData, googlePayConfig),
-        onError: () => this.onError(),
+        onError: (error) => this.onError(error),
         onCancel: () => this.onCancel(),
+        onValidate: () => this.onValidate(),
       };
 
       const options = { ...configuration, ...callbacks };
@@ -113,17 +115,33 @@ export default {
       this.googlePayLoaded = true;
     },
 
-    async onError() {
+    async onValidate() {
+      const [
+        agreementStore,
+        paymentStore,
+      ] = await window.geneCheckout.helpers.loadFromCheckout([
+        'stores.useAgreementStore',
+        'stores.usePaymentStore',
+      ]);
+      paymentStore.setErrorMessage('');
+      return agreementStore.validateAgreements();
+    },
+
+    async onError(error) {
       const [
         customerStore,
         loadingStore,
+        paymentStore,
       ] = await window.geneCheckout.helpers.loadFromCheckout([
         'stores.useCustomerStore',
         'stores.useLoadingStore',
+        'stores.usePaymentStore',
       ]);
       customerStore.createNewAddress('shipping');
       loadingStore.setLoadingState(false);
+      paymentStore.setErrorMessage(error);
     },
+
     async onCancel() {
       const [
         customerStore,

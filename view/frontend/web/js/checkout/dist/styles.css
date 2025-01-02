@@ -101,33 +101,7 @@
 }
 
 .paypal-express--button-container {
-  max-height: var(--ppcp-express-button-height, 45px);
-}
-.paypal-express--button-container#ppcp-express-paypal_ppcp_paylater {
-  margin: var(--indent__s) 0;
-}
-.paypal-express--button-container.text-loading {
-  height: var(--ppcp-express-button-height, 45px);
-}
-
-#ppcp-google-pay {
-  max-height: var(--ppcp-express-button-height, 45px);
-}
-#ppcp-google-pay button, #ppcp-google-pay.text-loading {
-  height: var(--ppcp-express-button-height, 45px);
-}
-
-.ppcp-apple-pay-container {
-  min-height: var(--ppcp-express-button-height, 45px);
-}
-.ppcp-apple-pay-container apple-pay-button, .ppcp-apple-pay-container.text-loading {
-  height: var(--ppcp-express-button-height, 45px);
-  --apple-pay-button-height: var(--ppcp-express-button-height, 45px);
-  width: 100%;
-}
-
-.paypal-express--button-container {
-  max-height: var(--ppcp-express-button-height, 45px);
+  max-height: var(--ppcp-express-button-height, 42px);
 }
 .paypal-express--button-container#ppcp-express-paypal_ppcp_paylater {
   margin: var(--indent__s) 0;
@@ -293,7 +267,33 @@
 }
 
 .paypal-express--button-container {
+  max-height: var(--ppcp-express-button-height, 42px);
+}
+.paypal-express--button-container#ppcp-express-paypal_ppcp_paylater {
+  margin: var(--indent__s) 0;
+}
+.paypal-express--button-container.text-loading {
+  height: var(--ppcp-express-button-height, 45px);
+}
+
+#ppcp-google-pay {
   max-height: var(--ppcp-express-button-height, 45px);
+}
+#ppcp-google-pay button, #ppcp-google-pay.text-loading {
+  height: var(--ppcp-express-button-height, 45px);
+}
+
+.ppcp-apple-pay-container {
+  min-height: var(--ppcp-express-button-height, 45px);
+}
+.ppcp-apple-pay-container apple-pay-button, .ppcp-apple-pay-container.text-loading {
+  height: var(--ppcp-express-button-height, 45px);
+  --apple-pay-button-height: var(--ppcp-express-button-height, 45px);
+  width: 100%;
+}
+
+.paypal-express--button-container {
+  max-height: var(--ppcp-express-button-height, 42px);
 }
 .paypal-express--button-container#ppcp-express-paypal_ppcp_paylater {
   margin: var(--indent__s) 0;
