@@ -112,7 +112,6 @@ export default {
       const options = { ...configuration, ...callbacks };
 
       ppcp.googlePayment(options, element);
-      this.googlePayLoaded = true;
     },
 
     async onValidate() {

@@ -148,7 +148,6 @@ export default {
       const options = { ...configuration, ...callbacks };
 
       ppcp.paypalButtons(options, element);
-      this.paypalLoaded = true;
     },
 
     createOrder: async (self) => {

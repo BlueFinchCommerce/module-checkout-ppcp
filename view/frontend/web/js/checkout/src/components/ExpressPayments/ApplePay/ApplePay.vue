@@ -100,7 +100,6 @@ export default {
       const options = { ...configuration, ...callbacks };
 
       ppcp.applePayment(options, element);
-      this.applePayLoaded = true;
     },
 
     async getPaymentRequest(applePayConfig) {
