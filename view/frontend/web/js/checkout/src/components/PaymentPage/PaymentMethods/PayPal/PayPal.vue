@@ -7,7 +7,8 @@
       class="pay-pal-title"
       :class="isMethodSelected ? 'selected' : ''"
       @click="selectPaymentMethod"
-      @keydown="selectPaymentMethod">
+      @keydown="selectPaymentMethod"
+    >
       <component
         :is="RadioButton"
         id="pay-pal-select"
@@ -22,7 +23,8 @@
         width="48px"
         class="pay-pal-logo"
         :src="payPalLogo"
-        alt="pay-pal-logo">
+        alt="pay-pal-logo"
+      >
     </div>
     <component
       :is="ErrorMessage"
@@ -32,28 +34,28 @@
     />
 
     <div
+      :id="`ppcp-paypal-paypal`"
       :style="{ display: isMethodSelected ? 'block' : 'none' }"
       class="paypal-button-container"
-      :id="`ppcp-paypal_ppcp_paypal`"
       :class="!paypalLoaded ? 'text-loading' : ''"
       :data-cy="'instant-checkout-ppcpPayPal'"
     />
     <div
+      :id="`ppcp-paypal-paylater`"
       :style="{ display: isMethodSelected ? 'block' : 'none' }"
       class="paypal-button-container"
-      :id="`ppcp-paypal_ppcp_paylater`"
       :class="!paypalLoaded ? 'text-loading' : ''"
       :data-cy="'instant-checkout-ppcpPayLater'"
     />
     <div
+      :id="`ppcp-paypal-messages`"
       :style="{ display: isMethodSelected ? 'block' : 'none' }"
       :class="!paypalLoaded ? 'text-loading' : ''"
       class="paypal-messages-container"
-      :id="`ppcp-paypal_messages`"
       :data-cy="'instant-checkout-ppcpMessages'"
     />
 
-    <div class="pay-pal-content" v-if="isMethodSelected">
+    <div v-if="isMethodSelected" class="pay-pal-content">
       <div class="recaptcha">
         <component
           :is="Recaptcha"
@@ -83,9 +85,7 @@
 <script>
 import { mapActions, mapState } from 'pinia';
 import usePpcpStore from '../../../../stores/PpcpStore';
-
-// Helpers
-import loadScript from '../../../../helpers/addScript';
+import ppcp from 'ppcp-web';
 
 // Services
 import createPPCPPaymentRest from '../../../../services/createPPCPPaymentRest';
@@ -95,6 +95,12 @@ import payPalImage from '../../icons/pp-acceptance-medium.png';
 
 export default {
   name: 'PpcpPayPalPayment',
+  props: {
+    open: {
+      type: Boolean,
+      required: false,
+    },
+  },
   data() {
     return {
       isMethodSelected: false,
@@ -118,12 +124,6 @@ export default {
       isLoggedIn: false,
     };
   },
-  props: {
-    open: {
-      type: Boolean,
-      required: false,
-    },
-  },
   computed: {
     ...mapState(usePpcpStore, [
       'paypal',
@@ -134,6 +134,17 @@ export default {
     ]),
     payPalLogo() {
       return payPalImage;
+    },
+  },
+  watch: {
+    selectedMethod: {
+      handler(newVal) {
+        if (newVal !== null && newVal !== 'ppcp_paypal') {
+          this.isMethodSelected = false;
+        }
+      },
+      immediate: true,
+      deep: true,
     },
   },
   async mounted() {
@@ -189,32 +200,11 @@ export default {
 
     await configStore.getInitialConfig();
     await cartStore.getCart();
-    if (!window[`paypal_${this.method}`]) {
-      await this.addScripts();
-    }
-
-    this.namespace = `${this.namespace}`;
-
-    if (this.paypal.payLaterActive) {
-      this.namespace = `${this.method}_paylater`;
-    }
-
     await this.renderPaypalInstance();
 
     if (this.open) {
       await this.selectPaymentMethod();
     }
-  },
-  watch: {
-    selectedMethod: {
-      handler(newVal) {
-        if (newVal !== null && newVal !== 'ppcp_paypal') {
-          this.isMethodSelected = false;
-        }
-      },
-      immediate: true,
-      deep: true,
-    },
   },
   methods: {
     ...mapActions(usePpcpStore, ['makePayment']),
@@ -228,197 +218,170 @@ export default {
       paymentStore.selectPaymentMethod('ppcp_paypal');
     },
 
-    async addScripts() {
+    async renderPaypalInstance() {
       const configStore = await window.geneCheckout.helpers.loadFromCheckout([
         'stores.useConfigStore',
       ]);
-
-      const loadPayPalScript = loadScript();
-      const params = {
-        intent: this.paypal.paymentAction,
-        currency: configStore.currencyCode,
-        components: 'buttons',
-      };
-
-      if (this.environment === 'sandbox') {
-        params['buyer-country'] = this.buyerCountry;
-        params['client-id'] = this.sandboxClientId;
-      } else {
-        params['client-id'] = this.productionClientId;
-      }
-
-      if (this.paypal.payLaterMessageActive) {
-        params.components += ',messages';
-      }
-
-      if (this.paypal.payLaterActive) {
-        params['enable-funding'] = 'paylater';
-      }
-
-      return loadPayPalScript(
-        'https://www.paypal.com/sdk/js',
-        params,
-        'ppcp_paypal',
-      );
-    },
-
-    async renderPaypalInstance() {
       const cartStore = await window.geneCheckout.helpers.loadFromCheckout([
         'stores.useCartStore',
       ]);
 
-      const paypalConfig = window[`paypal_${this.method}`];
-      if (paypalConfig) {
-        const commonRenderData = {
-          env: this.environment,
-          commit: true,
-          style: {
-            label: this.paypal.buttonLabel,
-            size: 'responsive',
-            shape: this.paypal.buttonShape,
-            color: this.paypal.buttonColor,
-            tagline: false,
+      const self = this;
+      const element = 'ppcp-paypal';
+
+      const configuration = {
+        sandboxClientId: this.sandboxClientId,
+        productionClientId: this.productionClientId,
+        intent: this.paypal.paymentAction,
+        pageType: 'checkout',
+        environment: this.environment,
+        commit: true,
+        amount: cartStore.cart.prices.grand_total.value,
+        buyerCountry: this.buyerCountry,
+        currency: configStore.currencyCode,
+        isPayLaterEnabled: this.paypal.payLaterActive,
+        isPayLaterMessagingEnabled: this.paypal.payLaterMessageActive,
+        messageStyles: {
+          layout: this.paypal.payLaterMessageLayout,
+          logo: {
+            type: this.paypal.payLaterMessageLogoType,
+            position: this.paypal.payLaterMessageLogoPosition,
           },
-          createOrder: async () => {
-            try {
-              const isPayLater = commonRenderData.fundingSource === paypalConfig.FUNDING.PAYLATER;
-              const vault = !isPayLater && this.paypal.vaultActive;
-
-              const data = await createPPCPPaymentRest(
-                this.method,
-                vault,
-                1,
-              );
-              const orderData = JSON.parse(data);
-
-              const [orderID] = orderData;
-              this.orderID = orderID;
-
-              return this.orderID;
-            } catch (error) {
-              console.error('Error during createOrder:', error);
-              return null;
-            }
+          text: {
+            size: this.paypal.payLaterMessageTextSize,
+            color: this.paypal.payLaterMessageColour,
+            align: this.paypal.payLaterMessageTextAlign,
           },
-          onClick: async () => {
-            const [
-              paymentStore,
-              agreementStore,
-              loadingStore,
-              recaptchaStore,
-            ] = await window.geneCheckout.helpers.loadFromCheckout([
-              'stores.usePaymentStore',
-              'stores.useAgreementStore',
-              'stores.useLoadingStore',
-              'stores.useRecaptchaStore',
-            ]);
-
-            paymentStore.setErrorMessage('');
-            const agreementsValid = agreementStore.validateAgreements();
-            const captchaValid = await recaptchaStore.validateToken('placeOrder');
-
-            if (!agreementsValid || !captchaValid) {
-              return false;
-            }
-            loadingStore.setLoadingState(true);
-            return true;
+        },
+        buttonStyles: {
+          paypal: {
+            buttonLabel: this.paypal.buttonLabel,
+            buttonSize: 'responsive',
+            buttonShape: this.paypal.buttonShape,
+            buttonColor: this.paypal.buttonColor,
+            buttonTagline: false,
           },
-          onApprove: async () => {
-            const [
-              paymentStore,
-              loadingStore,
-            ] = await window.geneCheckout.helpers.loadFromCheckout([
-              'stores.usePaymentStore',
-              'stores.useLoadingStore',
-            ]);
+          paylater: {
+            buttonShape: this.paypal.payLaterButtonShape,
+            buttonColor: this.paypal.payLaterButtonColour,
+          },
+        },
+        buttonHeight: 40,
+      };
 
-            return this.makePayment(
-              cartStore.cart.email,
-              this.orderID,
-              this.method,
-              false,
-              this.storeMethod,
-            ).then(() => {
-              window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
-            })
-              .catch((err) => {
-                loadingStore.setLoadingState(false);
-                try {
-                  window.geneCheckout.helpers.handleServiceError(err);
-                } catch (formattedError) {
-                  paymentStore.setErrorMessage(formattedError);
-                }
-              });
-          },
-          onCancel: async () => {
-            const loadingStore = await window.geneCheckout.helpers.loadFromCheckout([
-              'stores.useLoadingStore',
-            ]);
+      const callbacks = {
+        createOrder: () => this.createOrder(self),
+        onApprove: () => this.onApprove(self),
+        onClick: () => this.onClick(),
+        onCancel: () => this.onCancel(),
+        onError: (err) => this.onError(err),
+        onShippingAddressChange: (data) => this.onShippingAddressChange(self, data),
+        onShippingOptionsChange: (data) => this.onShippingOptionsChange(self, data),
+      };
 
-            loadingStore.setLoadingState(false);
-          },
-          onError: async (err) => {
-            const [
-              paymentStore,
-              loadingStore,
-            ] = await window.geneCheckout.helpers.loadFromCheckout([
-              'stores.usePaymentStore',
-              'stores.useLoadingStore',
-            ]);
-            loadingStore.setLoadingState(false);
-            paymentStore.setErrorMessage(err);
-          },
-        };
-        // Render the PayPal button
-        const paypalButtonData = {
-          ...commonRenderData,
-          fundingSource: paypalConfig.FUNDING.PAYPAL,
-        };
-        await paypalConfig.Buttons(paypalButtonData).render(
-          '#ppcp-paypal_ppcp_paypal',
+      const options = { ...configuration, ...callbacks };
+
+      ppcp.paypalButtons(options, element);
+      this.paypalLoaded = true;
+    },
+
+    createOrder: async (self) => {
+      try {
+        const vault = !self.paypal.payLaterActive && self.paypal.vaultActive;
+
+        const data = await createPPCPPaymentRest(
+          self.method,
+          vault,
+          1,
         );
+        const orderData = JSON.parse(data);
 
-        // Render the PayPal Pay Later button (if active)
-        if (this.paypal.payLaterActive) {
-          const payLaterButtonData = {
-            ...commonRenderData,
-            fundingSource: paypalConfig.FUNDING.PAYLATER,
-            style: {
-              ...commonRenderData.style,
-              color: this.paypal.payLaterButtonColour,
-              shape: this.paypal.payLaterButtonShape,
-            },
-          };
-          await paypalConfig.Buttons(payLaterButtonData).render(
-            '#ppcp-paypal_ppcp_paylater',
-          );
-        }
+        const [orderID] = orderData;
+        self.orderID = orderID;
 
-        const payLaterMessagingConfig = {
-          amount: cartStore.cart.total,
-          style: {
-            layout: this.paypal.payLaterMessageLayout,
-            logo: {
-              type: this.paypal.payLaterMessageLogoType,
-              position: this.paypal.payLaterMessageLogoPosition,
-            },
-            text: {
-              size: this.paypal.payLaterMessageTextSize,
-              color: this.paypal.payLaterMessageColour,
-              align: this.paypal.payLaterMessageTextAlign,
-            },
-          },
-        };
-
-        // Render the PayPal messages (if active)
-        if (this.paypal.payLaterMessageActive) {
-          await paypalConfig.Messages(payLaterMessagingConfig).render(
-            '#ppcp-paypal_messages',
-          );
-        }
-
-        this.paypalLoaded = true;
+        return self.orderID;
+      } catch (error) {
+        console.error('Error during createOrder:', error);
+        return null;
       }
+    },
+    onClick: async () => {
+      const [
+        paymentStore,
+        agreementStore,
+        loadingStore,
+        recaptchaStore,
+      ] = await window.geneCheckout.helpers.loadFromCheckout([
+        'stores.usePaymentStore',
+        'stores.useAgreementStore',
+        'stores.useLoadingStore',
+        'stores.useRecaptchaStore',
+      ]);
+
+      paymentStore.setErrorMessage('');
+      const agreementsValid = agreementStore.validateAgreements();
+      const captchaValid = await recaptchaStore.validateToken('placeOrder');
+
+      if (!agreementsValid || !captchaValid) {
+        return false;
+      }
+      loadingStore.setLoadingState(true);
+      return true;
+    },
+
+    onApprove: async (self) => {
+      const [
+        paymentStore,
+        loadingStore,
+        cartStore,
+      ] = await window.geneCheckout.helpers.loadFromCheckout([
+        'stores.usePaymentStore',
+        'stores.useLoadingStore',
+        'stores.useCartStore',
+      ]);
+
+      return self.makePayment(
+        cartStore.cart.email,
+        self.orderID,
+        self.method,
+        false,
+        self.storeMethod,
+      ).then(() => {
+        self.redirectToSuccess();
+      })
+        .catch((err) => {
+          loadingStore.setLoadingState(false);
+          try {
+            window.geneCheckout.helpers.handleServiceError(err);
+          } catch (formattedError) {
+            paymentStore.setErrorMessage(formattedError);
+          }
+        });
+    },
+    onCancel: async () => {
+      const loadingStore = await window.geneCheckout.helpers.loadFromCheckout([
+        'stores.useLoadingStore',
+      ]);
+
+      loadingStore.setLoadingState(false);
+    },
+    onError: async (err) => {
+      const [
+        paymentStore,
+        loadingStore,
+      ] = await window.geneCheckout.helpers.loadFromCheckout([
+        'stores.usePaymentStore',
+        'stores.useLoadingStore',
+      ]);
+      loadingStore.setLoadingState(false);
+      paymentStore.setErrorMessage(err);
+    },
+
+    onShippingAddressChange: () => {
+      // Function only required for express checkout
+    },
+    onShippingMethodChange: () => {
+      // Function only required for express checkout
     },
 
     redirectToSuccess() {
