@@ -21,9 +21,8 @@
 
 <script>
 import { mapActions, mapState } from 'pinia';
-import usePpcpStore from '../../../stores/PpcpStore';
 import ppcp from 'ppcp-web';
-
+import usePpcpStore from '../../../stores/PpcpStore';
 
 // Services
 import createPPCPPaymentRest from '../../../services/createPPCPPaymentRest';
@@ -84,11 +83,12 @@ export default {
     ...mapActions(usePpcpStore, ['getInitialConfigValues']),
 
     async renderPaypalInstance() {
-      const configStore = await window.geneCheckout.helpers.loadFromCheckout([
-        'stores.useConfigStore',
-      ]);
-      const cartStore = await window.geneCheckout.helpers.loadFromCheckout([
+      const [
+        cartStore,
+        configStore,
+      ] = await window.geneCheckout.helpers.loadFromCheckout([
         'stores.useCartStore',
+        'stores.useConfigStore',
       ]);
 
       const self = this;
