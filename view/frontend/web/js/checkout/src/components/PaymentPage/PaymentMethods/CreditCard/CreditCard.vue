@@ -7,7 +7,8 @@
       class="card-title"
       :class="isMethodSelected ? 'selected' : ''"
       @click="selectPaymentMethod"
-      @keydown="selectPaymentMethod">
+      @keydown="selectPaymentMethod"
+    >
       <component
         :is="RadioButton"
         id="card-select"
@@ -28,7 +29,8 @@
 
     <fieldset
       class="card-fieldset"
-      :style="{ display: isMethodSelected ? 'block' : 'none' }">
+      :style="{ display: isMethodSelected ? 'block' : 'none' }"
+    >
       <div class="field required">
         <label for="card-number-field-container" class="label">
           <span>
@@ -77,12 +79,13 @@
 
     <component
       :is="MyButton"
+      id="card-field-submit-button"
       :label="$t('Pay')"
       :style="{ display: isMethodSelected ? 'block' : 'none' }"
       primary
-      id="card-field-submit-button" />
+    />
 
-    <div class="card-content" v-if="isMethodSelected">
+    <div v-if="isMethodSelected" class="card-content">
       <component :is="PrivacyPolicy" />
       <div class="recaptcha">
         <component
@@ -110,17 +113,22 @@
 </template>
 
 <script>
+/* eslint-disable import/no-extraneous-dependencies */
+import ppcp from 'ppcp-web';
 import { mapActions, mapState } from 'pinia';
 import usePpcpStore from '../../../../stores/PpcpStore';
-
-// Helpers
-import loadScript from '../../../../helpers/addScript';
 
 // Services
 import createPPCPPaymentRest from '../../../../services/createPPCPPaymentRest';
 
 export default {
   name: 'PpcpCreditCardPayment',
+  props: {
+    open: {
+      type: Boolean,
+      required: false,
+    },
+  },
   data() {
     return {
       isMethodSelected: false,
@@ -142,17 +150,12 @@ export default {
       numberField: '#card-number-field-container',
       cvvField: '#card-cvv-field-container',
       expiryField: '#card-expiry-field-container',
+      submitButton: '#card-field-submit-button',
       isRecaptchaVisible: () => {},
       orderID: null,
       storeMethod: false,
       isLoggedIn: false,
     };
-  },
-  props: {
-    open: {
-      type: Boolean,
-      required: false,
-    },
   },
   computed: {
     ...mapState(usePpcpStore, [
@@ -162,6 +165,17 @@ export default {
       'productionClientId',
       'sandboxClientId',
     ]),
+  },
+  watch: {
+    selectedMethod: {
+      handler(newVal) {
+        if (newVal !== null && newVal !== 'ppcp_card') {
+          this.isMethodSelected = false;
+        }
+      },
+      immediate: true,
+      deep: true,
+    },
   },
   async mounted() {
     const {
@@ -218,23 +232,11 @@ export default {
 
     await configStore.getInitialConfig();
     await cartStore.getCart();
-    await this.addScripts();
     await this.initCardFields();
 
     if (this.open) {
       await this.selectPaymentMethod();
     }
-  },
-  watch: {
-    selectedMethod: {
-      handler(newVal) {
-        if (newVal !== null && newVal !== 'ppcp_card') {
-          this.isMethodSelected = false;
-        }
-      },
-      immediate: true,
-      deep: true,
-    },
   },
   methods: {
     ...mapActions(usePpcpStore, ['makePayment']),
@@ -248,209 +250,200 @@ export default {
       paymentStore.selectPaymentMethod('ppcp_card');
     },
 
-    async addScripts() {
+    async initCardFields() {
       const configStore = await window.geneCheckout.helpers.loadFromCheckout([
         'stores.useConfigStore',
       ]);
 
-      const loadPayPalScript = loadScript();
-      const params = {
+      const self = this;
+      const element = this.submitButton;
+
+      const configuration = {
+        sandboxClientId: this.sandboxClientId,
+        productionClientId: this.productionClientId,
         intent: this.card.paymentAction,
+        pageType: 'checkout',
+        environment: this.environment,
+        buyerCountry: this.buyerCountry,
         currency: configStore.currencyCode,
-        components: 'card-fields',
+        style: this.getStyles(),
+        cardFields: {
+          numberField: {
+            id: this.numberField,
+            placeholder: '4111 1111 1111 1111',
+            inputEvents: {
+              blur: (data, input) => this.inputBlur(data, input, 'cardNumberField'),
+            },
+          },
+          expiryField: {
+            id: this.expiryField,
+            placeholder: 'MM/YY',
+            inputEvents: {
+              blur: (data, input) => this.inputBlur(data, input, 'cardExpiryField'),
+            },
+          },
+          cvvField: {
+            id: this.cvvField,
+            placeholder: '123',
+            inputEvents: {
+              blur: (data, input) => this.inputBlur(data, input, 'cardCvvField'),
+            },
+          },
+        },
       };
 
-      if (this.environment === 'sandbox') {
-        params['buyer-country'] = this.buyerCountry;
-        params['client-id'] = this.sandboxClientId;
-      } else {
-        params['client-id'] = this.productionClientId;
-      }
+      const callbacks = {
+        createOrder: () => this.createOrder(self),
+        onApprove: () => this.onApprove(self),
+        onError: (error) => this.onError(error),
+        active: (bool) => this.active(bool),
+        onValidate: () => this.onValidate(),
+        handleErrors: (errors) => this.handleErrors(errors, self),
+      };
 
-      return loadPayPalScript(
-        'https://www.paypal.com/sdk/js',
-        params,
-        'ppcp_card',
-      );
+      const options = { ...configuration, ...callbacks };
+
+      ppcp.cardPayment(options, element);
     },
 
-    async initCardFields() {
-      if (window[`paypal_${this.method}`]) {
-        const cardFields = window[`paypal_${this.method}`].CardFields({
-          createOrder: async () => {
-            const loadingStore = await window.geneCheckout.helpers.loadFromCheckout([
-              'stores.useLoadingStore',
-            ]);
-
-            loadingStore.setLoadingState(true);
-
-            try {
-              const data = await createPPCPPaymentRest(
-                this.method,
-                this.card.vaultActive,
-                1,
-              );
-              const orderData = JSON.parse(data);
-
-              const [orderID] = orderData;
-              this.orderID = orderID;
-
-              return this.orderID;
-            } catch (error) {
-              loadingStore.setLoadingState(false);
-              console.error('Error during createOrder:', error);
-              return null;
-            }
-          },
-          onApprove: async () => {
-            const [
-              loadingStore,
-              paymentStore,
-              cartStore,
-            ] = await window.geneCheckout.helpers.loadFromCheckout([
-              'stores.useLoadingStore',
-              'stores.usePaymentStore',
-              'stores.useCartStore',
-            ]);
-
-            return this.makePayment(
-              cartStore.cart.email,
-              this.orderID,
-              this.method,
-              false,
-              this.storeMethod,
-            ).then(() => {
-              window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
-            })
-              .catch((err) => {
-                loadingStore.setLoadingState(false);
-                paymentStore.setErrorMessage(err.message);
-              });
-          },
-          onError: async (error) => {
-            const [
-              paymentStore,
-              loadingStore,
-            ] = await window.geneCheckout.helpers.loadFromCheckout([
-              'stores.usePaymentStore',
-              'stores.useLoadingStore',
-            ]);
-
-            paymentStore.setErrorMessage(error);
-            loadingStore.setLoadingState(false);
-          },
-          style: this.getStyles(),
-        });
-
-        await this.renderFields(cardFields);
-      }
-    },
-
-    async renderFields(cardFields) {
+    async onValidate() {
       const [
-        paymentStore,
         agreementStore,
-        loadingStore,
+        paymentStore,
         recaptchaStore,
       ] = await window.geneCheckout.helpers.loadFromCheckout([
-        'stores.usePaymentStore',
         'stores.useAgreementStore',
-        'stores.useLoadingStore',
+        'stores.usePaymentStore',
         'stores.useRecaptchaStore',
       ]);
-
       paymentStore.setErrorMessage('');
+      const agreementsValid = agreementStore.validateAgreements();
+      const captchaValid = await recaptchaStore.validateToken('placeOrder');
 
-      if (cardFields.isEligible()) {
-        const numberContainer = document.querySelector(this.numberField);
-        const cvvContainer = document.querySelector(this.cvvField);
-        const expiryContainer = document.querySelector(this.expiryField);
+      return agreementsValid && captchaValid;
+    },
 
-        const numberField = cardFields.NumberField({
-          placeholder: '4111 1111 1111 1111',
-          inputEvents: {
-            onBlur: (data) => {
-              numberContainer.className = data.fields.cardNumberField.isValid
-              || data.fields.cardNumberField.isEmpty
-                ? 'valid' : 'invalid';
-            },
-            onFocus: () => {
-            },
-          },
-        });
-        const cvvField = cardFields.CVVField({
-          placeholder: '123',
-          inputEvents: {
-            onBlur: (data) => {
-              cvvContainer.className = data.fields.cardCvvField.isValid
-              || data.fields.cardCvvField.isEmpty
-                ? 'valid' : 'invalid';
-            },
-            onFocus: () => {
-            },
-          },
-        });
-        const expiryField = cardFields.ExpiryField({
-          placeholder: 'MM/YY',
-          inputEvents: {
-            onBlur: (data) => {
-              expiryContainer.className = data.fields.cardExpiryField.isValid
-              || data.fields.cardExpiryField.isEmpty
-                ? 'valid' : 'invalid';
-            },
-            onFocus: () => {
-            },
-          },
-        });
+    active() {
+      // Not needed in vue checkout
+    },
 
-        if (numberContainer && !numberContainer.innerHTML.trim()) {
-          numberField.render(numberContainer);
-        }
-        if (cvvContainer && !cvvContainer.innerHTML.trim()) {
-          cvvField.render(cvvContainer);
-        }
-        if (expiryContainer && !expiryContainer.innerHTML.trim()) {
-          expiryField.render(expiryContainer);
-        }
+    inputBlur(data, input, field) {
+      /* eslint-disable no-param-reassign */
+      input.className = data.fields[field].isValid
+      || data.fields[field].isEmpty
+        ? 'valid' : 'invalid';
+    },
 
-        document.getElementById('card-field-submit-button').addEventListener('click', async () => {
-          const agreementsValid = agreementStore.validateAgreements();
-          const captchaValid = await recaptchaStore.validateToken('placeOrder');
+    createOrder: async (self) => {
+      const loadingStore = await window.geneCheckout.helpers.loadFromCheckout([
+        'stores.useLoadingStore',
+      ]);
 
-          if (agreementsValid && captchaValid) {
-            loadingStore.setLoadingState(true);
+      loadingStore.setLoadingState(true);
 
-            cardFields.getState().then((data) => {
-              if (data.isFormValid) {
-                cardFields.submit().then(() => {
-                  // Submit success
-                }).catch((error) => {
-                  paymentStore.setErrorMessage(error);
-                });
-              } else {
-                if (data.errors.includes('INVALID_NUMBER')) {
-                  loadingStore.setLoadingState(false);
-                  this.hostedNumberErrorMessage = 'Card number is not valid.';
-                }
-                if (data.errors.includes('INVALID_EXPIRY')) {
-                  loadingStore.setLoadingState(false);
-                  this.hostedDateErrorMessage = 'Expiry date is not valid.';
-                }
-                if (data.errors.includes('INVALID_CVV')) {
-                  loadingStore.setLoadingState(false);
-                  this.hostedCvvErrorMessage = 'CVV is not valid.';
-                }
-              }
-            });
-          } else {
-            loadingStore.setLoadingState(false);
-            return false;
-          }
+      try {
+        const data = await createPPCPPaymentRest(
+          self.method,
+          self.card.vaultActive,
+          1,
+        );
+        const orderData = JSON.parse(data);
 
-          return true;
-        });
+        const [orderID] = orderData;
+        /* eslint-disable no-param-reassign */
+        self.orderID = orderID;
+
+        return self.orderID;
+      } catch (error) {
+        loadingStore.setLoadingState(false);
+        console.error('Error during createOrder:', error);
+        return null;
       }
     },
+
+    onApprove: async (self) => {
+      const [
+        loadingStore,
+        paymentStore,
+        cartStore,
+      ] = await window.geneCheckout.helpers.loadFromCheckout([
+        'stores.useLoadingStore',
+        'stores.usePaymentStore',
+        'stores.useCartStore',
+      ]);
+
+      return self.makePayment(
+        cartStore.cart.email,
+        self.orderID,
+        self.method,
+        false,
+        self.storeMethod,
+      ).then(() => {
+        window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
+      })
+        .catch((err) => {
+          loadingStore.setLoadingState(false);
+          paymentStore.setErrorMessage(err.message);
+        });
+    },
+
+    handleErrors: async (errors, self) => {
+      const [
+        paymentStore,
+        loadingStore,
+      ] = await window.geneCheckout.helpers.loadFromCheckout([
+        'stores.usePaymentStore',
+        'stores.useLoadingStore',
+      ]);
+
+      self.hostedNumberErrorMessage = '';
+      self.hostedDateErrorMessage = '';
+      self.hostedCvvErrorMessage = '';
+
+      errors.forEach((error) => {
+        loadingStore.setLoadingState(false);
+        switch (error) {
+          case 'INVALID_NUMBER':
+            self.hostedNumberErrorMessage = 'Card number is not valid.';
+            break;
+          case 'INVALID_EXPIRY':
+            self.hostedDateErrorMessage = 'Expiry date is not valid.';
+            break;
+          case 'INVALID_CVV':
+            self.hostedCvvErrorMessage = 'CVV is not valid.';
+            break;
+          default:
+            paymentStore.setErrorMessage(error);
+            break;
+        }
+      });
+    },
+
+    displayErrorMessage: async (error, field, self) => {
+      const [
+        paymentStore,
+        loadingStore,
+      ] = await window.geneCheckout.helpers.loadFromCheckout([
+        'stores.usePaymentStore',
+        'stores.useLoadingStore',
+      ]);
+
+      switch (field) {
+        case 'cardNumber':
+          self.hostedNumberErrorMessage = error;
+          break;
+        case 'expirationDate':
+          self.hostedExpirationErrorMessage = error;
+          break;
+        case 'cvv':
+          self.hostedCvvErrorMessage = error;
+          break;
+        default:
+          paymentStore.setErrorMessage(error);
+      }
+      loadingStore.setLoadingState(false);
+    },
+
     getStyles() {
       return {
         '.valid': {
