@@ -1,27 +1,87 @@
-#ppcp-google-pay {
-  max-height: var(--ppcp-express-button-height, 45px);
+.ppcp-payment-methods-list .google-pay-container,
+.ppcp-payment-methods-list .apple-pay-container,
+.ppcp-payment-methods-list .pay-pal-container,
+.ppcp-payment-methods-list .venmo-container,
+.ppcp-payment-methods-list .card-container {
+  background-color: var(--radio-input-wrapper__background-color);
+  border: var(--radio-input-wrapper__border-weight) var(--base__border-style) var(--radio-input-wrapper__border-color);
+  border-radius: var(--radio-input-wrapper__border-radius);
+  flex-wrap: wrap;
+  line-height: 1;
+  margin-top: var(--indent__base);
+  padding: var(--indent__base);
 }
-#ppcp-google-pay button, #ppcp-google-pay.text-loading {
-  height: var(--ppcp-express-button-height, 45px);
+.ppcp-payment-methods-list .google-pay-container .selected,
+.ppcp-payment-methods-list .apple-pay-container .selected,
+.ppcp-payment-methods-list .pay-pal-container .selected,
+.ppcp-payment-methods-list .venmo-container .selected,
+.ppcp-payment-methods-list .card-container .selected {
+  margin-bottom: var(--indent__base);
 }
-
-.ppcp-apple-pay-container {
-  min-height: var(--ppcp-express-button-height, 45px);
-}
-.ppcp-apple-pay-container apple-pay-button, .ppcp-apple-pay-container.text-loading {
-  height: var(--ppcp-express-button-height, 45px);
-  --apple-pay-button-height: var(--ppcp-express-button-height, 45px);
+.ppcp-payment-methods-list .google-pay-container .ppcp-apple-pay-button apple-pay-button, .ppcp-payment-methods-list .google-pay-container .ppcp-apple-pay-button.text-loading,
+.ppcp-payment-methods-list .apple-pay-container .ppcp-apple-pay-button apple-pay-button,
+.ppcp-payment-methods-list .apple-pay-container .ppcp-apple-pay-button.text-loading,
+.ppcp-payment-methods-list .pay-pal-container .ppcp-apple-pay-button apple-pay-button,
+.ppcp-payment-methods-list .pay-pal-container .ppcp-apple-pay-button.text-loading,
+.ppcp-payment-methods-list .venmo-container .ppcp-apple-pay-button apple-pay-button,
+.ppcp-payment-methods-list .venmo-container .ppcp-apple-pay-button.text-loading,
+.ppcp-payment-methods-list .card-container .ppcp-apple-pay-button apple-pay-button,
+.ppcp-payment-methods-list .card-container .ppcp-apple-pay-button.text-loading {
+  height: 55px;
+  --apple-pay-button-height: var(--ppcp-express-button-height, 55px);
   width: 100%;
 }
-
-.paypal-express--button-container {
-  max-height: var(--ppcp-express-button-height, 42px);
+.ppcp-payment-methods-list .google-pay-container #ppcp-google-pay,
+.ppcp-payment-methods-list .apple-pay-container #ppcp-google-pay,
+.ppcp-payment-methods-list .pay-pal-container #ppcp-google-pay,
+.ppcp-payment-methods-list .venmo-container #ppcp-google-pay,
+.ppcp-payment-methods-list .card-container #ppcp-google-pay {
+  max-height: 55px;
 }
-.paypal-express--button-container#ppcp-express-paypal_ppcp_paylater {
-  margin: var(--indent__s) 0;
+.ppcp-payment-methods-list .google-pay-container #ppcp-google-pay button,
+.ppcp-payment-methods-list .apple-pay-container #ppcp-google-pay button,
+.ppcp-payment-methods-list .pay-pal-container #ppcp-google-pay button,
+.ppcp-payment-methods-list .venmo-container #ppcp-google-pay button,
+.ppcp-payment-methods-list .card-container #ppcp-google-pay button {
+  height: 55px;
 }
-.paypal-express--button-container.text-loading {
-  height: var(--ppcp-express-button-height, 45px);
+.ppcp-payment-methods-list .google-pay-content,
+.ppcp-payment-methods-list .apple-pay-content,
+.ppcp-payment-methods-list .pay-pal-content,
+.ppcp-payment-methods-list .venmo-content,
+.ppcp-payment-methods-list .card-content {
+  margin-top: var(--indent__base);
+}
+.ppcp-payment-methods-list .google-pay-title,
+.ppcp-payment-methods-list .apple-pay-title,
+.ppcp-payment-methods-list .pay-pal-title,
+.ppcp-payment-methods-list .venmo-title,
+.ppcp-payment-methods-list .card-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ppcp-payment-methods-list .paypal-button-container {
+  max-height: none;
+  margin-bottom: var(--indent__m);
+}
+.ppcp-payment-methods-list .card-fieldset {
+  border: 0;
+  padding: 0;
+}
+.ppcp-payment-methods-list .card-fieldset .field {
+  margin-bottom: var(--indent__s);
+}
+.ppcp-payment-methods-list .card-fieldset label {
+  padding-left: var(--indent__xs);
+  margin-bottom: var(--indent__xs);
+}
+.ppcp-payment-methods-list .card-fieldset label span {
+  font-size: var(--font__s) !important;
+}
+.ppcp-payment-methods-list .ppcp-store-method,
+.ppcp-payment-methods-list .recaptcha {
+  margin-bottom: var(--indent__m);
 }
 
 .ppcp-vault {
@@ -216,88 +276,28 @@
   height: var(--ppcp-express-button-height, 45px);
 }
 
-.ppcp-payment-methods-list .google-pay-container,
-.ppcp-payment-methods-list .apple-pay-container,
-.ppcp-payment-methods-list .pay-pal-container,
-.ppcp-payment-methods-list .venmo-container,
-.ppcp-payment-methods-list .card-container {
-  background-color: var(--radio-input-wrapper__background-color);
-  border: var(--radio-input-wrapper__border-weight) var(--base__border-style) var(--radio-input-wrapper__border-color);
-  border-radius: var(--radio-input-wrapper__border-radius);
-  flex-wrap: wrap;
-  line-height: 1;
-  margin-top: var(--indent__base);
-  padding: var(--indent__base);
+#ppcp-google-pay {
+  max-height: var(--ppcp-express-button-height, 45px);
 }
-.ppcp-payment-methods-list .google-pay-container .selected,
-.ppcp-payment-methods-list .apple-pay-container .selected,
-.ppcp-payment-methods-list .pay-pal-container .selected,
-.ppcp-payment-methods-list .venmo-container .selected,
-.ppcp-payment-methods-list .card-container .selected {
-  margin-bottom: var(--indent__base);
+#ppcp-google-pay button, #ppcp-google-pay.text-loading {
+  height: var(--ppcp-express-button-height, 45px);
 }
-.ppcp-payment-methods-list .google-pay-container .ppcp-apple-pay-button apple-pay-button, .ppcp-payment-methods-list .google-pay-container .ppcp-apple-pay-button.text-loading,
-.ppcp-payment-methods-list .apple-pay-container .ppcp-apple-pay-button apple-pay-button,
-.ppcp-payment-methods-list .apple-pay-container .ppcp-apple-pay-button.text-loading,
-.ppcp-payment-methods-list .pay-pal-container .ppcp-apple-pay-button apple-pay-button,
-.ppcp-payment-methods-list .pay-pal-container .ppcp-apple-pay-button.text-loading,
-.ppcp-payment-methods-list .venmo-container .ppcp-apple-pay-button apple-pay-button,
-.ppcp-payment-methods-list .venmo-container .ppcp-apple-pay-button.text-loading,
-.ppcp-payment-methods-list .card-container .ppcp-apple-pay-button apple-pay-button,
-.ppcp-payment-methods-list .card-container .ppcp-apple-pay-button.text-loading {
-  height: 55px;
-  --apple-pay-button-height: var(--ppcp-express-button-height, 55px);
+
+.ppcp-apple-pay-container {
+  min-height: var(--ppcp-express-button-height, 45px);
+}
+.ppcp-apple-pay-container apple-pay-button, .ppcp-apple-pay-container.text-loading {
+  height: var(--ppcp-express-button-height, 45px);
+  --apple-pay-button-height: var(--ppcp-express-button-height, 45px);
   width: 100%;
 }
-.ppcp-payment-methods-list .google-pay-container #ppcp-google-pay,
-.ppcp-payment-methods-list .apple-pay-container #ppcp-google-pay,
-.ppcp-payment-methods-list .pay-pal-container #ppcp-google-pay,
-.ppcp-payment-methods-list .venmo-container #ppcp-google-pay,
-.ppcp-payment-methods-list .card-container #ppcp-google-pay {
-  max-height: 55px;
+
+.paypal-express--button-container {
+  max-height: var(--ppcp-express-button-height, 42px);
 }
-.ppcp-payment-methods-list .google-pay-container #ppcp-google-pay button,
-.ppcp-payment-methods-list .apple-pay-container #ppcp-google-pay button,
-.ppcp-payment-methods-list .pay-pal-container #ppcp-google-pay button,
-.ppcp-payment-methods-list .venmo-container #ppcp-google-pay button,
-.ppcp-payment-methods-list .card-container #ppcp-google-pay button {
-  height: 55px;
+.paypal-express--button-container#ppcp-express-paypal_ppcp_paylater {
+  margin: var(--indent__s) 0;
 }
-.ppcp-payment-methods-list .google-pay-content,
-.ppcp-payment-methods-list .apple-pay-content,
-.ppcp-payment-methods-list .pay-pal-content,
-.ppcp-payment-methods-list .venmo-content,
-.ppcp-payment-methods-list .card-content {
-  margin-top: var(--indent__base);
-}
-.ppcp-payment-methods-list .google-pay-title,
-.ppcp-payment-methods-list .apple-pay-title,
-.ppcp-payment-methods-list .pay-pal-title,
-.ppcp-payment-methods-list .venmo-title,
-.ppcp-payment-methods-list .card-title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.ppcp-payment-methods-list .paypal-button-container {
-  max-height: none;
-  margin-bottom: var(--indent__m);
-}
-.ppcp-payment-methods-list .card-fieldset {
-  border: 0;
-  padding: 0;
-}
-.ppcp-payment-methods-list .card-fieldset .field {
-  margin-bottom: var(--indent__s);
-}
-.ppcp-payment-methods-list .card-fieldset label {
-  padding-left: var(--indent__xs);
-  margin-bottom: var(--indent__xs);
-}
-.ppcp-payment-methods-list .card-fieldset label span {
-  font-size: var(--font__s) !important;
-}
-.ppcp-payment-methods-list .ppcp-store-method,
-.ppcp-payment-methods-list .recaptcha {
-  margin-bottom: var(--indent__m);
+.paypal-express--button-container.text-loading {
+  height: var(--ppcp-express-button-height, 45px);
 }
