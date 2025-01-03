@@ -120,19 +120,6 @@ export default {
     this.RadioButton = RadioButton;
     this.Recaptcha = Recaptcha;
     this.PrivacyPolicy = PrivacyPolicy;
-
-    // Check if the script is already included
-    const scriptSrc = 'https://pay.google.com/gp/p/js/pay.js';
-    const existingScript = Array.from(document.scripts).find(
-      (script) => script.src === scriptSrc,
-    );
-
-    if (!existingScript) {
-      // Script not found, insert it
-      const googlePayScript = document.createElement('script');
-      googlePayScript.setAttribute('src', scriptSrc);
-      document.head.appendChild(googlePayScript);
-    }
   },
   async created() {
     const [
@@ -203,14 +190,6 @@ export default {
     },
 
     async initGooglePay() {
-      try {
-        this.button = await this.createGooglePayButton();
-      } catch (err) {
-        console.warn(err);
-      }
-    },
-
-    async createGooglePayButton() {
       const [
         cartStore,
         configStore,
@@ -241,8 +220,7 @@ export default {
 
       const callbacks = {
         placeOrder: (paymentData) => this.placeOrder(paymentData),
-        onPaymentAuthorized: (paymentData) => this.onPaymentAuthorized(paymentData),
-        onPaymentDataChanged: (paymentData, googlePayConfig) => this.onPaymentDataChanged(paymentData, googlePayConfig),
+        onPaymentAuthorized: (paymentData, googlepay) => this.onPaymentAuthorized(paymentData, googlepay),
         onError: (error) => this.onError(error),
         onCancel: () => this.onCancel(),
         onValidate: () => this.onValidate(),
@@ -271,7 +249,7 @@ export default {
       return agreementsValid && captchaValid;
     },
 
-    async onPaymentAuthorized(data) {
+    async onPaymentAuthorized(data, googlepay) {
       const cartStore = await window.geneCheckout.helpers.loadFromCheckout([
         'stores.useCartStore',
       ]);
@@ -314,7 +292,7 @@ export default {
           };
 
           // Confirm the order using Google Pay
-          const response = await window.paypal_ppcp_googlepay.Googlepay().confirmOrder(confirmOrderData);
+          const response = await googlepay.confirmOrder(confirmOrderData);
 
           // Handle the onApprove callback
           await this.onApprove(response, data);
@@ -332,10 +310,6 @@ export default {
           });
         }
       });
-    },
-
-    async onPaymentDataChanged() {
-      // we are not allowing data change on payment page
     },
 
     async onApprove(data, paymentData) {
