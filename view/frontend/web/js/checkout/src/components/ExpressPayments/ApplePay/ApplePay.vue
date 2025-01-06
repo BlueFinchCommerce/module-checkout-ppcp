@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="applePayAvailable"
+    v-if="applePayAvailable && apple.showOnTopCheckout"
     id="ppcp-apple-pay"
     class="ppcp-apple-pay-container"
     :class="!applePayLoaded ? 'text-loading' : 'ppcp-apple-pay'"
@@ -64,7 +64,7 @@ export default {
       method.code === this.method
     ));
 
-    if (applePayConfig) {
+    if (applePayConfig && this.apple.showOnTopCheckout) {
       this.renderApplePayButton();
     } else {
       paymentStore.removeExpressMethod(this.key);
