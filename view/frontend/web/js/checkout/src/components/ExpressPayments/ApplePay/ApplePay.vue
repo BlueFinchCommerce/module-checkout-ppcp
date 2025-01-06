@@ -96,6 +96,7 @@ export default {
         onShippingMethodSelect: (data, session) => this.onShippingMethodSelect(data, session),
         onPaymentAuthorized: (data, session, applepay) => this.onPaymentAuthorized(data, session, applepay),
         onValidate: () => this.onValidate(),
+        onClose: () => this.onClose(),
       };
 
       const options = { ...configuration, ...callbacks };
@@ -369,6 +370,15 @@ export default {
       }
 
       session.completeShippingMethodSelection(applePayShippingContactUpdate);
+    },
+
+    async onClose() {
+      // clear shipping address form
+
+      const customerStore = await window.geneCheckout.helpers.loadFromCheckout([
+        'stores.useCustomerStore',
+      ]);
+      customerStore.createNewAddress('shipping');
     },
 
     mapShippingMethods(shippingMethods) {
