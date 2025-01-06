@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="applePayAvailable"
+    v-if="applePayAvailable && apple.showOnTopCheckout"
     id="ppcp-apple-pay"
     class="ppcp-apple-pay-container"
     :class="!applePayLoaded ? 'text-loading' : 'ppcp-apple-pay'"
@@ -64,7 +64,7 @@ export default {
       method.code === this.method
     ));
 
-    if (applePayConfig) {
+    if (applePayConfig && this.apple.showOnTopCheckout) {
       this.renderApplePayButton();
     } else {
       paymentStore.removeExpressMethod(this.key);
@@ -96,6 +96,7 @@ export default {
         onShippingMethodSelect: (data, session) => this.onShippingMethodSelect(data, session),
         onPaymentAuthorized: (data, session, applepay) => this.onPaymentAuthorized(data, session, applepay),
         onValidate: () => this.onValidate(),
+        onClose: () => this.onClose(),
       };
 
       const options = { ...configuration, ...callbacks };
@@ -369,6 +370,15 @@ export default {
       }
 
       session.completeShippingMethodSelection(applePayShippingContactUpdate);
+    },
+
+    async onClose() {
+      // clear shipping address form
+
+      const customerStore = await window.geneCheckout.helpers.loadFromCheckout([
+        'stores.useCustomerStore',
+      ]);
+      customerStore.createNewAddress('shipping');
     },
 
     mapShippingMethods(shippingMethods) {

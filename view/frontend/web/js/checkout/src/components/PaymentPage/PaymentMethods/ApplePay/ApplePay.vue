@@ -277,10 +277,12 @@ export default {
       ]);
 
       const { billingContact } = data.payment;
+
       const billingAddress = await this.mapAppleAddress(
         billingContact,
         cartStore.cart.email,
-        cartStore.cart.shipping_addresses[0].telephone,
+        cartStore.cart.shipping_addresses[0]?.telephone
+        || cartStore.cart.billing_address?.telephone,
       );
 
       let shippingAddress = null;

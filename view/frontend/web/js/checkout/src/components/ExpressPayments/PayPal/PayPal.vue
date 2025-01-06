@@ -74,12 +74,14 @@ export default {
 
     if (paypalPayConfig) {
       await this.getInitialConfigValues();
-      await this.renderPaypalInstance();
-      await this.waitForButtonsToRender();
-      this.paypalLoaded = true;
-    } else {
-      paymentStore.removeExpressMethod(this.key);
-      this.paypalLoaded = true;
+      if (this.paypal.showOnTopCheckout) {
+        await this.renderPaypalInstance();
+        await this.waitForButtonsToRender();
+        this.paypalLoaded = true;
+      } else {
+        paymentStore.removeExpressMethod(this.key);
+        this.paypalLoaded = true;
+      }
     }
   },
   methods: {

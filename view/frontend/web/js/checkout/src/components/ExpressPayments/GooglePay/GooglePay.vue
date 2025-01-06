@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="google.enabled"
+    v-if="google.enabled && google.showOnTopCheckout"
     id="ppcp-google-pay"
     :class="!googlePayLoaded ? 'text-loading' : ''"
     :data-cy="'instant-checkout-PPCPGooglePay'"
@@ -57,7 +57,7 @@ export default {
       method.code === this.method
     ));
 
-    if (googlePayConfig) {
+    if (googlePayConfig && this.google.showOnTopCheckout) {
       await this.initGooglePay();
     } else {
       paymentStore.removeExpressMethod(this.key);

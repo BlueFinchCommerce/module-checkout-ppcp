@@ -14,6 +14,7 @@ export default defineStore('ppcpStore', {
     apple: {
       merchantName: '',
       enabled: false,
+      showOnTopCheckout: false,
       paymentAction: '',
       sortOrder: null,
       title: '',
@@ -34,12 +35,14 @@ export default defineStore('ppcpStore', {
     google: {
       buttonColor: 'white',
       enabled: false,
+      showOnTopCheckout: false,
       paymentAction: '',
       sortOrder: null,
       title: '',
     },
     paypal: {
       enabled: false,
+      showOnTopCheckout: false,
       vaultActive: false,
       title: '',
       paymentAction: '',
@@ -107,18 +110,21 @@ export default defineStore('ppcpStore', {
           ppcp_buyer_country
 
           ppcp_googlepay_active
+          ppcp_googlepay_top_checkout
           ppcp_googlepay_title
           ppcp_googlepay_payment_action
           ppcp_googlepay_button_colour
           ppcp_googlepay_sort_order
 
           ppcp_applepay_active
+          ppcp_applepay_top_checkout
           ppcp_applepay_title
           ppcp_applepay_payment_action
           ppcp_applepay_merchant_name
           ppcp_applepay_sort_order
 
           ppcp_paypal_active
+          ppcp_paypal_top_checkout
           ppcp_paypal_vault_active
           ppcp_paypal_title
           ppcp_paypal_payment_action
@@ -189,6 +195,7 @@ export default defineStore('ppcpStore', {
           google: {
             buttonColor: storeconfig.ppcp_googlepay_button_colour,
             enabled: storeconfig.ppcp_googlepay_active === '1',
+            showOnTopCheckout: storeconfig.ppcp_googlepay_top_checkout === '1',
             paymentAction: storeconfig.ppcp_googlepay_payment_action
             === 'authorize_capture' ? 'capture' : storeconfig.ppcp_googlepay_payment_action,
             sortOrder: storeconfig.ppcp_googlepay_sort_order,
@@ -197,6 +204,7 @@ export default defineStore('ppcpStore', {
           apple: {
             merchantName: storeconfig.ppcp_applepay_merchant_name,
             enabled: storeconfig.ppcp_applepay_active === '1',
+            showOnTopCheckout: storeconfig.ppcp_applepay_top_checkout === '1',
             paymentAction: storeconfig.ppcp_applepay_payment_action
             === 'authorize_capture' ? 'capture' : storeconfig.ppcp_applepay_payment_action,
             sortOrder: storeconfig.ppcp_applepay_sort_order,
@@ -218,6 +226,7 @@ export default defineStore('ppcpStore', {
           },
           paypal: {
             enabled: storeconfig.ppcp_paypal_active === '1',
+            showOnTopCheckout: storeconfig.ppcp_paypal_top_checkout === '1',
             vaultActive: storeconfig.ppcp_paypal_vault_active === '1',
             title: storeconfig.ppcp_paypal_title,
             paymentAction: storeconfig.ppcp_paypal_payment_action
