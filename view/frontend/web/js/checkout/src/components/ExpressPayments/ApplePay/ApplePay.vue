@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="applePayAvailable && apple.showOnTopCheckout"
+    v-if="applePayAvailable && apple.showOnTopCheckout && apple.enabled"
     id="ppcp-apple-pay"
     class="ppcp-apple-pay-container"
     :class="!applePayLoaded ? 'text-loading' : 'ppcp-apple-pay'"
