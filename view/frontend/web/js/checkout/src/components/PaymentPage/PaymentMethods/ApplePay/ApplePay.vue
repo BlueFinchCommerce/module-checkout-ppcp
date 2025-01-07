@@ -174,7 +174,6 @@ export default {
   methods: {
     ...mapActions(usePpcpStore, [
       'makePayment',
-      'mapSelectedAddress',
       'mapAppleAddress',
     ]),
 
@@ -285,11 +284,6 @@ export default {
         || cartStore.cart.billing_address?.telephone,
       );
 
-      let shippingAddress = null;
-      if (!cartStore.cart.is_virtual) {
-        shippingAddress = await this.mapSelectedAddress(cartStore.cart.shipping_addresses[0]);
-      }
-
       if (!configStore.countries.some(({ id }) => id === billingAddress.country_code)) {
         session.completePayment(window.ApplePaySession.STATUS_FAILURE);
         return;
@@ -304,16 +298,12 @@ export default {
         billingContact: data.payment.billingContact,
       }).then(async () => {
         try {
-          window.geneCheckout.services.setAddressesOnCart(
-            shippingAddress,
-            billingAddress,
-            cartStore.cart.email,
-          ).then(() => this.makePayment(
+          this.makePayment(
             cartStore.cart.email,
             this.orderID,
             this.method,
             false,
-          )).then(async () => {
+          ).then(async () => {
             session.completePayment(window.ApplePaySession.STATUS_SUCCESS);
             window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
           });

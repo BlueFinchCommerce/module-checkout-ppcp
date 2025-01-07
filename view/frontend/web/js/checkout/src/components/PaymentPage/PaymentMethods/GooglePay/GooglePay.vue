@@ -172,7 +172,6 @@ export default {
       'getEnvironment',
       'mapAddress',
       'makePayment',
-      'mapSelectedAddress',
     ]),
 
     async selectPaymentMethod() {
@@ -268,20 +267,7 @@ export default {
           return;
         }
 
-        const mapBillingAddress = await this.mapAddress(
-          data.paymentMethodData.info.billingAddress,
-          data.email,
-          data.paymentMethodData.info.billingAddress.phoneNumber,
-        );
-
         try {
-          await window.geneCheckout.services
-            .setAddressesOnCart(
-              await this.mapSelectedAddress(cartStore.cart.shipping_addresses[0]),
-              mapBillingAddress,
-              data.email,
-            );
-
           // Create PPCP Payment and get the orderID
           const ppcpOrderId = await createPPCPPaymentRest(this.method);
           [this.orderID] = JSON.parse(ppcpOrderId);
