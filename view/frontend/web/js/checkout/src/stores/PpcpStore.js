@@ -319,32 +319,6 @@ export default defineStore('ppcpStore', {
       };
     },
 
-    async mapSelectedAddress(address) {
-      const configStore = await window.geneCheckout.helpers.loadFromCheckout([
-        'stores.useConfigStore',
-      ]);
-
-      const regionId = configStore.getRegionId(
-        address.countryCode,
-        address.administrativeArea,
-      );
-
-      return {
-        street: address.street,
-        postcode: address.postcode,
-        country_code: address.country.code,
-        company: address.company || '',
-        firstname: address.firstname,
-        lastname: address.lastname,
-        city: address.city,
-        telephone: address.telephone,
-        region: {
-          ...(address.region.code ? { region: address.region.code } : {}),
-          ...(regionId ? { region_id: regionId } : {}),
-        },
-      };
-    },
-
     async makePayment(email, orderID, method, express, vault = false) {
       const payment = {
         email,
