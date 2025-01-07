@@ -1,20 +1,20 @@
 <template>
   <div
-    v-if="paypal.showOnTopCheckout"
+    v-if="paypal.showOnTopCheckout && paypal.enabled"
     :id="`ppcp-express-paypal`"
     class="paypal-express--button-container"
     :class="!paypalLoaded ? 'text-loading' : ''"
     :data-cy="'instant-checkout-ppcpPayPal'"
   />
   <div
-    v-if="paypal.showOnTopCheckout"
+    v-if="paypal.showOnTopCheckout && paypal.enabled"
     :id="`ppcp-express-paylater`"
     class="paypal-express--button-container"
     :class="!paypalLoaded ? 'text-loading' : ''"
     :data-cy="'instant-checkout-ppcpPayLater'"
   />
   <div
-    v-if="paypal.showOnTopCheckout"
+    v-if="paypal.showOnTopCheckout && paypal.enabled"
     :id="`ppcp-express-messages`"
     :class="!paypalLoaded ? 'text-loading' : ''"
     class="paypal-messages-container"
@@ -77,7 +77,7 @@ export default {
 
     if (paypalPayConfig) {
       await this.getInitialConfigValues();
-      if (this.paypal.showOnTopCheckout) {
+      if (this.paypal.showOnTopCheckout && this.paypal.enabled) {
         await this.renderPaypalInstance();
         await this.waitForButtonsToRender();
         this.paypalLoaded = true;
