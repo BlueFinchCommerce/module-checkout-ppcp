@@ -338,13 +338,14 @@ export default {
       const loadingStore = await window.geneCheckout.helpers.loadFromCheckout([
         'stores.useLoadingStore',
       ]);
-
       loadingStore.setLoadingState(true);
+
+      const vault = self.storeMethod && self.card.vaultActive && self.isLoggedIn;
 
       try {
         const data = await createPPCPPaymentRest(
           self.method,
-          self.card.vaultActive,
+          vault,
           1,
         );
         const orderData = JSON.parse(data);
