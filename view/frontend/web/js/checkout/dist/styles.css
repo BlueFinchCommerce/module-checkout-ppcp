@@ -1,36 +1,3 @@
-.adyen-payment-icons {
-  width: var(--footer-icons-width-mobile, auto);
-}
-.adyen-payment-icons ul {
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: var(--footer-icons-align-items, center);
-  justify-content: center;
-  height: 100%;
-}
-.adyen-payment-icons ul li {
-  display: block;
-  list-style: none;
-  margin: var(--footer-icon-margin-mobile, 0 10px);
-  height: 100%;
-}
-.adyen-payment-icons ul li img {
-  height: var(--footer-icons-min-height, 25px);
-}
-
-@media (min-width: 768px) {
-  .adyen-payment-icons {
-    width: var(--footer-icons-width-desktop, auto);
-  }
-  .adyen-payment-icons ul {
-    margin: 0 0 0;
-  }
-  .adyen-payment-icons ul li {
-    margin: var(--footer-icon-margin, 0 10px);
-  }
-}
 .ppcp-footer-icons {
   width: var(--footer-icons-width-mobile, auto);
 }
@@ -154,58 +121,39 @@
   margin-bottom: var(--indent__m);
 }
 
-#ppcp-google-pay {
-  max-height: var(--ppcp-express-button-height, 45px);
+.adyen-payment-icons {
+  width: var(--footer-icons-width-mobile, auto);
 }
-#ppcp-google-pay button, #ppcp-google-pay.text-loading {
-  height: var(--ppcp-express-button-height, 45px);
+.adyen-payment-icons ul {
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: var(--footer-icons-align-items, center);
+  justify-content: center;
+  height: 100%;
 }
-
-.ppcp-apple-pay-container {
-  min-height: var(--ppcp-express-button-height, 45px);
+.adyen-payment-icons ul li {
+  display: block;
+  list-style: none;
+  margin: var(--footer-icon-margin-mobile, 0 10px);
+  height: 100%;
 }
-.ppcp-apple-pay-container apple-pay-button, .ppcp-apple-pay-container.text-loading {
-  height: var(--ppcp-express-button-height, 45px);
-  --apple-pay-button-height: var(--ppcp-express-button-height, 45px);
-  width: 100%;
-}
-
-.paypal-express--button-container {
-  max-height: var(--ppcp-express-button-height, 42px);
-}
-.paypal-express--button-container#ppcp-express-paypal_ppcp_paylater {
-  margin: var(--indent__s) 0;
-}
-.paypal-express--button-container.text-loading {
-  height: var(--ppcp-express-button-height, 45px);
+.adyen-payment-icons ul li img {
+  height: var(--footer-icons-min-height, 25px);
 }
 
-#ppcp-google-pay {
-  max-height: var(--ppcp-express-button-height, 45px);
+@media (min-width: 768px) {
+  .adyen-payment-icons {
+    width: var(--footer-icons-width-desktop, auto);
+  }
+  .adyen-payment-icons ul {
+    margin: 0 0 0;
+  }
+  .adyen-payment-icons ul li {
+    margin: var(--footer-icon-margin, 0 10px);
+  }
 }
-#ppcp-google-pay button, #ppcp-google-pay.text-loading {
-  height: var(--ppcp-express-button-height, 45px);
-}
-
-.ppcp-apple-pay-container {
-  min-height: var(--ppcp-express-button-height, 45px);
-}
-.ppcp-apple-pay-container apple-pay-button, .ppcp-apple-pay-container.text-loading {
-  height: var(--ppcp-express-button-height, 45px);
-  --apple-pay-button-height: var(--ppcp-express-button-height, 45px);
-  width: 100%;
-}
-
-.paypal-express--button-container {
-  max-height: var(--ppcp-express-button-height, 42px);
-}
-.paypal-express--button-container#ppcp-express-paypal_ppcp_paylater {
-  margin: var(--indent__s) 0;
-}
-.paypal-express--button-container.text-loading {
-  height: var(--ppcp-express-button-height, 45px);
-}
-
 .ppcp-vault {
   display: grid;
   gap: var(--indent__base);
@@ -346,6 +294,58 @@
     grid-auto-columns: calc(50% - var(--indent__xs));
   }
 }
+#ppcp-google-pay {
+  max-height: var(--ppcp-express-button-height, 45px);
+}
+#ppcp-google-pay button, #ppcp-google-pay.text-loading {
+  height: var(--ppcp-express-button-height, 45px);
+}
+
+.ppcp-apple-pay-container {
+  min-height: var(--ppcp-express-button-height, 45px);
+}
+.ppcp-apple-pay-container apple-pay-button, .ppcp-apple-pay-container.text-loading {
+  height: var(--ppcp-express-button-height, 45px);
+  --apple-pay-button-height: var(--ppcp-express-button-height, 45px);
+  width: 100%;
+}
+
+.paypal-express--button-container {
+  max-height: var(--ppcp-express-button-height, 42px);
+}
+.paypal-express--button-container#ppcp-express-paypal_ppcp_paylater {
+  margin: var(--indent__s) 0;
+}
+.paypal-express--button-container.text-loading {
+  height: var(--ppcp-express-button-height, 45px);
+}
+
+#ppcp-google-pay {
+  max-height: var(--ppcp-express-button-height, 45px);
+}
+#ppcp-google-pay button, #ppcp-google-pay.text-loading {
+  height: var(--ppcp-express-button-height, 45px);
+}
+
+.ppcp-apple-pay-container {
+  min-height: var(--ppcp-express-button-height, 45px);
+}
+.ppcp-apple-pay-container apple-pay-button, .ppcp-apple-pay-container.text-loading {
+  height: var(--ppcp-express-button-height, 45px);
+  --apple-pay-button-height: var(--ppcp-express-button-height, 45px);
+  width: 100%;
+}
+
+.paypal-express--button-container {
+  max-height: var(--ppcp-express-button-height, 42px);
+}
+.paypal-express--button-container#ppcp-express-paypal_ppcp_paylater {
+  margin: var(--indent__s) 0;
+}
+.paypal-express--button-container.text-loading {
+  height: var(--ppcp-express-button-height, 45px);
+}
+
 #ppcp-google-pay {
   max-height: var(--ppcp-express-button-height, 45px);
 }
