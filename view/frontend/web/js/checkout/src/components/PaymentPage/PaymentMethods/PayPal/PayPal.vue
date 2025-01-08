@@ -116,6 +116,7 @@ export default {
       selectedMethod: 'ppcp_paypal',
       method: 'ppcp_paypal',
       namespace: 'paypal_ppcp_paypal',
+      fundingSource: '',
       isRecaptchaVisible: () => {},
       orderID: null,
       paypalLoaded: false,
@@ -273,7 +274,7 @@ export default {
       const callbacks = {
         createOrder: () => this.createOrder(self),
         onApprove: () => this.onApprove(self),
-        onClick: () => this.onClick(),
+        onClick: (data) => this.onClick(data, self),
         onCancel: () => this.onCancel(),
         onError: (err) => this.onError(err),
         onShippingAddressChange: (data) => this.onShippingAddressChange(self, data),
@@ -288,8 +289,7 @@ export default {
 
     createOrder: async (self) => {
       try {
-        const vault = !self.paypal.payLaterActive && self.paypal.vaultActive;
-
+        const vault = self.fundingSource === 'paypal' && self.paypal.vaultActive;
         const data = await createPPCPPaymentRest(
           self.method,
           vault,
@@ -307,7 +307,7 @@ export default {
         return null;
       }
     },
-    onClick: async () => {
+    onClick: async (data, self) => {
       const [
         paymentStore,
         agreementStore,
@@ -327,6 +327,7 @@ export default {
       if (!agreementsValid || !captchaValid) {
         return false;
       }
+      self.fundingSource = data.fundingSource;
       loadingStore.setLoadingState(true);
       return true;
     },
