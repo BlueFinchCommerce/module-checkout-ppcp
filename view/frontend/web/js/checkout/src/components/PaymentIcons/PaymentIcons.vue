@@ -1,6 +1,6 @@
 <template>
   <template v-if="isPPCPenabled">
-    <div class="adyen-payment-icons">
+    <div class="ppcp-payment-icons">
       <ul
         class="pay-with__column"
         v-if="filteredPaymentIcons.length > 0">

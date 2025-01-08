@@ -1,6 +1,6 @@
 @import '../../styles/breakpoints';
 
-.adyen-payment-icons {
+.ppcp-payment-icons {
   width: var(--footer-icons-width-mobile, auto);
 
   ul {
@@ -26,7 +26,7 @@
 }
 
 @media (min-width: $screen__m) {
-  .adyen-payment-icons {
+  .ppcp-payment-icons {
     width: var(--footer-icons-width-desktop, auto);
 
     ul {
