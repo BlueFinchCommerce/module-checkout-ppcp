@@ -77,6 +77,7 @@ export default defineStore('ppcpStore', {
       changeShippingAddressUrl: '',
       finishOrderUrl: '',
     },
+    ppcpPaymentsIcons: [],
   }),
   getters: {
     selectedVaultMethod: (state) => (
@@ -259,6 +260,24 @@ export default defineStore('ppcpStore', {
           },
         });
       }
+    },
+
+    async setPaymentIcons() {
+      const cartStore = await window.geneCheckout.helpers.loadFromCheckout([
+        'stores.useCartStore',
+      ]);
+
+      // Retrieve available payment methods from the cart store
+      const paymentMethods = cartStore.cart.available_payment_methods;
+
+      // Filter and transform the payment methods
+      const ppcpPaymentsIcons = paymentMethods
+        .filter((method) => method.code.includes('ppcp'))
+        .map((method) => ({
+          name: method.code,
+        }));
+
+      this.setData({ ppcpPaymentsIcons });
     },
 
     getEnvironment() {
