@@ -34,39 +34,6 @@
     margin: var(--footer-icon-margin, 0 10px);
   }
 }
-.adyen-payment-icons {
-  width: var(--footer-icons-width-mobile, auto);
-}
-.adyen-payment-icons ul {
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: var(--footer-icons-align-items, center);
-  justify-content: center;
-  height: 100%;
-}
-.adyen-payment-icons ul li {
-  display: block;
-  list-style: none;
-  margin: var(--footer-icon-margin-mobile, 0 10px);
-  height: 100%;
-}
-.adyen-payment-icons ul li img {
-  height: var(--footer-icons-min-height, 25px);
-}
-
-@media (min-width: 768px) {
-  .adyen-payment-icons {
-    width: var(--footer-icons-width-desktop, auto);
-  }
-  .adyen-payment-icons ul {
-    margin: 0 0 0;
-  }
-  .adyen-payment-icons ul li {
-    margin: var(--footer-icon-margin, 0 10px);
-  }
-}
 .ppcp-payment-methods-list .google-pay-container,
 .ppcp-payment-methods-list .apple-pay-container,
 .ppcp-payment-methods-list .pay-pal-container,
@@ -137,6 +104,7 @@
 .ppcp-payment-methods-list .card-fieldset {
   border: 0;
   padding: 0;
+  min-height: 255px;
 }
 .ppcp-payment-methods-list .card-fieldset .field {
   margin-bottom: var(--indent__s);
@@ -153,6 +121,39 @@
   margin-bottom: var(--indent__m);
 }
 
+.adyen-payment-icons {
+  width: var(--footer-icons-width-mobile, auto);
+}
+.adyen-payment-icons ul {
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: var(--footer-icons-align-items, center);
+  justify-content: center;
+  height: 100%;
+}
+.adyen-payment-icons ul li {
+  display: block;
+  list-style: none;
+  margin: var(--footer-icon-margin-mobile, 0 10px);
+  height: 100%;
+}
+.adyen-payment-icons ul li img {
+  height: var(--footer-icons-min-height, 25px);
+}
+
+@media (min-width: 768px) {
+  .adyen-payment-icons {
+    width: var(--footer-icons-width-desktop, auto);
+  }
+  .adyen-payment-icons ul {
+    margin: 0 0 0;
+  }
+  .adyen-payment-icons ul li {
+    margin: var(--footer-icon-margin, 0 10px);
+  }
+}
 .ppcp-vault {
   display: grid;
   gap: var(--indent__base);

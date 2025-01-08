@@ -93,10 +93,9 @@
         :message="errorMessage"
         :attached="false"
       />
-      <div class="recaptcha">
+      <div class="recaptcha" v-if="isRecaptchaVisible('placeOrder')">
         <component
           :is="Recaptcha"
-          v-if="isRecaptchaVisible('placeOrder')"
           id="placeOrder"
           location="ppcpVaultedMethods"
         />
@@ -124,12 +123,6 @@
           :id="`ppcp-paypal_ppcp_paylater_vaulted`"
           :class="!paypalLoaded ? 'text-loading' : ''"
           :data-cy="'vaulted-checkout-ppcpPayLater'"
-        />
-        <div
-          :class="!paypalLoaded ? 'text-loading' : ''"
-          class="paypal-messages-container"
-          :id="`ppcp-paypal_messages_vaulted`"
-          :data-cy="'vaulted-checkout-ppcpMessages'"
         />
       </div>
       <div v-if="selectedVault.payment_method_code === 'ppcp_venmo'">
@@ -356,7 +349,7 @@ export default {
           await this.addScripts(userIdToken, 'ppcp_venmo_vault');
           await this.renderVenmoInstance();
           loadingStore.setLoadingState(false);
-        }, 0);
+        }, 100);
       } else if (this.selectedVault.payment_method_code === 'ppcp_paypal') {
         loadingStore.setLoadingState(true);
         setTimeout(async () => {
@@ -409,7 +402,7 @@ export default {
     },
 
     async renderVenmoInstance() {
-      const paypalConfig = window.paypal_ppcp_venmo;
+      const paypalConfig = window[`paypal_${this.venmoMethod}`];
       if (paypalConfig) {
         const commonRenderData = {
           env: this.environment,
@@ -498,7 +491,7 @@ export default {
         'stores.useCartStore',
       ]);
 
-      const paypalConfig = window.paypal_ppcp_paypal;
+      const paypalConfig = window[`paypal_${this.paypalMethod}`];
       if (paypalConfig) {
         const commonRenderData = {
           env: this.environment,
@@ -580,6 +573,18 @@ export default {
 
         // Render the PayPal Pay Later button (if active)
         if (this.paypal.payLaterActive) {
+          let message;
+          if (this.paypal.payLaterMessageActive) {
+            message = {
+              align: this.paypal.payLaterMessageTextAlign,
+              amount: cartStore.cart.prices.grand_total.value,
+              // Button doesn't support monochrome or greyscale so in either of these cases return black.
+              color: this.paypal.payLaterMessageColour !== 'black'
+              || this.paypal.payLaterMessageColour !== 'white' ? 'black'
+                : this.paypal.payLaterMessageColour,
+            };
+          }
+
           const payLaterButtonData = {
             ...commonRenderData,
             fundingSource: paypalConfig.FUNDING.PAYLATER,
@@ -588,32 +593,11 @@ export default {
               color: this.paypal.payLaterButtonColour,
               shape: this.paypal.payLaterButtonShape,
             },
+            message,
           };
+
           await paypalConfig.Buttons(payLaterButtonData).render(
             '#ppcp-paypal_ppcp_paylater_vaulted',
-          );
-        }
-
-        // Render the PayPal messages (if active)
-        if (this.paypal.payLaterMessageActive) {
-          const payLaterMessagingConfig = {
-            amount: cartStore.cart.total,
-            style: {
-              layout: this.paypal.payLaterMessageLayout,
-              logo: {
-                type: this.paypal.payLaterMessageLogoType,
-                position: this.paypal.payLaterMessageLogoPosition,
-              },
-              text: {
-                size: this.paypal.payLaterMessageTextSize,
-                color: this.paypal.payLaterMessageColour,
-                align: this.paypal.payLaterMessageTextAlign,
-              },
-            },
-          };
-
-          await paypalConfig.Messages(payLaterMessagingConfig).render(
-            '#ppcp-paypal_messages_vaulted',
           );
         }
 

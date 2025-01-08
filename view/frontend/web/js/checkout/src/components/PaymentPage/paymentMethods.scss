@@ -54,6 +54,7 @@
   .card-fieldset {
     border: 0;
     padding: 0;
+    min-height: 255px; //remove cls jump
 
     .field {
       margin-bottom: var(--indent__s);
