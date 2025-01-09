@@ -220,8 +220,8 @@ export default defineStore('ppcpStore', {
             title: storeconfig.ppcp_venmo_title,
           },
           apm: {
-            enabled: storeconfig.ppcp_apm_active,
-            title: storeconfig.ppcp_apm_title === '1',
+            enabled: storeconfig.ppcp_apm_active === '1',
+            title: storeconfig.ppcp_apm_title,
             sortOrder: storeconfig.ppcp_apm_sort_order,
             allowedPayments: storeconfig.ppcp_apm_allowed_methods,
           },
