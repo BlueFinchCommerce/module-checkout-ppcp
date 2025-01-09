@@ -402,9 +402,8 @@ export default {
       self.hostedCvvErrorMessage = '';
 
       if (typeof errors === 'string') {
-        loadingStore.setLoadingState(false);
-        self.errorMessage = errors;
         paymentStore.setErrorMessage(errors);
+        loadingStore.setLoadingState(false);
         console.log(errors);
         return;
       }
