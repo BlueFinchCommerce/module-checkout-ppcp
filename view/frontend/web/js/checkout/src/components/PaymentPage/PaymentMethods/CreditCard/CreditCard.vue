@@ -401,48 +401,33 @@ export default {
       self.hostedDateErrorMessage = '';
       self.hostedCvvErrorMessage = '';
 
-      errors.forEach((error) => {
+      if (typeof errors === 'string') {
         loadingStore.setLoadingState(false);
-        switch (error) {
-          case 'INVALID_NUMBER':
-            self.hostedNumberErrorMessage = 'Card number is not valid.';
-            break;
-          case 'INVALID_EXPIRY':
-            self.hostedDateErrorMessage = 'Expiry date is not valid.';
-            break;
-          case 'INVALID_CVV':
-            self.hostedCvvErrorMessage = 'CVV is not valid.';
-            break;
-          default:
-            paymentStore.setErrorMessage(error);
-            break;
-        }
-      });
-    },
-
-    displayErrorMessage: async (error, field, self) => {
-      const [
-        paymentStore,
-        loadingStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
-        'stores.usePaymentStore',
-        'stores.useLoadingStore',
-      ]);
-
-      switch (field) {
-        case 'cardNumber':
-          self.hostedNumberErrorMessage = error;
-          break;
-        case 'expirationDate':
-          self.hostedExpirationErrorMessage = error;
-          break;
-        case 'cvv':
-          self.hostedCvvErrorMessage = error;
-          break;
-        default:
-          paymentStore.setErrorMessage(error);
+        paymentStore.setErrorMessage(errors);
+        return;
       }
-      loadingStore.setLoadingState(false);
+
+      if (Array.isArray(errors)) {
+        errors.forEach((error) => {
+          loadingStore.setLoadingState(false);
+          switch (error) {
+            case 'INVALID_NUMBER':
+              self.hostedNumberErrorMessage = 'Card number is not valid.';
+              break;
+            case 'INVALID_EXPIRY':
+              self.hostedDateErrorMessage = 'Expiry date is not valid.';
+              break;
+            case 'INVALID_CVV':
+              self.hostedCvvErrorMessage = 'CVV is not valid.';
+              break;
+            default:
+              paymentStore.setErrorMessage(error);
+              break;
+          }
+        });
+      } else {
+        console.warn('Unexpected errors format:', errors);
+      }
     },
 
     getStyles() {
