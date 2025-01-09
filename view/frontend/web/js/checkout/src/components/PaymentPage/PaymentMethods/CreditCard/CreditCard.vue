@@ -403,7 +403,9 @@ export default {
 
       if (typeof errors === 'string') {
         loadingStore.setLoadingState(false);
+        self.errorMessage = errors;
         paymentStore.setErrorMessage(errors);
+        console.log(errors);
         return;
       }
 
