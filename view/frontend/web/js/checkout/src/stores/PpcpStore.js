@@ -223,7 +223,7 @@ export default defineStore('ppcpStore', {
             enabled: storeconfig.ppcp_apm_active === '1',
             title: storeconfig.ppcp_apm_title,
             sortOrder: storeconfig.ppcp_apm_sort_order,
-            allowedPayments: storeconfig.ppcp_apm_allowed_methods,
+            allowedPayments: JSON.parse(storeconfig.ppcp_apm_allowed_methods),
           },
           paypal: {
             enabled: storeconfig.ppcp_paypal_active === '1',

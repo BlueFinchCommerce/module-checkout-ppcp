@@ -16,7 +16,7 @@
         <component
           :is="RadioButton"
           :id="`paypal_${allowedMethod.name}_select`"
-          :text="allowedMethod.name"
+          :text="allowedMethod.title"
           :checked="selectedMethod === allowedMethod.prefixedName"
           :data-cy="'apm-payment-radio'"
           class="apm-payment-radio"
@@ -65,6 +65,9 @@
 import ppcp from 'ppcp-web';
 import { mapActions, mapState } from 'pinia';
 import usePpcpStore from '../../../../stores/PpcpStore';
+
+// Services
+import createPPCPPaymentRest from '../../../../services/createPPCPPaymentRest';
 
 export default {
   name: 'PpcpApmPayment',
@@ -180,16 +183,17 @@ export default {
     },
 
     getAllowedMethods() {
-      const paymentsArray = this.apm.allowedPayments.split(',');
+      const paymentsArray = this.apm.allowedPayments;
       const methods = {};
 
       // Add a prefix to each element using map
       const prefix = 'ppcp_';
 
       paymentsArray.forEach((paymentMethod) => {
-        methods[paymentMethod] = {
-          name: paymentMethod,
-          prefixedName: prefix + paymentMethod,
+        methods[paymentMethod.value] = {
+          title: paymentMethod.label,
+          name: paymentMethod.value,
+          prefixedName: prefix + paymentMethod.value,
           isAvailable: true,
         };
       });
@@ -220,7 +224,7 @@ export default {
       };
 
       const callbacks = {
-        createOrder: () => this.createOrder(self),
+        createOrder: () => this.createOrder(element, self),
         onApprove: () => this.onApprove(self),
         onClick: () => this.onClick(),
         onCancel: () => this.onCancel(),
@@ -235,9 +239,30 @@ export default {
     },
 
     isPaymentMethodAvailable(isAvailable, method) {
-      this.allowedMethods[method].isAvailable = isAvailable;
+    //   this.allowedMethods[method].isAvailable = isAvailable;
       const element = document.getElementById(`paypal_${method}_method`);
       element.style.display = isAvailable ? '' : 'none';
+    },
+
+    createOrder: async (element, self) => {
+      try {
+        const method = `ppcp_apm_${element}`;
+        const data = await createPPCPPaymentRest(
+          method,
+          1,
+        );
+        console.log(data);
+        const orderData = JSON.parse(data);
+
+        const [orderID] = orderData;
+        /* eslint-disable no-param-reassign */
+        self.orderID = orderID;
+
+        return self.orderID;
+      } catch (error) {
+        console.error('Error during createOrder:', error);
+        return null;
+      }
     },
 
     onClick: async () => {
