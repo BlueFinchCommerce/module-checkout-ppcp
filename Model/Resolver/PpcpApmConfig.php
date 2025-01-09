@@ -38,15 +38,14 @@ class PpcpApmConfig implements ResolverInterface
     ) {
         try {
             $apmAllowedMethods = explode(',', $this->payPalConfigProvider->getAllowedPaymentMethod());
-            $methods = '';
+            $methods = [];
             $apmMethods = $this->apmMethods->toOptionArray();
             foreach ($apmMethods as $option) {
                 if (in_array($option['value'], $apmAllowedMethods)) {
-                    $methods .= $option['label'] . ',';
+                    $methods[] = $option;
                 }
             }
-            $methods = rtrim($methods, ',');
-            return $methods;
+            return json_encode($methods);
         } catch (GraphQlNoSuchEntityException $exception) {
             throw new GraphQlNoSuchEntityException(__($exception->getMessage()));
         }
