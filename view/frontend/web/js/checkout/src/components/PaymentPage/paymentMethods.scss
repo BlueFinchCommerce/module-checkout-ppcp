@@ -75,4 +75,10 @@
   .recaptcha {
     margin-bottom: var(--indent__m);
   }
+
+  #card-number-field-container + .error-message,
+  #card-expiry-field-container + .error-message,
+  #card-cvv-field-container + .error-message {
+    margin: 0 auto var(--indent__base);
+  }
 }

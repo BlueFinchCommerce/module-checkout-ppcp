@@ -55,7 +55,7 @@ type StoreConfig {
 
     ppcp_apm_active: String @doc(description: "APM enabled.")
     ppcp_apm_title: String @doc(description: "APM title.")
-    ppcp_apm_allowed_methods: String @doc(description: "APM allowed methods.")
+    ppcp_apm_allowed_methods: String @doc(description: "APM allowed methods.") @resolver(class: "\\Gene\\BetterCheckoutPPCP\\Model\\Resolver\\PpcpApmConfig")
     ppcp_apm_sort_order: String @doc(description: "APM sort order.")
 }
 
