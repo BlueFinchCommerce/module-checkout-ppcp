@@ -29,10 +29,6 @@
             "type": "composer",
             "url": "https://mirror.mage-os.org/"
         },
-        "checkout": {
-            "type": "vcs",
-            "url": "https://github.com/genecommerce/module-better-checkout"
-        },
         "stub": {
             "type": "path",
             "url": "./dev/composerstub/ppcp"
