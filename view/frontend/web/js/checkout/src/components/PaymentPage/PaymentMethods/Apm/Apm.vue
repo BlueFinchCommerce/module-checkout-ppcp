@@ -1,7 +1,6 @@
 <template>
-  <div v-for="allowedMethod in allowedMethods">
+  <div v-for="allowedMethod in allowedMethods" :key="allowedMethod.name">
     <div
-      v-if="allowedMethod.isAvailable"
       :id="`paypal_${allowedMethod.name}_method`"
       :style="{ display: 'none' }"
       :class="{ active: selectedMethod === allowedMethod.prefixedName }"
@@ -27,8 +26,8 @@
       </div>
       <component
         :is="ErrorMessage"
-        v-if="errorMessage"
-        :message="errorMessage"
+        v-if="errorMessages[allowedMethod.prefixedName]"
+        :message="errorMessages[allowedMethod.prefixedName]"
         :attached="false"
       />
       <div
@@ -82,6 +81,7 @@ export default {
       selectedMethod: null,
       apmPaymentLoaded: false,
       allowedMethods: {},
+      errorMessages: {},
       errorMessage: '',
       ErrorMessage: null,
       PrivacyPolicy: null,
@@ -91,6 +91,7 @@ export default {
       isRecaptchaVisible: () => {},
       orderID: null,
       availableMethods: [],
+      prefix: 'ppcp_apm',
     };
   },
   computed: {
@@ -150,6 +151,7 @@ export default {
     paymentStore.$subscribe((mutation) => {
       if (typeof mutation.payload.selectedMethod !== 'undefined') {
         this.selectedMethod = mutation.payload.selectedMethod;
+        this.errorMessages = {};
       }
     });
 
@@ -186,15 +188,11 @@ export default {
       const paymentsArray = this.apm.allowedPayments;
       const methods = {};
 
-      // Add a prefix to each element using map
-      const prefix = 'ppcp_';
-
       paymentsArray.forEach((paymentMethod) => {
         methods[paymentMethod.value] = {
           title: paymentMethod.label,
           name: paymentMethod.value,
-          prefixedName: prefix + paymentMethod.value,
-          isAvailable: true,
+          prefixedName: `${this.prefix}_${paymentMethod.value}`,
         };
       });
       this.allowedMethods = methods;
@@ -224,10 +222,10 @@ export default {
       };
 
       const callbacks = {
-        createOrder: () => this.createOrder(element, self),
-        onApprove: () => this.onApprove(self),
+        createOrder: (method) => this.createOrder(method, self),
+        onApprove: (method) => this.onApprove(method, self),
         onClick: () => this.onClick(),
-        onCancel: () => this.onCancel(),
+        onCancel: (method) => this.onCancel(method, self),
         onError: (err) => this.onError(err),
         isPaymentMethodAvailable: (bool, method) => this.isPaymentMethodAvailable(bool, method),
       };
@@ -239,19 +237,18 @@ export default {
     },
 
     isPaymentMethodAvailable(isAvailable, method) {
-    //   this.allowedMethods[method].isAvailable = isAvailable;
       const element = document.getElementById(`paypal_${method}_method`);
       element.style.display = isAvailable ? '' : 'none';
     },
 
-    createOrder: async (element, self) => {
+    createOrder: async (method, self) => {
       try {
-        const method = `ppcp_apm_${element}`;
+        const methodKey = `${self.prefix}_${method}`;
         const data = await createPPCPPaymentRest(
-          method,
+          methodKey,
           1,
         );
-        console.log(data);
+
         const orderData = JSON.parse(data);
 
         const [orderID] = orderData;
@@ -289,7 +286,8 @@ export default {
       return true;
     },
 
-    onApprove: async (self) => {
+    onApprove: async (method, self) => {
+      const methodKey = `${self.prefix}_${method}`;
       const [
         paymentStore,
         loadingStore,
@@ -303,10 +301,12 @@ export default {
       return self.makePayment(
         cartStore.cart.email,
         self.orderID,
-        self.method,
+        self.prefix,
         false,
-        self.storeMethod,
+        false,
+        methodKey,
       ).then(() => {
+        self.errorMessages[methodKey] = '';
         self.redirectToSuccess();
       })
         .catch((err) => {
@@ -319,11 +319,13 @@ export default {
         });
     },
 
-    onCancel: async () => {
+    onCancel: async (method, self) => {
+      const methodKey = `${self.prefix}_${method}`;
+      const error = 'Cannot validate payment.';
       const loadingStore = await window.geneCheckout.helpers.loadFromCheckout([
         'stores.useLoadingStore',
       ]);
-
+      self.errorMessages[methodKey] = error;
       loadingStore.setLoadingState(false);
     },
 

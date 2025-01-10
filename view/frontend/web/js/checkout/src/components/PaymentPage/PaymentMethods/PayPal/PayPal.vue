@@ -333,6 +333,7 @@ export default {
     },
 
     onApprove: async (self) => {
+      console.log('method', self.method);
       const [
         paymentStore,
         loadingStore,
