@@ -34,6 +34,7 @@
     />
 
     <div
+      v-if="paypal.enabled"
       :id="`ppcp-paypal-paypal`"
       :style="{ display: isMethodSelected ? 'block' : 'none' }"
       class="paypal-button-container"
@@ -41,18 +42,12 @@
       :data-cy="'instant-checkout-ppcpPayPal'"
     />
     <div
+      v-if="paypal.payLaterActive"
       :id="`ppcp-paypal-paylater`"
       :style="{ display: isMethodSelected ? 'block' : 'none' }"
       class="paypal-button-container"
       :class="!paypalLoaded ? 'text-loading' : ''"
       :data-cy="'instant-checkout-ppcpPayLater'"
-    />
-    <div
-      :id="`ppcp-paypal-messages`"
-      :style="{ display: isMethodSelected ? 'block' : 'none' }"
-      :class="!paypalLoaded ? 'text-loading' : ''"
-      class="paypal-messages-container"
-      :data-cy="'instant-checkout-ppcpMessages'"
     />
 
     <div v-if="isMethodSelected" class="pay-pal-content">
@@ -231,6 +226,22 @@ export default {
       const self = this;
       const element = 'ppcp-paypal';
 
+      let messageStyles;
+      if (this.paypal.payLaterMessageActive) {
+        messageStyles = {
+          layout: this.paypal.payLaterMessageLayout,
+          logo: {
+            type: this.paypal.payLaterMessageLogoType,
+            position: this.paypal.payLaterMessageLogoPosition,
+          },
+          text: {
+            size: this.paypal.payLaterMessageTextSize,
+            color: this.paypal.payLaterMessageColour,
+            align: this.paypal.payLaterMessageTextAlign,
+          },
+        };
+      }
+
       const configuration = {
         sandboxClientId: this.sandboxClientId,
         productionClientId: this.productionClientId,
@@ -243,18 +254,7 @@ export default {
         currency: configStore.currencyCode,
         isPayLaterEnabled: this.paypal.payLaterActive,
         isPayLaterMessagingEnabled: this.paypal.payLaterMessageActive,
-        messageStyles: {
-          layout: this.paypal.payLaterMessageLayout,
-          logo: {
-            type: this.paypal.payLaterMessageLogoType,
-            position: this.paypal.payLaterMessageLogoPosition,
-          },
-          text: {
-            size: this.paypal.payLaterMessageTextSize,
-            color: this.paypal.payLaterMessageColour,
-            align: this.paypal.payLaterMessageTextAlign,
-          },
-        },
+        messageStyles,
         buttonStyles: {
           paypal: {
             buttonLabel: this.paypal.buttonLabel,

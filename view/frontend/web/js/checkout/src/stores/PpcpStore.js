@@ -244,7 +244,7 @@ export default defineStore('ppcpStore', {
             payLaterButtonShape: storeconfig
               .ppcp_paypal_paylater_button_paylater_shape,
             payLaterMessageActive: storeconfig
-              .ppcp_paypal_paylater_message_enable,
+              .ppcp_paypal_paylater_message_enable === '1',
             payLaterMessageLayout: storeconfig
               .ppcp_paypal_paylater_message_layout,
             payLaterMessageLogoType: storeconfig

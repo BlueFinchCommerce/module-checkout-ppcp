@@ -90,6 +90,7 @@
       grid-template-rows: repeat(3, auto);
       margin: 0;
       padding: var(--indent__base);
+      min-height: 135px;
 
       &.ppcp-payment__payment-method-disabled {
         background: var(--selectable__background-color);
