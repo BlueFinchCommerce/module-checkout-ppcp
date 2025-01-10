@@ -34,6 +34,7 @@
     />
 
     <div
+      v-if="paypal.enabled"
       :id="`ppcp-paypal-paypal`"
       :style="{ display: isMethodSelected ? 'block' : 'none' }"
       class="paypal-button-container"
@@ -41,18 +42,12 @@
       :data-cy="'instant-checkout-ppcpPayPal'"
     />
     <div
+      v-if="paypal.payLaterActive"
       :id="`ppcp-paypal-paylater`"
       :style="{ display: isMethodSelected ? 'block' : 'none' }"
       class="paypal-button-container"
       :class="!paypalLoaded ? 'text-loading' : ''"
       :data-cy="'instant-checkout-ppcpPayLater'"
-    />
-    <div
-      :id="`ppcp-paypal-messages`"
-      :style="{ display: isMethodSelected ? 'block' : 'none' }"
-      :class="!paypalLoaded ? 'text-loading' : ''"
-      class="paypal-messages-container"
-      :data-cy="'instant-checkout-ppcpMessages'"
     />
 
     <div v-if="isMethodSelected" class="pay-pal-content">
