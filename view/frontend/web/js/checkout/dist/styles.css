@@ -175,6 +175,10 @@
   width: 100%;
 }
 
+.message-active {
+  margin-bottom: var(--indent__base);
+}
+
 .paypal-express--button-container {
   max-height: var(--ppcp-express-button-height, 42px);
 }
@@ -342,6 +346,10 @@
   width: 100%;
 }
 
+.message-active {
+  margin-bottom: var(--indent__base);
+}
+
 .paypal-express--button-container {
   max-height: var(--ppcp-express-button-height, 42px);
 }
@@ -366,6 +374,10 @@
   height: var(--ppcp-express-button-height, 45px);
   --apple-pay-button-height: var(--ppcp-express-button-height, 45px);
   width: 100%;
+}
+
+.message-active {
+  margin-bottom: var(--indent__base);
 }
 
 .paypal-express--button-container {
