@@ -10,15 +10,11 @@
     v-if="paypal.showOnTopCheckout && paypal.payLaterActive"
     :id="`ppcp-express-paylater`"
     class="paypal-express--button-container"
-    :class="!paypalLoaded ? 'text-loading' : ''"
+    :class="{
+      'text-loading': !paypalLoaded,
+      'message-active': paypal.payLaterMessageActive,
+    }"
     :data-cy="'instant-checkout-ppcpPayLater'"
-  />
-  <div
-    v-if="paypal.showOnTopCheckout && paypal.payLaterMessageActive"
-    :id="`ppcp-express-messages`"
-    :class="!paypalLoaded ? 'text-loading' : ''"
-    class="paypal-messages-container"
-    :data-cy="'instant-checkout-ppcpMessages'"
   />
 </template>
 
@@ -116,6 +112,22 @@ export default {
       const self = this;
       const element = 'ppcp-express';
 
+      let messageStyles;
+      if (this.paypal.payLaterMessageActive) {
+        messageStyles = {
+          layout: this.paypal.payLaterMessageLayout,
+          logo: {
+            type: this.paypal.payLaterMessageLogoType,
+            position: this.paypal.payLaterMessageLogoPosition,
+          },
+          text: {
+            size: this.paypal.payLaterMessageTextSize,
+            color: this.paypal.payLaterMessageColour,
+            align: this.paypal.payLaterMessageTextAlign,
+          },
+        };
+      }
+
       const configuration = {
         sandboxClientId: this.sandboxClientId,
         productionClientId: this.productionClientId,
@@ -128,18 +140,7 @@ export default {
         currency: configStore.currencyCode,
         isPayLaterEnabled: this.paypal.payLaterActive,
         isPayLaterMessagingEnabled: this.paypal.payLaterMessageActive,
-        messageStyles: {
-          layout: this.paypal.payLaterMessageLayout,
-          logo: {
-            type: this.paypal.payLaterMessageLogoType,
-            position: this.paypal.payLaterMessageLogoPosition,
-          },
-          text: {
-            size: this.paypal.payLaterMessageTextSize,
-            color: this.paypal.payLaterMessageColour,
-            align: this.paypal.payLaterMessageTextAlign,
-          },
-        },
+        messageStyles,
         buttonStyles: {
           paypal: {
             buttonLabel: this.paypal.buttonLabel,

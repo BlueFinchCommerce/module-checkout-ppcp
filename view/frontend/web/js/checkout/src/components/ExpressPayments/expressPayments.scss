@@ -20,6 +20,10 @@
   }
 }
 
+.message-active {
+  margin-bottom: var(--indent__base);
+}
+
 .paypal-express--button-container {
   max-height: var(--ppcp-express-button-height, 42px);
 
