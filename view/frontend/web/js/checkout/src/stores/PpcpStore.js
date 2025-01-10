@@ -220,10 +220,10 @@ export default defineStore('ppcpStore', {
             title: storeconfig.ppcp_venmo_title,
           },
           apm: {
-            enabled: storeconfig.ppcp_apm_active,
-            title: storeconfig.ppcp_apm_title === '1',
+            enabled: storeconfig.ppcp_apm_active === '1',
+            title: storeconfig.ppcp_apm_title,
             sortOrder: storeconfig.ppcp_apm_sort_order,
-            allowedPayments: storeconfig.ppcp_apm_allowed_methods,
+            allowedPayments: JSON.parse(storeconfig.ppcp_apm_allowed_methods),
           },
           paypal: {
             enabled: storeconfig.ppcp_paypal_active === '1',
@@ -338,7 +338,7 @@ export default defineStore('ppcpStore', {
       };
     },
 
-    async makePayment(email, orderID, method, express, vault = false) {
+    async makePayment(email, orderID, method, express, vault = false, apmMethod = false) {
       const payment = {
         email,
         paymentMethod: {
@@ -346,11 +346,15 @@ export default defineStore('ppcpStore', {
           additional_data: {
             'express-payment': express,
             'paypal-order-id': orderID,
-            is_active_payment_token_enabler: vault,
+            is_active_payment_token_enabler: vault
           },
           extension_attributes: window.geneCheckout.helpers.getPaymentExtensionAttributes(),
         },
       };
+
+      if (apmMethod) {
+        payment.paymentMethod.additional_data['apm-method'] = apmMethod;
+      }
 
       return window.geneCheckout.services.createPaymentRest(payment);
     },

@@ -405,7 +405,6 @@ export default {
         paymentStore.setErrorMessage(errors);
         loadingStore.setLoadingState(false);
         self.errorMessage = errors;
-        console.log(errors);
         return;
       }
 
