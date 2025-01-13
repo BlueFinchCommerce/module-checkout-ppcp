@@ -1,5 +1,6 @@
 <template>
   <div
+    v-if="methodEligible"
     :class="{ active: isMethodSelected }"
     class="venmo-container"
   >
@@ -90,6 +91,7 @@ export default {
   data() {
     return {
       isMethodSelected: false,
+      methodEligible: true,
       errorMessage: '',
       ErrorMessage: null,
       PrivacyPolicy: null,
@@ -240,12 +242,17 @@ export default {
         onClick: () => this.onClick(),
         onCancel: () => this.onCancel(),
         onError: (err) => this.onError(err),
+        isPaymentMethodEligible: (bool) => this.isPaymentMethodEligible(bool),
       };
 
       const options = { ...configuration, ...callbacks };
 
       ppcp.venmoPayment(options, element);
       this.venmoLoaded = true;
+    },
+
+    isPaymentMethodEligible(isAvailable) {
+      this.methodEligible = isAvailable;
     },
 
     createOrder: async (self) => {

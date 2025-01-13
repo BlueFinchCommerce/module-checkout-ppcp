@@ -279,12 +279,17 @@ export default {
         onError: (err) => this.onError(err),
         onShippingAddressChange: (data) => this.onShippingAddressChange(self, data),
         onShippingOptionsChange: (data) => this.onShippingOptionsChange(self, data),
+        isPaymentMethodEligible: (bool, method) => this.isPaymentMethodEligible(bool, method),
       };
 
       const options = { ...configuration, ...callbacks };
 
       ppcp.paypalButtons(options, element);
       this.paypalLoaded = true;
+    },
+
+    isPaymentMethodEligible() {
+      // Function only required for express checkout
     },
 
     createOrder: async (self) => {
@@ -333,7 +338,6 @@ export default {
     },
 
     onApprove: async (self) => {
-      console.log('method', self.method);
       const [
         paymentStore,
         loadingStore,
