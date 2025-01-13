@@ -1,19 +1,19 @@
 <template>
   <div
-    v-if="paypal.showOnTopCheckout && paypal.enabled"
+    v-if="paypal.showOnTopCheckout && paypal.enabled && paypalEligible"
     :id="`ppcp-express-paypal`"
     class="paypal-express--button-container"
     :class="!paypalLoaded ? 'text-loading' : ''"
     :data-cy="'instant-checkout-ppcpPayPal'"
   />
   <div
-    v-if="paypal.showOnTopCheckout && paypal.payLaterActive"
+    v-if="paypal.showOnTopCheckout && paypal.payLaterActive && paylaterEligible"
     :id="`ppcp-express-paylater`"
     class="paypal-express--button-container"
-    :class="{
-      'text-loading': !paypalLoaded,
-      'message-active': paypal.payLaterMessageActive,
-    }"
+    :class="[
+      !paylaterLoaded ? 'text-loading' : '',
+      paypal.payLaterMessageActive ? 'message-active' : '',
+    ]"
     :data-cy="'instant-checkout-ppcpPayLater'"
   />
 </template>
@@ -40,6 +40,9 @@ export default {
       namespace: 'paypal_ppcp_paypal',
       orderID: null,
       paypalLoaded: false,
+      paylaterLoaded: false,
+      paypalEligible: true,
+      paylaterEligible: true,
       address: {},
     };
   },
@@ -75,30 +78,15 @@ export default {
       await this.getInitialConfigValues();
       if (this.paypal.showOnTopCheckout && this.paypal.enabled) {
         await this.renderPaypalInstance();
-        await this.waitForButtonsToRender();
-        this.paypalLoaded = true;
       } else {
         paymentStore.removeExpressMethod(this.key);
         this.paypalLoaded = true;
+        this.paylaterLoaded = true;
       }
     }
   },
   methods: {
     ...mapActions(usePpcpStore, ['getInitialConfigValues']),
-
-    async waitForButtonsToRender() {
-      const buttonContainers = document.querySelectorAll('.paypal-express--button-container');
-      const isRendered = () => Array.from(buttonContainers).every((container) => container.children.length > 0);
-
-      return new Promise((resolve) => {
-        const interval = setInterval(() => {
-          if (isRendered()) {
-            clearInterval(interval);
-            resolve();
-          }
-        }, 100);
-      });
-    },
 
     async renderPaypalInstance() {
       const [
@@ -165,11 +153,17 @@ export default {
         onError: (err) => this.onError(err),
         onShippingAddressChange: (data) => this.onShippingAddressChange(self, data),
         onShippingOptionsChange: (data) => this.onShippingOptionsChange(self, data),
+        isPaymentMethodEligible: (bool, method) => this.isPaymentMethodEligible(bool, method),
       };
 
       const options = { ...configuration, ...callbacks };
 
       ppcp.paypalButtons(options, element);
+    },
+
+    isPaymentMethodEligible(isAvailable, method) {
+      this[`${method}Eligible`] = isAvailable;
+      this[`${method}Loaded`] = true;
     },
 
     createOrder: async (self) => {
