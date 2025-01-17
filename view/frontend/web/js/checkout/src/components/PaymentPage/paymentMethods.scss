@@ -34,6 +34,10 @@
           height: 55px;
         }
       }
+
+      .actions-toolbar {
+        margin-bottom: var(--indent__m);
+      }
     }
 
     &-content {
