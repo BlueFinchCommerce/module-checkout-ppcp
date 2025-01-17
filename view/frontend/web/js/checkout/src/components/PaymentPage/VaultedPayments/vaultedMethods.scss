@@ -35,9 +35,11 @@
   grid-template-columns: unset;
   overflow-x: auto;
   padding-bottom: var(--indent__s);
+  overflow-y: hidden;
 
   .email {
     max-width: 127px;
+    word-break: break-word;
   }
 
   img {
@@ -49,12 +51,12 @@
 
     &.ppcp_venmo {
       max-width: 35px;
-      height: 10px;
+      height: 8px;
       margin-bottom: 51px;
     }
 
     &.ppcp_paypal {
-      height: 25px;
+      height: 20px;
     }
   }
 
