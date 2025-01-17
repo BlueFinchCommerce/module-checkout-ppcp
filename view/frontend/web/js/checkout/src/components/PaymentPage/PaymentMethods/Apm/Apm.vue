@@ -50,7 +50,7 @@
             :is="Recaptcha"
             v-if="isRecaptchaVisible('placeOrder')"
             id="placeOrder"
-            location="ppcpPaymentApm"
+            :location="`${allowedMethod.name}-ppcpPaymentApm`"
           />
         </div>
         <component :is="Agreements" id="ppcp-checkout-apm-payment" />
