@@ -103,7 +103,12 @@ export default {
       const callbacks = {
         placeOrder: (paymentData) => this.placeOrder(paymentData),
         onPaymentAuthorized: (paymentData, googlepay) => this.onPaymentAuthorized(paymentData, googlepay),
-        onPaymentDataChanged: (paymentData, googlePayConfig) => this.onPaymentDataChanged(paymentData, googlePayConfig),
+        ...(cartStore.cart.is_virtual ? {} : {
+          onPaymentDataChanged: (paymentData, googlePayConfig) => this.onPaymentDataChanged(
+            paymentData,
+            googlePayConfig,
+          ),
+        }),
         onError: (error) => this.onError(error),
         onCancel: () => this.onCancel(),
         onValidate: () => this.onValidate(),
@@ -185,71 +190,94 @@ export default {
 
         window.geneCheckout.services.getShippingMethods(address, this.method, true)
           .then(async (response) => {
-            const methods = response.shipping_addresses[0].available_shipping_methods;
-            const paymentDataRequestUpdate = {};
+            try {
+              const methods = response.shipping_addresses[0].available_shipping_methods;
+              const paymentDataRequestUpdate = {};
 
-            const shippingMethods = methods.map((shippingMethod) => {
-              const description = shippingMethod.carrier_title
-                ? `${window.geneCheckout.helpers.formatPrice(shippingMethod.price_incl_tax.value)}
-                   ${shippingMethod.carrier_title}`
-                : window.geneCheckout.helpers.formatPrice(shippingMethod.price_incl_tax.value);
+              const shippingMethods = methods.map((shippingMethod) => {
+                const description = shippingMethod.carrier_title
+                  ? `${window.geneCheckout.helpers.formatPrice(shippingMethod.price_incl_tax.value)}
+             ${shippingMethod.carrier_title}`
+                  : window.geneCheckout.helpers.formatPrice(shippingMethod.price_incl_tax.value);
 
-              return {
-                id: shippingMethod.method_code,
-                label: shippingMethod.method_title,
-                description,
+                return {
+                  id: shippingMethod.method_code,
+                  label: shippingMethod.method_title,
+                  description,
+                };
+              });
+
+              // Filter out nominated day as this isn't available inside of Google Pay.
+              const fShippingMethods = shippingMethods.filter((sid) => sid.id !== 'nominated_delivery');
+
+              // Any error message means we need to exit by resolving with an error state.
+              if (!fShippingMethods.length) {
+                resolve({
+                  error: {
+                    reason: 'SHIPPING_ADDRESS_UNSERVICEABLE',
+                    message: this.$t('errorMessages.googlePayNoShippingMethods'),
+                    intent: 'SHIPPING_ADDRESS',
+                  },
+                });
+                return;
+              }
+
+              const selectedShipping = data.shippingOptionData.id === 'shipping_option_unselected'
+                ? methods[0]
+                : methods.find(({ method_code: id }) => id === data.shippingOptionData.id)
+                || methods[0];
+
+              await shippingMethodsStore.submitShippingInfo(
+                selectedShipping.carrier_code,
+                selectedShipping.method_code,
+              );
+
+              loadingStore.setLoadingState(true);
+
+              paymentDataRequestUpdate.newShippingOptionParameters = {
+                defaultSelectedOptionId: selectedShipping.method_code,
+                shippingOptions: fShippingMethods,
               };
-            });
 
-            // Filter out nominated day as this isn't available inside of Google Pay.
-            const fShippingMethods = shippingMethods.filter((sid) => sid.id !== 'nominated_delivery');
+              paymentDataRequestUpdate.newTransactionInfo = {
+                displayItems: [
+                  {
+                    label: 'Shipping',
+                    type: 'LINE_ITEM',
+                    price: selectedShipping.amount.value.toString(),
+                    status: 'FINAL',
+                  },
+                ],
+                currencyCode: cartStore.cart.prices.grand_total.currency,
+                totalPriceStatus: 'FINAL',
+                totalPrice: cartStore.cart.prices.grand_total.value.toString(),
+                totalPriceLabel: 'Total',
+                countryCode: googlePayConfig.countryCode,
+              };
 
-            // Any error message means we need to exit by resolving with an error state.
-            if (!fShippingMethods.length) {
+              resolve(paymentDataRequestUpdate);
+            } catch (error) {
+              // Handle any errors that occurred during processing
+              console.error('Error processing shipping methods:', error);
               resolve({
                 error: {
-                  reason: 'SHIPPING_ADDRESS_UNSERVICEABLE',
-                  message: this.$t('errorMessages.googlePayNoShippingMethods'),
+                  reason: 'INTERNAL_ERROR',
+                  message: this.$t('errorMessages.unexpectedError'),
                   intent: 'SHIPPING_ADDRESS',
                 },
               });
-              return;
             }
-
-            const selectedShipping = data.shippingOptionData.id === 'shipping_option_unselected'
-              ? methods[0]
-              : methods.find(({ method_code: id }) => id === data.shippingOptionData.id)
-              || methods[0];
-
-            await shippingMethodsStore.submitShippingInfo(
-              selectedShipping.carrier_code,
-              selectedShipping.method_code,
-            );
-
-            loadingStore.setLoadingState(true);
-
-            paymentDataRequestUpdate.newShippingOptionParameters = {
-              defaultSelectedOptionId: selectedShipping.method_code,
-              shippingOptions: fShippingMethods,
-            };
-
-            paymentDataRequestUpdate.newTransactionInfo = {
-              displayItems: [
-                {
-                  label: 'Shipping',
-                  type: 'LINE_ITEM',
-                  price: selectedShipping.amount.value.toString(),
-                  status: 'FINAL',
-                },
-              ],
-              currencyCode: cartStore.cart.prices.grand_total.currency,
-              totalPriceStatus: 'FINAL',
-              totalPrice: cartStore.cart.prices.grand_total.value.toString(),
-              totalPriceLabel: 'Total',
-              countryCode: googlePayConfig.countryCode,
-            };
-
-            resolve(paymentDataRequestUpdate);
+          })
+          .catch((error) => {
+            // Handle errors from getShippingMethods
+            console.error('Error fetching shipping methods:', error);
+            resolve({
+              error: {
+                reason: 'SHIPPING_ADDRESS_UNSERVICEABLE',
+                message: this.$t('errorMessages.googlePayNoShippingMethods'),
+                intent: 'SHIPPING_ADDRESS',
+              },
+            });
           });
       });
     },
