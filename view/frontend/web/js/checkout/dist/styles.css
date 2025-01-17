@@ -204,6 +204,7 @@
 }
 .ppcp-vaulted-methods-container .email {
   max-width: 127px;
+  word-break: break-word;
 }
 .ppcp-vaulted-methods-container img {
   max-width: 30px;
