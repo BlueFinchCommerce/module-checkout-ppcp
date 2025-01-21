@@ -2,6 +2,7 @@
   <div
     v-if="google.enabled && google.showOnTopCheckout"
     id="ppcp-google-pay"
+    :style="{ order: paypal.sortOrder }"
     :class="!googlePayLoaded ? 'text-loading' : ''"
     :data-cy="'instant-checkout-PPCPGooglePay'"
   />

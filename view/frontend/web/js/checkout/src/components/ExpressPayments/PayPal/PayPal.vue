@@ -1,6 +1,7 @@
 <template>
   <div
     v-if="paypal.showOnTopCheckout && paypal.enabled && paypalEligible"
+    :style="{ order: paypal.sortOrder }"
     :id="`ppcp-express-paypal`"
     class="paypal-express--button-container"
     :class="!paypalLoaded ? 'text-loading' : ''"
@@ -8,6 +9,7 @@
   />
   <div
     v-if="paypal.showOnTopCheckout && paypal.payLaterActive && paylaterEligible"
+    :style="{ order: paypal.sortOrder }"
     :id="`ppcp-express-paylater`"
     class="paypal-express--button-container"
     :class="[
