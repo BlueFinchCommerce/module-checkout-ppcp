@@ -5,8 +5,8 @@
            * so the method fails to completely successfully. -->
       <div
         :style="{
-        display: allowedMethod.name === 'ideal' && isMobile ? 'none' : 'block',
-      }"
+          display: allowedMethod.name === 'ideal' && isMobile ? 'none' : 'block',
+        }"
       >
         <div
           :id="`paypal_${allowedMethod.name}_method`"

@@ -13,7 +13,11 @@
       >
         <button
           class="ppcp-payment__payment-method__header__title button"
-          :class="{ 'ppcp-payment__payment-method-disabled': !vaultedMethod.selected }"
+          :class="{
+            'ppcp-payment__payment-method-disabled': !vaultedMethod.selected,
+            'vaulted-paypal': vaultedMethod.payment_method_code === 'ppcp_paypal',
+            'vaulted-venmo': vaultedMethod.payment_method_code === 'ppcp_venmo',
+          }"
           :aria-label="$t('paymentCard.storedPaymentLabel', { lastFour: vaultedMethod.details.maskedCC })"
           type="button"
           data-cy="ppcp-saved-payment-card-button"

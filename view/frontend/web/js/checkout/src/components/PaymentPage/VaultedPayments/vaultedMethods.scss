@@ -27,6 +27,28 @@
   }
 }
 
+.vaulted-paypal,
+.vaulted-venmo {
+  grid-template-columns: repeat(2, 1fr) !important;
+  grid-template-rows: auto auto !important;
+  grid-template-areas:
+        "col1 col2"
+        "col3 col3";
+
+  .ppcp-payment__payment-method-select {
+    grid-area: col2;
+  }
+
+  img {
+    grid-area: col1 !important;
+  }
+
+  .email {
+    grid-area: col3;
+    max-width: 150px;
+  }
+}
+
 .ppcp-vaulted-methods-container {
   display: grid;
   grid-auto-flow: column;
@@ -36,11 +58,6 @@
   overflow-x: auto;
   padding-bottom: var(--indent__s);
   overflow-y: hidden;
-
-  .email {
-    max-width: 127px;
-    word-break: break-word;
-  }
 
   img {
     max-width: 30px;

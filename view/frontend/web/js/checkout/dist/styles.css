@@ -1,3 +1,72 @@
+.ppcp-footer-icons {
+  width: var(--footer-icons-width-mobile, auto);
+}
+.ppcp-footer-icons ul {
+  padding: 0;
+  margin: var(--footer-icons-margin-mobile, var(--indent__s) 0);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: var(--footer-icons-align-items, flex-start);
+  justify-content: center;
+  height: 100%;
+}
+.ppcp-footer-icons ul li {
+  display: block;
+  list-style: none;
+  margin: var(--footer-icon-margin-mobile, 0 10px);
+  height: 100%;
+}
+.ppcp-footer-icons ul li img {
+  height: var(--footer-icons-min-height, 20px);
+}
+.ppcp-footer-icons ul li img.ppcp_venmo {
+  height: 10px;
+}
+
+@media (min-width: 768px) {
+  .ppcp-footer-icons {
+    width: var(--footer-icons-width-desktop, auto);
+  }
+  .ppcp-footer-icons ul {
+    margin: 0 0 0;
+  }
+  .ppcp-footer-icons ul li {
+    margin: var(--footer-icon-margin, 0 10px);
+  }
+}
+.ppcp-payment-icons {
+  width: var(--footer-icons-width-mobile, auto);
+}
+.ppcp-payment-icons ul {
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: var(--footer-icons-align-items, center);
+  justify-content: center;
+  height: 100%;
+}
+.ppcp-payment-icons ul li {
+  display: block;
+  list-style: none;
+  margin: var(--footer-icon-margin-mobile, 0 10px);
+  height: 100%;
+}
+.ppcp-payment-icons ul li img {
+  height: var(--footer-icons-min-height, 25px);
+}
+
+@media (min-width: 768px) {
+  .ppcp-payment-icons {
+    width: var(--footer-icons-width-desktop, auto);
+  }
+  .ppcp-payment-icons ul {
+    margin: 0 0 0;
+  }
+  .ppcp-payment-icons ul li {
+    margin: var(--footer-icon-margin, 0 10px);
+  }
+}
 .ppcp-payment-methods-list .google-pay-container,
 .ppcp-payment-methods-list .apple-pay-container,
 .ppcp-payment-methods-list .pay-pal-container,
@@ -106,135 +175,6 @@
   margin: 0 auto var(--indent__base);
 }
 
-.ppcp-footer-icons {
-  width: var(--footer-icons-width-mobile, auto);
-}
-.ppcp-footer-icons ul {
-  padding: 0;
-  margin: var(--footer-icons-margin-mobile, var(--indent__s) 0);
-  display: flex;
-  flex-wrap: wrap;
-  align-items: var(--footer-icons-align-items, flex-start);
-  justify-content: center;
-  height: 100%;
-}
-.ppcp-footer-icons ul li {
-  display: block;
-  list-style: none;
-  margin: var(--footer-icon-margin-mobile, 0 10px);
-  height: 100%;
-}
-.ppcp-footer-icons ul li img {
-  height: var(--footer-icons-min-height, 20px);
-}
-.ppcp-footer-icons ul li img.ppcp_venmo {
-  height: 10px;
-}
-
-@media (min-width: 768px) {
-  .ppcp-footer-icons {
-    width: var(--footer-icons-width-desktop, auto);
-  }
-  .ppcp-footer-icons ul {
-    margin: 0 0 0;
-  }
-  .ppcp-footer-icons ul li {
-    margin: var(--footer-icon-margin, 0 10px);
-  }
-}
-.ppcp-payment-icons {
-  width: var(--footer-icons-width-mobile, auto);
-}
-.ppcp-payment-icons ul {
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: var(--footer-icons-align-items, center);
-  justify-content: center;
-  height: 100%;
-}
-.ppcp-payment-icons ul li {
-  display: block;
-  list-style: none;
-  margin: var(--footer-icon-margin-mobile, 0 10px);
-  height: 100%;
-}
-.ppcp-payment-icons ul li img {
-  height: var(--footer-icons-min-height, 25px);
-}
-
-@media (min-width: 768px) {
-  .ppcp-payment-icons {
-    width: var(--footer-icons-width-desktop, auto);
-  }
-  .ppcp-payment-icons ul {
-    margin: 0 0 0;
-  }
-  .ppcp-payment-icons ul li {
-    margin: var(--footer-icon-margin, 0 10px);
-  }
-}
-#ppcp-google-pay {
-  max-height: var(--ppcp-express-button-height, 45px);
-}
-#ppcp-google-pay button, #ppcp-google-pay.text-loading {
-  height: var(--ppcp-express-button-height, 45px);
-}
-
-.ppcp-apple-pay-container {
-  min-height: var(--ppcp-express-button-height, 45px);
-}
-.ppcp-apple-pay-container apple-pay-button, .ppcp-apple-pay-container.text-loading {
-  height: var(--ppcp-express-button-height, 45px);
-  --apple-pay-button-height: var(--ppcp-express-button-height, 45px);
-  width: 100%;
-}
-
-.message-active {
-  margin-bottom: var(--indent__base);
-}
-
-.paypal-express--button-container {
-  max-height: var(--ppcp-express-button-height, 42px);
-}
-.paypal-express--button-container#ppcp-express-paypal_ppcp_paylater {
-  margin: var(--indent__s) 0;
-}
-.paypal-express--button-container.text-loading {
-  height: var(--ppcp-express-button-height, 45px);
-}
-
-#ppcp-google-pay {
-  max-height: var(--ppcp-express-button-height, 45px);
-}
-#ppcp-google-pay button, #ppcp-google-pay.text-loading {
-  height: var(--ppcp-express-button-height, 45px);
-}
-
-.ppcp-apple-pay-container {
-  min-height: var(--ppcp-express-button-height, 45px);
-}
-.ppcp-apple-pay-container apple-pay-button, .ppcp-apple-pay-container.text-loading {
-  height: var(--ppcp-express-button-height, 45px);
-  --apple-pay-button-height: var(--ppcp-express-button-height, 45px);
-  width: 100%;
-}
-
-.message-active {
-  margin-bottom: var(--indent__base);
-}
-
-.paypal-express--button-container {
-  max-height: var(--ppcp-express-button-height, 42px);
-}
-.paypal-express--button-container#ppcp-express-paypal_ppcp_paylater {
-  margin: var(--indent__s) 0;
-}
-.paypal-express--button-container.text-loading {
-  height: var(--ppcp-express-button-height, 45px);
-}
-
 .ppcp-vault {
   display: grid;
   gap: var(--indent__base);
@@ -261,6 +201,26 @@
   white-space: nowrap;
 }
 
+.vaulted-paypal,
+.vaulted-venmo {
+  grid-template-columns: repeat(2, 1fr) !important;
+  grid-template-rows: auto auto !important;
+  grid-template-areas: "col1 col2" "col3 col3";
+}
+.vaulted-paypal .ppcp-payment__payment-method-select,
+.vaulted-venmo .ppcp-payment__payment-method-select {
+  grid-area: col2;
+}
+.vaulted-paypal img,
+.vaulted-venmo img {
+  grid-area: col1 !important;
+}
+.vaulted-paypal .email,
+.vaulted-venmo .email {
+  grid-area: col3;
+  max-width: 150px;
+}
+
 .ppcp-vaulted-methods-container {
   display: grid;
   grid-auto-flow: column;
@@ -270,10 +230,6 @@
   overflow-x: auto;
   padding-bottom: var(--indent__s);
   overflow-y: hidden;
-}
-.ppcp-vaulted-methods-container .email {
-  max-width: 127px;
-  word-break: break-word;
 }
 .ppcp-vaulted-methods-container img {
   max-width: 30px;
@@ -378,6 +334,66 @@
     grid-auto-columns: calc(50% - var(--indent__xs));
   }
 }
+#ppcp-google-pay {
+  max-height: var(--ppcp-express-button-height, 45px);
+}
+#ppcp-google-pay button, #ppcp-google-pay.text-loading {
+  height: var(--ppcp-express-button-height, 45px);
+}
+
+.ppcp-apple-pay-container {
+  min-height: var(--ppcp-express-button-height, 45px);
+}
+.ppcp-apple-pay-container apple-pay-button, .ppcp-apple-pay-container.text-loading {
+  height: var(--ppcp-express-button-height, 45px);
+  --apple-pay-button-height: var(--ppcp-express-button-height, 45px);
+  width: 100%;
+}
+
+.message-active {
+  margin-bottom: var(--indent__base);
+}
+
+.paypal-express--button-container {
+  max-height: var(--ppcp-express-button-height, 42px);
+}
+.paypal-express--button-container#ppcp-express-paypal_ppcp_paylater {
+  margin: var(--indent__s) 0;
+}
+.paypal-express--button-container.text-loading {
+  height: var(--ppcp-express-button-height, 45px);
+}
+
+#ppcp-google-pay {
+  max-height: var(--ppcp-express-button-height, 45px);
+}
+#ppcp-google-pay button, #ppcp-google-pay.text-loading {
+  height: var(--ppcp-express-button-height, 45px);
+}
+
+.ppcp-apple-pay-container {
+  min-height: var(--ppcp-express-button-height, 45px);
+}
+.ppcp-apple-pay-container apple-pay-button, .ppcp-apple-pay-container.text-loading {
+  height: var(--ppcp-express-button-height, 45px);
+  --apple-pay-button-height: var(--ppcp-express-button-height, 45px);
+  width: 100%;
+}
+
+.message-active {
+  margin-bottom: var(--indent__base);
+}
+
+.paypal-express--button-container {
+  max-height: var(--ppcp-express-button-height, 42px);
+}
+.paypal-express--button-container#ppcp-express-paypal_ppcp_paylater {
+  margin: var(--indent__s) 0;
+}
+.paypal-express--button-container.text-loading {
+  height: var(--ppcp-express-button-height, 45px);
+}
+
 #ppcp-google-pay {
   max-height: var(--ppcp-express-button-height, 45px);
 }
