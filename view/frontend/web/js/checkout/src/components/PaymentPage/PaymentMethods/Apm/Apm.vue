@@ -1,7 +1,8 @@
 <template>
+  <p>AAAAA</p>
   <div v-for="allowedMethod in allowedMethods" :key="allowedMethod.name">
     <!-- * We need to hide iDEAL from mobile devices as the webhook callbacks aren't currently available
-         * so the method fails to completely succssfully. -->
+         * so the method fails to completely successfully. -->
     <div
       :style="{
         display: allowedMethod.name === 'ideal' && isMobile ? 'none' : 'block',
