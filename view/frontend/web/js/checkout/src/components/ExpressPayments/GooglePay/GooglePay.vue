@@ -323,7 +323,6 @@ export default {
             .setAddressesOnCart(mapShippingAddress, mapBillingAddress, data.email);
 
           // Create PPCP Payment and get the orderID
-
           const ppcpOrderId = await createPPCPPaymentRest(this.method);
           [this.orderID] = JSON.parse(ppcpOrderId);
 
