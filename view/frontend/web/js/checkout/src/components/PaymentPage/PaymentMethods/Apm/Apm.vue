@@ -1,66 +1,68 @@
 <template>
-  <div v-for="allowedMethod in allowedMethods" :key="allowedMethod.name">
-    <!-- * We need to hide iDEAL from mobile devices as the webhook callbacks aren't currently available
-         * so the method fails to completely succssfully. -->
-    <div
-      :style="{
-        display: allowedMethod.name === 'ideal' && isMobile ? 'none' : 'block',
-      }"
-    >
+  <div v-if="apm.enabled">
+    <div v-for="allowedMethod in allowedMethods" :key="allowedMethod.name">
+      <!-- * We need to hide iDEAL from mobile devices as the webhook callbacks aren't currently available
+           * so the method fails to completely successfully. -->
       <div
-        :id="`paypal_${allowedMethod.name}_method`"
-        :style="{ display: 'none' }"
-        :class="{ active: selectedMethod === allowedMethod.prefixedName }"
-        class="apm-payment-container"
+        :style="{
+          display: allowedMethod.name === 'ideal' && isMobile ? 'none' : 'block',
+        }"
       >
         <div
-          class="apm-payment-title"
-          :class="selectedMethod === allowedMethod.prefixedName ? 'selected' : ''"
-          @click="selectPaymentMethod(allowedMethod.prefixedName)"
-          @keydown="selectPaymentMethod(allowedMethod.prefixedName)"
+          :id="`paypal_${allowedMethod.name}_method`"
+          :style="{ display: 'none' }"
+          :class="{ active: selectedMethod === allowedMethod.prefixedName }"
+          class="apm-payment-container"
         >
-          <component
-            :is="RadioButton"
-            :id="`paypal_${allowedMethod.name}_select`"
-            :text="allowedMethod.title"
-            :checked="selectedMethod === allowedMethod.prefixedName"
-            :data-cy="'apm-payment-radio'"
-            class="apm-payment-radio"
+          <div
+            class="apm-payment-title"
+            :class="selectedMethod === allowedMethod.prefixedName ? 'selected' : ''"
             @click="selectPaymentMethod(allowedMethod.prefixedName)"
             @keydown="selectPaymentMethod(allowedMethod.prefixedName)"
-          />
-          <span :id="`paypal_${allowedMethod.name}_mark`" />
-        </div>
-        <component
-          :is="ErrorMessage"
-          v-if="errorMessages[allowedMethod.prefixedName]"
-          :message="errorMessages[allowedMethod.prefixedName]"
-          :attached="false"
-        />
-        <div
-          id="ppcp-apm-payment"
-          :style="{ display: selectedMethod === allowedMethod.prefixedName ? 'block' : 'none' }"
-          :class="!apmPaymentLoaded && selectedMethod === allowedMethod.prefixedName ? 'text-loading' : ''"
-          :data-cy="'checkout-PPCP-apm-payment'"
-        />
-        <div
-          :style="{ display: selectedMethod === allowedMethod.prefixedName ? 'block' : 'none' }"
-          class="apm-payment-content"
-        >
-          <div class="actions-toolbar" data-bind="css: {'ppcp-disabled': !isPlaceOrderActionAllowed()}">
-            <div :id="`paypal_${allowedMethod.name}_fields`" />
-            <div :id="`paypal_${allowedMethod.name}_button`" />
-          </div>
-          <component :is="PrivacyPolicy" />
-          <div class="recaptcha">
+          >
             <component
-              :is="Recaptcha"
-              v-if="isRecaptchaVisible('placeOrder')"
-              id="placeOrder"
-              :location="`${allowedMethod.name}-ppcpPaymentApm`"
+              :is="RadioButton"
+              :id="`paypal_${allowedMethod.name}_select`"
+              :text="allowedMethod.title"
+              :checked="selectedMethod === allowedMethod.prefixedName"
+              :data-cy="'apm-payment-radio'"
+              class="apm-payment-radio"
+              @click="selectPaymentMethod(allowedMethod.prefixedName)"
+              @keydown="selectPaymentMethod(allowedMethod.prefixedName)"
             />
+            <span :id="`paypal_${allowedMethod.name}_mark`" />
           </div>
-          <component :is="Agreements" id="ppcp-checkout-apm-payment" />
+          <component
+            :is="ErrorMessage"
+            v-if="errorMessages[allowedMethod.prefixedName]"
+            :message="errorMessages[allowedMethod.prefixedName]"
+            :attached="false"
+          />
+          <div
+            id="ppcp-apm-payment"
+            :style="{ display: selectedMethod === allowedMethod.prefixedName ? 'block' : 'none' }"
+            :class="!apmPaymentLoaded && selectedMethod === allowedMethod.prefixedName ? 'text-loading' : ''"
+            :data-cy="'checkout-PPCP-apm-payment'"
+          />
+          <div
+            :style="{ display: selectedMethod === allowedMethod.prefixedName ? 'block' : 'none' }"
+            class="apm-payment-content"
+          >
+            <div class="actions-toolbar" data-bind="css: {'ppcp-disabled': !isPlaceOrderActionAllowed()}">
+              <div :id="`paypal_${allowedMethod.name}_fields`" />
+              <div :id="`paypal_${allowedMethod.name}_button`" />
+            </div>
+            <component :is="PrivacyPolicy" />
+            <div class="recaptcha">
+              <component
+                :is="Recaptcha"
+                v-if="isRecaptchaVisible('placeOrder')"
+                id="placeOrder"
+                :location="`${allowedMethod.name}-ppcpPaymentApm`"
+              />
+            </div>
+            <component :is="Agreements" id="ppcp-checkout-apm-payment" />
+          </div>
         </div>
       </div>
     </div>

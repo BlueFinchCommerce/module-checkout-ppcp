@@ -51,7 +51,7 @@ export default {
         { ...this.paypal, component: this.PpcpPayPalPayment },
         { ...this.venmo, component: this.PpcpVenmoPayment },
         { ...this.card, component: this.PpcpCreditCardPayment },
-        { ...this.card, component: this.PpcpApmPayment },
+        { ...this.apm, component: this.PpcpApmPayment },
       ];
       // Sort based on sortOrder
       return methods
