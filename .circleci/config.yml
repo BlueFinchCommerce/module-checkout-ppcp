@@ -161,4 +161,4 @@ workflows:
   build-test:
     jobs:
       - build:
-          context: checkout extension
+          context: bluefinch checkout extension
