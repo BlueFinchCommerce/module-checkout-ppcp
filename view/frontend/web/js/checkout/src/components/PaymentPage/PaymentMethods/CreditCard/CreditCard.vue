@@ -273,6 +273,7 @@ export default {
             placeholder: '4111 1111 1111 1111',
             inputEvents: {
               blur: (data, input) => this.inputBlur(data, input, 'cardNumberField'),
+              change: () => this.inputChange(self, 'cardNumberField'),
             },
           },
           expiryField: {
@@ -280,6 +281,7 @@ export default {
             placeholder: 'MM/YY',
             inputEvents: {
               blur: (data, input) => this.inputBlur(data, input, 'cardExpiryField'),
+              change: () => this.inputChange(self, 'cardExpiryField'),
             },
           },
           cvvField: {
@@ -287,6 +289,7 @@ export default {
             placeholder: '123',
             inputEvents: {
               blur: (data, input) => this.inputBlur(data, input, 'cardCvvField'),
+              change: () => this.inputChange(self, 'cardCvvField'),
             },
           },
         },
@@ -332,6 +335,22 @@ export default {
       input.className = data.fields[field].isValid
       || data.fields[field].isEmpty
         ? 'valid' : 'invalid';
+    },
+
+    inputChange(self, field) {
+      switch (field) {
+        case 'cardNumberField':
+          self.hostedNumberErrorMessage = '';
+          break;
+        case 'cardExpiryField':
+          self.hostedDateErrorMessage = '';
+          break;
+        case 'cardCvvField':
+          self.hostedCvvErrorMessage = '';
+          break;
+        default:
+          break;
+      }
     },
 
     createOrder: async (self) => {
