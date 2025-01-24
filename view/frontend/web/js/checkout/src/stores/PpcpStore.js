@@ -35,7 +35,7 @@ export default defineStore('ppcpStore', {
     google: {
       buttonColor: 'white',
       enabled: false,
-      showOnTopCheckout: false,
+      showOnTopCheckout: true,
       paymentAction: '',
       sortOrder: null,
       title: '',

@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="google.enabled && google.showOnTopCheckout"
+    v-if="googlePayConfig && google.showOnTopCheckout"
     id="ppcp-google-pay"
     :style="{ order: google.sortOrder }"
     :class="!googlePayLoaded ? 'text-loading' : ''"
@@ -49,16 +49,20 @@ export default {
       'stores.useConfigStore',
     ]);
 
+    this.googlePayConfig = paymentStore.availableMethods.find((method) => (
+      method.code === this.method
+    ));
+
+    if (!this.googlePayConfig) {
+      return;
+    }
+
     paymentStore.addExpressMethod(this.key);
     await configStore.getInitialConfig();
     await cartStore.getCart();
     await this.getInitialConfigValues();
 
-    const googlePayConfig = paymentStore.availableMethods.find((method) => (
-      method.code === this.method
-    ));
-
-    if (googlePayConfig && this.google.showOnTopCheckout) {
+    if (this.googlePayConfig && this.google.showOnTopCheckout) {
       await this.initGooglePay();
     } else {
       paymentStore.removeExpressMethod(this.key);
