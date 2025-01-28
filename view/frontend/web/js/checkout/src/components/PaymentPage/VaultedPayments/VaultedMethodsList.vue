@@ -8,6 +8,7 @@
       :class="`ppcp-vaulted-methods-container-${filteredVaultedMethods.length}`"
     >
       <div
+        class="vaulted-method"
         v-for="vaultedMethod in filteredVaultedMethods"
         :key="vaultedMethod.publicHash"
       >
