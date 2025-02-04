@@ -146,10 +146,6 @@ jobs:
           command: |
             git clone https://x-access-token:$GH_PAT@github.com/BlueFinchCommerce/ppcp-web.git
       - run:
-          name: Remove package-lick.json file
-          working_directory: ~/magento2
-          command: rm -rf vendor/bluefinchcommerce/module-checkout-ppcp/package-lock.json
-      - run:
           name: NPM install to root module
           working_directory: ~/magento2
           command: npm --prefix vendor/bluefinchcommerce/module-checkout-ppcp i
@@ -157,6 +153,14 @@ jobs:
           name: NPM install to checkout app
           working_directory: ~/magento2
           command: npm --prefix vendor/bluefinchcommerce/module-checkout-ppcp/view/frontend/web/js/checkout i
+      - run:
+          name: Check installed dependencies
+          working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp
+          command: npm list --depth=1
+      - run:
+          working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp
+          name: Link ppcp-web
+          command: npm link ppcp-web
       - run:
           name: ESLint run against checkout app
           working_directory: ~/magento2
