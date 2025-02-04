@@ -157,6 +157,11 @@ jobs:
           name: Check installed dependencies
           working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp
           command: npm list --depth=1
+  
+      - run:
+          working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp
+          name: npm link for ppcp-web
+          command: npm --prefix vendor/bluefinchcommerce/module-checkout-ppcp/view/frontend/web/js/checkout/ppcp-web link
       - run:
           working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp
           name: Link ppcp-web
