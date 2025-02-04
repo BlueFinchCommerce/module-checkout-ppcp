@@ -117,7 +117,7 @@ export default {
           Agreements,
         },
       },
-    } = await import(window.geneCheckout.main);
+    } = await import(window.bluefinchCheckout.main);
 
     this.Agreements = Agreements;
     this.ErrorMessage = ErrorMessage;
@@ -131,7 +131,7 @@ export default {
       paymentStore,
       configStore,
       cartStore,
-    ] = await window.geneCheckout.helpers.loadFromCheckout([
+    ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
       'stores.useRecaptchaStore',
       'stores.usePaymentStore',
       'stores.useConfigStore',
@@ -179,14 +179,14 @@ export default {
 
     async selectPaymentMethod() {
       this.isMethodSelected = true;
-      const paymentStore = await window.geneCheckout.helpers.loadFromCheckout(
+      const paymentStore = await window.bluefinchCheckout.helpers.loadFromCheckout(
         'stores.usePaymentStore',
       );
       paymentStore.selectPaymentMethod('ppcp_applepay');
     },
 
     async renderApplePayButton() {
-      const configStore = await window.geneCheckout.helpers.loadFromCheckout([
+      const configStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useConfigStore',
       ]);
 
@@ -219,7 +219,7 @@ export default {
         agreementStore,
         paymentStore,
         recaptchaStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useAgreementStore',
         'stores.usePaymentStore',
         'stores.useRecaptchaStore',
@@ -236,7 +236,7 @@ export default {
       const [
         cartStore,
         configStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useCartStore',
         'stores.useConfigStore',
       ]);
@@ -270,7 +270,7 @@ export default {
       const [
         cartStore,
         configStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useCartStore',
         'stores.useConfigStore',
       ]);
@@ -305,7 +305,7 @@ export default {
             false,
           ).then(async () => {
             session.completePayment(window.ApplePaySession.STATUS_SUCCESS);
-            window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
+            window.location.href = window.bluefinchCheckout.helpers.getSuccessPageUrl();
           });
         } catch (error) {
           console.log(error);

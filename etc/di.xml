@@ -2,6 +2,6 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
     <type name="Magento\VaultGraphQl\Model\Resolver\PaymentTokens">
-        <plugin name="genePaymentTokens" type="Gene\BetterCheckoutPPCP\Plugin\Resolver\PaymentTokens" />
+        <plugin name="genePaymentTokens" type="BlueFinch\CheckoutPPCP\Plugin\Resolver\PaymentTokens" />
     </type>
 </config>

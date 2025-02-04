@@ -1,5 +1,5 @@
 {
-    "name": "gene/module-better-checkout-ppcp",
+    "name": "bluefinchcommerce/module-checkout-ppcp",
     "description": "",
     "type": "magento2-module",
     "autoload": {
@@ -7,12 +7,12 @@
             "registration.php"
         ],
         "psr-4": {
-            "Gene\\BetterCheckoutPPCP\\": ""
+            "BlueFinch\\CheckoutPPCP\\": ""
         }
     },
     "require": {
         "magento/framework": "*",
-        "gene/module-better-checkout": "^1.0",
+        "bluefinchcommerce/module-checkout": "^1.0",
         "paypal/module-ppcp": "*",
         "magento/module-vault-graph-ql": "*"
     },
@@ -31,7 +31,7 @@
         },
         "checkout": {
             "type": "vcs",
-            "url": "https://github.com/genecommerce/module-better-checkout"
+            "url": "https://github.com/bluefinchcommerce/module-checkout"
         },
         "stub": {
             "type": "path",

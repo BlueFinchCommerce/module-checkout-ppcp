@@ -65,7 +65,7 @@ export default {
       configStore,
       loadingStore,
       customerStore,
-    ] = await window.geneCheckout.helpers.loadFromCheckout([
+    ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
       'stores.useCartStore',
       'stores.useConfigStore',
       'stores.useLoadingStore',

@@ -1,7 +1,7 @@
 import usePpcpStore from '../stores/PpcpStore';
 
 export default async (orderId, shippingAddress, method) => {
-  const paymentStore = await window.geneCheckout.helpers.loadFromCheckout([
+  const paymentStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
     'stores.usePaymentStore',
   ]);
 
@@ -19,7 +19,7 @@ export default async (orderId, shippingAddress, method) => {
   };
 
   try {
-    const response = await window.geneCheckout.services.authenticatedRequest().post(
+    const response = await window.bluefinchCheckout.services.authenticatedRequest().post(
       url,
       data,
       { headers },

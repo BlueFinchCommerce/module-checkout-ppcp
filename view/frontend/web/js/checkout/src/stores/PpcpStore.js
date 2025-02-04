@@ -90,7 +90,7 @@ export default defineStore('ppcpStore', {
     },
 
     async getInitialConfigValues() {
-      const graphQlRequest = await window.geneCheckout.helpers.loadFromCheckout([
+      const graphQlRequest = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'services.graphQlRequest',
       ]);
 
@@ -263,7 +263,7 @@ export default defineStore('ppcpStore', {
     },
 
     async setPaymentIcons() {
-      const cartStore = await window.geneCheckout.helpers.loadFromCheckout([
+      const cartStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useCartStore',
       ]);
 
@@ -287,7 +287,7 @@ export default defineStore('ppcpStore', {
     },
 
     async mapAddress(address, email, telephone) {
-      const configStore = await window.geneCheckout.helpers.loadFromCheckout([
+      const configStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useConfigStore',
       ]);
       const [firstname, ...lastname] = address.name.split(' ');
@@ -313,7 +313,7 @@ export default defineStore('ppcpStore', {
     },
 
     async mapAppleAddress(address, email, telephone) {
-      const configStore = await window.geneCheckout.helpers.loadFromCheckout([
+      const configStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useConfigStore',
       ]);
 
@@ -348,7 +348,7 @@ export default defineStore('ppcpStore', {
             'paypal-order-id': orderID,
             is_active_payment_token_enabler: vault,
           },
-          extension_attributes: window.geneCheckout.helpers.getPaymentExtensionAttributes(),
+          extension_attributes: window.bluefinchCheckout.helpers.getPaymentExtensionAttributes(),
         },
       };
 
@@ -356,7 +356,7 @@ export default defineStore('ppcpStore', {
         payment.paymentMethod.additional_data['apm-method'] = apmMethod;
       }
 
-      return window.geneCheckout.services.createPaymentRest(payment);
+      return window.bluefinchCheckout.services.createPaymentRest(payment);
     },
 
     selectVaultedMethod(vaultedMethod) {
@@ -383,7 +383,7 @@ export default defineStore('ppcpStore', {
     },
 
     async getVaultedMethodsData() {
-      const paymentStore = await window.geneCheckout.helpers.loadFromCheckout([
+      const paymentStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.usePaymentStore',
       ]);
 

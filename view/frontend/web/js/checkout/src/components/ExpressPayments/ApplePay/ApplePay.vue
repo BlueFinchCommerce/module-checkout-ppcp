@@ -47,7 +47,7 @@ export default {
       cartStore,
       paymentStore,
       configStore,
-    ] = await window.geneCheckout.helpers.loadFromCheckout([
+    ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
       'stores.useCartStore',
       'stores.usePaymentStore',
       'stores.useConfigStore',
@@ -76,7 +76,7 @@ export default {
     ...mapActions(usePpcpStore, ['getInitialConfigValues', 'makePayment', 'mapAppleAddress']),
 
     async renderApplePayButton() {
-      const configStore = await window.geneCheckout.helpers.loadFromCheckout([
+      const configStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useConfigStore',
       ]);
 
@@ -109,7 +109,7 @@ export default {
       const [
         agreementStore,
         paymentStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useAgreementStore',
         'stores.usePaymentStore',
       ]);
@@ -122,7 +122,7 @@ export default {
       const [
         cartStore,
         configStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useCartStore',
         'stores.useConfigStore',
       ]);
@@ -156,7 +156,7 @@ export default {
       const [
         cartStore,
         configStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useCartStore',
         'stores.useConfigStore',
       ]);
@@ -186,11 +186,11 @@ export default {
         billingContact: data.payment.billingContact,
       }).then(async () => {
         try {
-          window.geneCheckout.services.setAddressesOnCart(shippingAddress, billingAddress, email)
+          window.bluefinchCheckout.services.setAddressesOnCart(shippingAddress, billingAddress, email)
             .then(() => this.makePayment(email, this.orderID, this.method, true))
             .then(async () => {
               session.completePayment(window.ApplePaySession.STATUS_SUCCESS);
-              window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
+              window.location.href = window.bluefinchCheckout.helpers.getSuccessPageUrl();
             });
         } catch (error) {
           console.log(error);
@@ -210,7 +210,7 @@ export default {
         cartStore,
         configStore,
         shippingMethodsStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useCartStore',
         'stores.useConfigStore',
         'stores.useShippingMethodsStore',
@@ -235,7 +235,7 @@ export default {
       this.address = address;
 
       try {
-        const result = await window.geneCheckout.services.getShippingMethods(
+        const result = await window.bluefinchCheckout.services.getShippingMethods(
           address,
           this.method,
           true,
@@ -329,7 +329,7 @@ export default {
       const [
         cartStore,
         shippingMethodsStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useCartStore',
         'stores.useShippingMethodsStore',
       ]);
@@ -376,7 +376,7 @@ export default {
     async onClose() {
       // clear shipping address form
 
-      const customerStore = await window.geneCheckout.helpers.loadFromCheckout([
+      const customerStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useCustomerStore',
       ]);
       customerStore.createNewAddress('shipping');

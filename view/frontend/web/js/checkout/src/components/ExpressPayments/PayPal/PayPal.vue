@@ -62,7 +62,7 @@ export default {
       cartStore,
       paymentStore,
       configStore,
-    ] = await window.geneCheckout.helpers.loadFromCheckout([
+    ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
       'stores.useCartStore',
       'stores.usePaymentStore',
       'stores.useConfigStore',
@@ -94,7 +94,7 @@ export default {
       const [
         cartStore,
         configStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useCartStore',
         'stores.useConfigStore',
       ]);
@@ -191,7 +191,7 @@ export default {
         shippingMethodsStore,
         agreementStore,
         loadingStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.usePaymentStore',
         'stores.useShippingMethodsStore',
         'stores.useAgreementStore',
@@ -227,7 +227,7 @@ export default {
         const [
           paymentStore,
           loadingStore,
-        ] = await window.geneCheckout.helpers.loadFromCheckout([
+        ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
           'stores.usePaymentStore',
           'stores.useLoadingStore',
         ]);
@@ -253,7 +253,7 @@ export default {
         const [
           paymentStore,
           loadingStore,
-        ] = await window.geneCheckout.helpers.loadFromCheckout([
+        ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
           'stores.usePaymentStore',
           'stores.useLoadingStore',
         ]);
@@ -267,7 +267,7 @@ export default {
       const [
         paymentStore,
         loadingStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.usePaymentStore',
         'stores.useLoadingStore',
       ]);
@@ -292,7 +292,7 @@ export default {
       const [
         customerStore,
         loadingStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useCustomerStore',
         'stores.useLoadingStore',
       ]);
@@ -305,7 +305,7 @@ export default {
       const [
         paymentStore,
         loadingStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.usePaymentStore',
         'stores.useLoadingStore',
       ]);
@@ -314,7 +314,7 @@ export default {
     },
 
     async mapAddress(shippingAddress) {
-      const configStore = await window.geneCheckout.helpers.loadFromCheckout([
+      const configStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useConfigStore',
       ]);
 
@@ -328,7 +328,7 @@ export default {
     },
 
     redirectToSuccess() {
-      window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
+      window.location.href = window.bluefinchCheckout.helpers.getSuccessPageUrl();
     },
   },
 };

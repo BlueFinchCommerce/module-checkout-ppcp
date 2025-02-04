@@ -43,7 +43,7 @@ export default {
       cartStore,
       paymentStore,
       configStore,
-    ] = await window.geneCheckout.helpers.loadFromCheckout([
+    ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
       'stores.useCartStore',
       'stores.usePaymentStore',
       'stores.useConfigStore',
@@ -77,7 +77,7 @@ export default {
       const [
         cartStore,
         configStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useCartStore',
         'stores.useConfigStore',
       ]);
@@ -124,7 +124,7 @@ export default {
       const [
         agreementStore,
         paymentStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useAgreementStore',
         'stores.usePaymentStore',
       ]);
@@ -137,7 +137,7 @@ export default {
         customerStore,
         loadingStore,
         paymentStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useCustomerStore',
         'stores.useLoadingStore',
         'stores.usePaymentStore',
@@ -151,7 +151,7 @@ export default {
       const [
         customerStore,
         loadingStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useCustomerStore',
         'stores.useLoadingStore',
       ]);
@@ -165,7 +165,7 @@ export default {
         configStore,
         loadingStore,
         shippingMethodsStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useCartStore',
         'stores.useConfigStore',
         'stores.useLoadingStore',
@@ -189,7 +189,7 @@ export default {
           lastname: 'UNKNOWN',
         };
 
-        window.geneCheckout.services.getShippingMethods(address, this.method, true)
+        window.bluefinchCheckout.services.getShippingMethods(address, this.method, true)
           .then(async (response) => {
             try {
               const methods = response.shipping_addresses[0].available_shipping_methods;
@@ -197,9 +197,9 @@ export default {
 
               const shippingMethods = methods.map((shippingMethod) => {
                 const description = shippingMethod.carrier_title
-                  ? `${window.geneCheckout.helpers.formatPrice(shippingMethod.price_incl_tax.value)}
+                  ? `${window.bluefinchCheckout.helpers.formatPrice(shippingMethod.price_incl_tax.value)}
              ${shippingMethod.carrier_title}`
-                  : window.geneCheckout.helpers.formatPrice(shippingMethod.price_incl_tax.value);
+                  : window.bluefinchCheckout.helpers.formatPrice(shippingMethod.price_incl_tax.value);
 
                 return {
                   id: shippingMethod.method_code,
@@ -284,7 +284,7 @@ export default {
     },
 
     async onPaymentAuthorized(data, googlepay) {
-      const cartStore = await window.geneCheckout.helpers.loadFromCheckout([
+      const cartStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useCartStore',
       ]);
       //  eslint-disable-next-line no-async-promise-executor
@@ -319,7 +319,7 @@ export default {
         }
 
         try {
-          await window.geneCheckout.services
+          await window.bluefinchCheckout.services
             .setAddressesOnCart(mapShippingAddress, mapBillingAddress, data.email);
 
           // Create PPCP Payment and get the orderID
@@ -365,19 +365,19 @@ export default {
         loadingStore,
         customerStore,
         paymentStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useLoadingStore',
         'stores.useCustomerStore',
         'stores.usePaymentStore',
       ]);
       return this.makePayment(paymentData.email, this.orderID, this.method, true)
         .then(() => {
-          window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
+          window.location.href = window.bluefinchCheckout.helpers.getSuccessPageUrl();
         })
         .catch((err) => {
           loadingStore.setLoadingState(false);
           try {
-            window.geneCheckout.helpers.handleServiceError(err);
+            window.bluefinchCheckout.helpers.handleServiceError(err);
           } catch (formattedError) {
             // clear shipping address form
             customerStore.createNewAddress('shipping');

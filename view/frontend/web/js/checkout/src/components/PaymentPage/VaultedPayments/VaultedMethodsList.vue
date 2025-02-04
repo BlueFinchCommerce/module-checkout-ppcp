@@ -242,7 +242,7 @@ export default {
     const [
       paymentStore,
       recaptchaStore,
-    ] = await window.geneCheckout.helpers.loadFromCheckout([
+    ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
       'stores.usePaymentStore',
       'stores.useRecaptchaStore',
     ]);
@@ -269,7 +269,7 @@ export default {
           MyButton,
         },
       },
-    } = await import(window.geneCheckout.main);
+    } = await import(window.bluefinchCheckout.main);
 
     this.Agreements = Agreements;
     this.ErrorMessage = ErrorMessage;
@@ -289,7 +289,7 @@ export default {
     ]),
 
     async getFilteredVaultedMethods() {
-      const paymentStore = await window.geneCheckout.helpers.loadFromCheckout([
+      const paymentStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.usePaymentStore',
       ]);
 
@@ -317,7 +317,7 @@ export default {
       const [
         paymentStore,
         loadingStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.usePaymentStore',
         'stores.useLoadingStore',
       ]);
@@ -367,7 +367,7 @@ export default {
     },
 
     async addScripts(userIdToken, paymentCode) {
-      const configStore = await window.geneCheckout.helpers.loadFromCheckout([
+      const configStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useConfigStore',
       ]);
 
@@ -442,7 +442,7 @@ export default {
               agreementStore,
               loadingStore,
               recaptchaStore,
-            ] = await window.geneCheckout.helpers.loadFromCheckout([
+            ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
               'stores.usePaymentStore',
               'stores.useAgreementStore',
               'stores.useLoadingStore',
@@ -464,7 +464,7 @@ export default {
             return this.placeOrder(orderID, requestId);
           },
           onCancel: async () => {
-            const loadingStore = await window.geneCheckout.helpers.loadFromCheckout([
+            const loadingStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
               'stores.useLoadingStore',
             ]);
 
@@ -474,7 +474,7 @@ export default {
             const [
               paymentStore,
               loadingStore,
-            ] = await window.geneCheckout.helpers.loadFromCheckout([
+            ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
               'stores.usePaymentStore',
               'stores.useLoadingStore',
             ]);
@@ -492,7 +492,7 @@ export default {
     },
 
     async renderPayPalVaultButton(id) {
-      const cartStore = await window.geneCheckout.helpers.loadFromCheckout([
+      const cartStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useCartStore',
       ]);
 
@@ -531,7 +531,7 @@ export default {
               agreementStore,
               loadingStore,
               recaptchaStore,
-            ] = await window.geneCheckout.helpers.loadFromCheckout([
+            ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
               'stores.usePaymentStore',
               'stores.useAgreementStore',
               'stores.useLoadingStore',
@@ -553,7 +553,7 @@ export default {
             return this.placeOrder(orderID, requestId);
           },
           onCancel: async () => {
-            const loadingStore = await window.geneCheckout.helpers.loadFromCheckout([
+            const loadingStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
               'stores.useLoadingStore',
             ]);
 
@@ -563,7 +563,7 @@ export default {
             const [
               paymentStore,
               loadingStore,
-            ] = await window.geneCheckout.helpers.loadFromCheckout([
+            ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
               'stores.usePaymentStore',
               'stores.useLoadingStore',
             ]);
@@ -616,7 +616,7 @@ export default {
         agreementStore,
         loadingStore,
         recaptchaStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.usePaymentStore',
         'stores.useAgreementStore',
         'stores.useLoadingStore',
@@ -653,7 +653,7 @@ export default {
         paymentStore,
         loadingStore,
         cartStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.usePaymentStore',
         'stores.useLoadingStore',
         'stores.useCartStore',
@@ -670,13 +670,13 @@ export default {
             paypal_request_id: requestId || '',
             public_hash: this.selectedVault.publicHash,
           },
-          extension_attributes: window.geneCheckout.helpers.getPaymentExtensionAttributes(),
+          extension_attributes: window.bluefinchCheckout.helpers.getPaymentExtensionAttributes(),
         },
       };
 
-      window.geneCheckout.services.createPaymentRest(payment)
+      window.bluefinchCheckout.services.createPaymentRest(payment)
         .then(() => {
-          window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
+          window.location.href = window.bluefinchCheckout.helpers.getSuccessPageUrl();
         })
         .catch((err) => {
           loadingStore.setLoadingState(false);

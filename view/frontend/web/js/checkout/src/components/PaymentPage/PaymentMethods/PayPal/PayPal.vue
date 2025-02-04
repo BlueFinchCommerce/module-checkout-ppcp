@@ -156,7 +156,7 @@ export default {
           Checkbox,
         },
       },
-    } = await import(window.geneCheckout.main);
+    } = await import(window.bluefinchCheckout.main);
 
     this.Agreements = Agreements;
     this.ErrorMessage = ErrorMessage;
@@ -172,7 +172,7 @@ export default {
       configStore,
       cartStore,
       customerStore,
-    ] = await window.geneCheckout.helpers.loadFromCheckout([
+    ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
       'stores.useRecaptchaStore',
       'stores.usePaymentStore',
       'stores.useConfigStore',
@@ -209,17 +209,17 @@ export default {
     async selectPaymentMethod() {
       this.isMethodSelected = true;
 
-      const paymentStore = await window.geneCheckout.helpers.loadFromCheckout(
+      const paymentStore = await window.bluefinchCheckout.helpers.loadFromCheckout(
         'stores.usePaymentStore',
       );
       paymentStore.selectPaymentMethod('ppcp_paypal');
     },
 
     async renderPaypalInstance() {
-      const configStore = await window.geneCheckout.helpers.loadFromCheckout([
+      const configStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useConfigStore',
       ]);
-      const cartStore = await window.geneCheckout.helpers.loadFromCheckout([
+      const cartStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useCartStore',
       ]);
 
@@ -318,7 +318,7 @@ export default {
         agreementStore,
         loadingStore,
         recaptchaStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.usePaymentStore',
         'stores.useAgreementStore',
         'stores.useLoadingStore',
@@ -342,7 +342,7 @@ export default {
         paymentStore,
         loadingStore,
         cartStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.usePaymentStore',
         'stores.useLoadingStore',
         'stores.useCartStore',
@@ -360,14 +360,14 @@ export default {
         .catch((err) => {
           loadingStore.setLoadingState(false);
           try {
-            window.geneCheckout.helpers.handleServiceError(err);
+            window.bluefinchCheckout.helpers.handleServiceError(err);
           } catch (formattedError) {
             paymentStore.setErrorMessage(formattedError);
           }
         });
     },
     onCancel: async () => {
-      const loadingStore = await window.geneCheckout.helpers.loadFromCheckout([
+      const loadingStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useLoadingStore',
       ]);
 
@@ -377,7 +377,7 @@ export default {
       const [
         paymentStore,
         loadingStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.usePaymentStore',
         'stores.useLoadingStore',
       ]);
@@ -393,7 +393,7 @@ export default {
     },
 
     redirectToSuccess() {
-      window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
+      window.location.href = window.bluefinchCheckout.helpers.getSuccessPageUrl();
     },
   },
 };

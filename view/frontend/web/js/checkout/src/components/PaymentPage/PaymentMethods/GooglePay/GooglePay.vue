@@ -113,7 +113,7 @@ export default {
           Agreements,
         },
       },
-    } = await import(window.geneCheckout.main);
+    } = await import(window.bluefinchCheckout.main);
 
     this.Agreements = Agreements;
     this.ErrorMessage = ErrorMessage;
@@ -127,7 +127,7 @@ export default {
       paymentStore,
       configStore,
       cartStore,
-    ] = await window.geneCheckout.helpers.loadFromCheckout([
+    ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
       'stores.useRecaptchaStore',
       'stores.usePaymentStore',
       'stores.useConfigStore',
@@ -182,7 +182,7 @@ export default {
         this.googlePayLoaded = true;
       }
 
-      const paymentStore = await window.geneCheckout.helpers.loadFromCheckout(
+      const paymentStore = await window.bluefinchCheckout.helpers.loadFromCheckout(
         'stores.usePaymentStore',
       );
       paymentStore.selectPaymentMethod('ppcp_googlepay');
@@ -192,7 +192,7 @@ export default {
       const [
         cartStore,
         configStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useCartStore',
         'stores.useConfigStore',
       ]);
@@ -236,7 +236,7 @@ export default {
         agreementStore,
         paymentStore,
         recaptchaStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useAgreementStore',
         'stores.usePaymentStore',
         'stores.useRecaptchaStore',
@@ -249,7 +249,7 @@ export default {
     },
 
     async onPaymentAuthorized(data, googlepay) {
-      const cartStore = await window.geneCheckout.helpers.loadFromCheckout([
+      const cartStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useCartStore',
       ]);
       //  eslint-disable-next-line no-async-promise-executor
@@ -307,7 +307,7 @@ export default {
     },
 
     async onCancel() {
-      const loadingStore = await window.geneCheckout.helpers.loadFromCheckout([
+      const loadingStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useLoadingStore',
       ]);
       loadingStore.setLoadingState(false);
@@ -317,7 +317,7 @@ export default {
       const [
         loadingStore,
         paymentStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useLoadingStore',
         'stores.usePaymentStore',
       ]);
@@ -329,18 +329,18 @@ export default {
       const [
         loadingStore,
         paymentStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useLoadingStore',
         'stores.usePaymentStore',
       ]);
       return this.makePayment(paymentData.email, this.orderID, this.method, false)
         .then(() => {
-          window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
+          window.location.href = window.bluefinchCheckout.helpers.getSuccessPageUrl();
         })
         .catch((err) => {
           loadingStore.setLoadingState(false);
           try {
-            window.geneCheckout.helpers.handleServiceError(err);
+            window.bluefinchCheckout.helpers.handleServiceError(err);
           } catch (formattedError) {
             paymentStore.setErrorMessage(formattedError);
           }

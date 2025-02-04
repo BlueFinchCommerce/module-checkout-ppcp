@@ -30,7 +30,7 @@ import PayPalSvg from '../../icons/payments/white/icon-paypal-white.png';
 export default {
   name: 'PpcpFooterIcons',
   async created() {
-    const [cartStore, configStore] = await window.geneCheckout.helpers.loadFromCheckout([
+    const [cartStore, configStore] = await window.bluefinchCheckout.helpers.loadFromCheckout([
       'stores.useCartStore',
       'stores.useConfigStore',
     ]);

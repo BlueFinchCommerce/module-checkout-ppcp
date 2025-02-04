@@ -32,7 +32,7 @@ import VenmoSvg from '../../icons/payments/colour/Venmo-Logo.png';
 export default {
   name: 'PpcpPaymentIcons',
   async created() {
-    const [cartStore, configStore] = await window.geneCheckout.helpers.loadFromCheckout([
+    const [cartStore, configStore] = await window.bluefinchCheckout.helpers.loadFromCheckout([
       'stores.useCartStore',
       'stores.useConfigStore',
     ]);
