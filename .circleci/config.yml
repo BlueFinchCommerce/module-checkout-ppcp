@@ -143,10 +143,8 @@ jobs:
       - run:
           name: Configure npm authentication
           command: |
-            echo "//npm.pkg.github.com/:_authToken=${GH_PAT}" >> ~/.npmrc
+            echo "//npm.pkg.github.com/:_authToken=$GH_PAT" >> ~/.npmrc
             echo "@bluefinchcommerce:registry=https://npm.pkg.github.com/" >> ~/.npmrc
-          environment:
-            GH_PAT: ${{ secrets.GH_PAT }}
       - run:
           name: NPM install to root module
           working_directory: ~/magento2
