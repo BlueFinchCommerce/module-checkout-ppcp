@@ -1,5 +1,6 @@
 <template>
   <div
+    v-if="methodEligible"
     :class="{ active: isMethodSelected }"
     class="venmo-container"
   >
@@ -7,7 +8,8 @@
       class="venmo-title"
       :class="isMethodSelected ? 'selected' : ''"
       @click="selectPaymentMethod"
-      @keydown="selectPaymentMethod">
+      @keydown="selectPaymentMethod"
+    >
       <component
         :is="RadioButton"
         id="venmo-select"
@@ -22,7 +24,8 @@
         width="48px"
         class="venmo-logo"
         :src="venmoLogo"
-        alt="venmo-logo">
+        alt="venmo-logo"
+      >
     </div>
     <component
       :is="ErrorMessage"
@@ -32,13 +35,13 @@
     />
 
     <div
+      :id="`paypal-button-container-venmo`"
       :style="{ display: isMethodSelected ? 'block' : 'none' }"
       class="paypal-button-container"
-      :id="`paypal-button-container-venmo`"
       :class="!venmoLoaded ? 'text-loading' : ''"
       :data-cy="'instant-checkout-ppcpPayPalVenmo'"
     />
-    <div class="venmo-content" v-if="isMethodSelected">
+    <div v-if="isMethodSelected" class="venmo-content">
       <div class="recaptcha">
         <component
           :is="Recaptcha"
@@ -66,11 +69,10 @@
 </template>
 
 <script>
+/* eslint-disable import/no-extraneous-dependencies */
+import ppcp from 'ppcp-web';
 import { mapActions, mapState } from 'pinia';
 import usePpcpStore from '../../../../stores/PpcpStore';
-
-// Helpers
-import loadScript from '../../../../helpers/addScript';
 
 // Services
 import createPPCPPaymentRest from '../../../../services/createPPCPPaymentRest';
@@ -80,9 +82,16 @@ import venmoImage from '../../icons/venmo_logo_blue.png';
 
 export default {
   name: 'PpcpVenmoPayment',
+  props: {
+    open: {
+      type: Boolean,
+      required: false,
+    },
+  },
   data() {
     return {
       isMethodSelected: false,
+      methodEligible: true,
       errorMessage: '',
       ErrorMessage: null,
       PrivacyPolicy: null,
@@ -101,12 +110,6 @@ export default {
       isLoggedIn: false,
     };
   },
-  props: {
-    open: {
-      type: Boolean,
-      required: false,
-    },
-  },
   computed: {
     ...mapState(usePpcpStore, [
       'venmo',
@@ -118,6 +121,17 @@ export default {
     ]),
     venmoLogo() {
       return venmoImage;
+    },
+  },
+  watch: {
+    selectedMethod: {
+      handler(newVal) {
+        if (newVal !== null && newVal !== 'ppcp_venmo') {
+          this.isMethodSelected = false;
+        }
+      },
+      immediate: true,
+      deep: true,
     },
   },
   async mounted() {
@@ -132,7 +146,7 @@ export default {
           Checkbox,
         },
       },
-    } = await import(window.geneCheckout.main);
+    } = await import(window.bluefinchCheckout.main);
 
     this.Agreements = Agreements;
     this.ErrorMessage = ErrorMessage;
@@ -148,7 +162,7 @@ export default {
       configStore,
       cartStore,
       customerStore,
-    ] = await window.geneCheckout.helpers.loadFromCheckout([
+    ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
       'stores.useRecaptchaStore',
       'stores.usePaymentStore',
       'stores.useConfigStore',
@@ -173,25 +187,11 @@ export default {
 
     await configStore.getInitialConfig();
     await cartStore.getCart();
-    if (!window.paypal_ppcp_venmo) {
-      await this.addScripts();
-    }
-    await this.renderPaypalInstance();
+    await this.renderVenmoInstance();
 
     if (this.open) {
       await this.selectPaymentMethod();
     }
-  },
-  watch: {
-    selectedMethod: {
-      handler(newVal) {
-        if (newVal !== null && newVal !== 'ppcp_venmo') {
-          this.isMethodSelected = false;
-        }
-      },
-      immediate: true,
-      deep: true,
-    },
   },
   methods: {
     ...mapActions(usePpcpStore, ['makePayment']),
@@ -199,153 +199,157 @@ export default {
     async selectPaymentMethod() {
       this.isMethodSelected = true;
 
-      const paymentStore = await window.geneCheckout.helpers.loadFromCheckout(
+      const paymentStore = await window.bluefinchCheckout.helpers.loadFromCheckout(
         'stores.usePaymentStore',
       );
       paymentStore.selectPaymentMethod('ppcp_venmo');
     },
 
-    async addScripts() {
-      const configStore = await window.geneCheckout.helpers.loadFromCheckout([
+    async renderVenmoInstance() {
+      const configStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useConfigStore',
       ]);
+      const cartStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
+        'stores.useCartStore',
+      ]);
 
-      const loadPayPalScript = loadScript();
-      const params = {
+      const self = this;
+      const element = 'paypal-button-container-venmo';
+
+      const configuration = {
+        sandboxClientId: this.sandboxClientId,
+        productionClientId: this.productionClientId,
         intent: this.paypal.paymentAction,
+        pageType: 'checkout',
+        environment: this.environment,
+        commit: true,
+        amount: cartStore.cart.prices.grand_total.value,
+        buyerCountry: this.buyerCountry,
         currency: configStore.currencyCode,
-        components: 'buttons',
+        buttonStyles: {
+          buttonLabel: this.paypal.buttonLabel,
+          buttonSize: 'responsive',
+          buttonShape: this.paypal.buttonShape,
+          buttonColor: this.paypal.buttonColor,
+          buttonTagline: false,
+        },
+        buttonHeight: 40,
       };
 
-      if (this.environment === 'sandbox') {
-        params['buyer-country'] = this.buyerCountry;
-        params['client-id'] = this.sandboxClientId;
-      } else {
-        params['client-id'] = this.productionClientId;
-      }
+      const callbacks = {
+        createOrder: () => this.createOrder(self),
+        onApprove: () => this.onApprove(self),
+        onClick: () => this.onClick(),
+        onCancel: () => this.onCancel(),
+        onError: (err) => this.onError(err),
+        isPaymentMethodEligible: (bool) => this.isPaymentMethodEligible(bool),
+      };
 
-      params['enable-funding'] = 'venmo';
+      const options = { ...configuration, ...callbacks };
 
-      return loadPayPalScript(
-        'https://www.paypal.com/sdk/js',
-        params,
-        'ppcp_venmo',
-      );
+      ppcp.venmoPayment(options, element);
+      this.venmoLoaded = true;
     },
 
-    async renderPaypalInstance() {
-      const paypalConfig = window.paypal_ppcp_venmo;
-      if (paypalConfig) {
-        const commonRenderData = {
-          env: this.environment,
-          commit: true,
-          style: {
-            label: this.paypal.buttonLabel,
-            size: 'responsive',
-            shape: this.paypal.buttonShape,
-            color: this.paypal.buttonColor === 'gold' ? 'blue' : this.paypal.buttonColor,
-            tagline: false,
-          },
-          fundingSource: paypalConfig.FUNDING.VENMO,
-          createOrder: async () => {
-            try {
-              const data = await createPPCPPaymentRest(
-                this.method,
-                this.venmo.vaultActive,
-                1,
-              );
-              const orderData = JSON.parse(data);
+    isPaymentMethodEligible(isAvailable) {
+      this.methodEligible = isAvailable;
+    },
 
-              const [orderID] = orderData;
-              this.orderID = orderID;
-
-              return this.orderID;
-            } catch (error) {
-              console.error('Error during createOrder:', error);
-              return null;
-            }
-          },
-          onClick: async () => {
-            const [
-              paymentStore,
-              agreementStore,
-              loadingStore,
-              recaptchaStore,
-            ] = await window.geneCheckout.helpers.loadFromCheckout([
-              'stores.usePaymentStore',
-              'stores.useAgreementStore',
-              'stores.useLoadingStore',
-              'stores.useRecaptchaStore',
-            ]);
-
-            paymentStore.setErrorMessage('');
-            const agreementsValid = agreementStore.validateAgreements();
-            const captchaValid = await recaptchaStore.validateToken('placeOrder');
-
-            if (!agreementsValid || !captchaValid) {
-              return false;
-            }
-            loadingStore.setLoadingState(true);
-            return true;
-          },
-          onApprove: async () => {
-            const [
-              paymentStore,
-              loadingStore,
-              cartStore,
-            ] = await window.geneCheckout.helpers.loadFromCheckout([
-              'stores.usePaymentStore',
-              'stores.useLoadingStore',
-              'stores.useCartStore',
-            ]);
-            return this.makePayment(
-              cartStore.cart.email,
-              this.orderID,
-              this.method,
-              false,
-              this.storeMethod,
-            ).then(() => {
-              window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
-            })
-              .catch((err) => {
-                loadingStore.setLoadingState(false);
-                try {
-                  window.geneCheckout.helpers.handleServiceError(err);
-                } catch (formattedError) {
-                  paymentStore.setErrorMessage(formattedError);
-                }
-              });
-          },
-          onCancel: async () => {
-            const loadingStore = await window.geneCheckout.helpers.loadFromCheckout([
-              'stores.useLoadingStore',
-            ]);
-
-            loadingStore.setLoadingState(false);
-          },
-          onError: async (err) => {
-            const [
-              paymentStore,
-              loadingStore,
-            ] = await window.geneCheckout.helpers.loadFromCheckout([
-              'stores.usePaymentStore',
-              'stores.useLoadingStore',
-            ]);
-            loadingStore.setLoadingState(false);
-            paymentStore.setErrorMessage(err);
-          },
-        };
-
-        await paypalConfig.Buttons(commonRenderData).render(
-          '#paypal-button-container-venmo',
+    createOrder: async (self) => {
+      try {
+        const data = await createPPCPPaymentRest(
+          self.method,
+          self.venmo.vaultActive,
+          1,
         );
+        const orderData = JSON.parse(data);
 
-        this.venmoLoaded = true;
+        const [orderID] = orderData;
+        /* eslint-disable no-param-reassign */
+        self.orderID = orderID;
+
+        return self.orderID;
+      } catch (error) {
+        console.error('Error during createOrder:', error);
+        return null;
       }
+    },
+
+    onClick: async () => {
+      const [
+        paymentStore,
+        agreementStore,
+        loadingStore,
+        recaptchaStore,
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
+        'stores.usePaymentStore',
+        'stores.useAgreementStore',
+        'stores.useLoadingStore',
+        'stores.useRecaptchaStore',
+      ]);
+
+      paymentStore.setErrorMessage('');
+      const agreementsValid = agreementStore.validateAgreements();
+      const captchaValid = await recaptchaStore.validateToken('placeOrder');
+
+      if (!agreementsValid || !captchaValid) {
+        return false;
+      }
+      loadingStore.setLoadingState(true);
+      return true;
+    },
+
+    onApprove: async (self) => {
+      const [
+        paymentStore,
+        loadingStore,
+        cartStore,
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
+        'stores.usePaymentStore',
+        'stores.useLoadingStore',
+        'stores.useCartStore',
+      ]);
+      return self.makePayment(
+        cartStore.cart.email,
+        self.orderID,
+        self.method,
+        false,
+        self.storeMethod,
+      ).then(() => {
+        self.redirectToSuccess();
+      })
+        .catch((err) => {
+          loadingStore.setLoadingState(false);
+          try {
+            window.bluefinchCheckout.helpers.handleServiceError(err);
+          } catch (formattedError) {
+            paymentStore.setErrorMessage(formattedError);
+          }
+        });
+    },
+
+    onCancel: async () => {
+      const loadingStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
+        'stores.useLoadingStore',
+      ]);
+
+      loadingStore.setLoadingState(false);
+    },
+
+    onError: async (err) => {
+      const [
+        paymentStore,
+        loadingStore,
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
+        'stores.usePaymentStore',
+        'stores.useLoadingStore',
+      ]);
+      loadingStore.setLoadingState(false);
+      paymentStore.setErrorMessage(err);
     },
 
     redirectToSuccess() {
-      window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
+      window.location.href = window.bluefinchCheckout.helpers.getSuccessPageUrl();
     },
   },
 };

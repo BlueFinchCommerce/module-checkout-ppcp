@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Gene\BetterCheckoutPPCP\Plugin\Resolver;
+namespace BlueFinch\CheckoutPPCP\Plugin\Resolver;
 
 use Magento\Framework\GraphQl\Config\Element\Field;
 use Magento\Framework\GraphQl\Exception\GraphQlAuthorizationException;

@@ -1,5 +1,5 @@
 export default async (id) => {
-  const paymentStore = await window.geneCheckout.helpers.loadFromCheckout([
+  const paymentStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
     'stores.usePaymentStore',
   ]);
 
@@ -14,7 +14,7 @@ export default async (id) => {
   };
 
   try {
-    const response = await window.geneCheckout.services.authenticatedRequest().post(
+    const response = await window.bluefinchCheckout.services.authenticatedRequest().post(
       url,
       JSON.stringify(body),
       { headers },

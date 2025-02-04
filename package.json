@@ -1,5 +1,5 @@
 {
-  "name": "gene-better-checkout-ppcp",
+  "name": "bluefinchcommerce-checkout-ppcp",
   "description": "",
   "main": ".eslintrc",
   "scripts": {
@@ -8,14 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/genecommerce/module-better-checkout-ppcp.git"
+    "url": "git+https://github.com/bluefinchcommerce/module-checkout-ppcp.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/genecommerce/module-better-checkout-ppcp/issues"
+    "url": "https://github.com/bluefinchcommerce/module-checkout-ppcp/issues"
   },
-  "homepage": "https://github.com/genecommerce/module-better-checkout-ppcp#readme",
+  "homepage": "https://github.com/bluefinchcommerce/module-checkout-ppcp#readme",
   "devDependencies": {
     "eslint": "^8.50.0"
   }

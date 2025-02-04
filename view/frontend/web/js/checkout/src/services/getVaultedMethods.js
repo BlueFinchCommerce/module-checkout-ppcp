@@ -10,7 +10,7 @@ export default async () => {
       }
     }
   }`;
-  const methods = await window.geneCheckout.services.graphQlRequest(
+  const methods = await window.bluefinchCheckout.services.graphQlRequest(
     request,
     {},
     {},
