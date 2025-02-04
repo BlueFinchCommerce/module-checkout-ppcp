@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - "develop*"
+      - feature/ppcp-web-ci-pipeline # todo remove me
       - "hotfix/*"
 
 jobs:
@@ -29,6 +30,9 @@ jobs:
         run: |
           set -v
 
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_PPCP_WEB_PAT }}" >> ~/.npmrc
+          echo "@bluefinchcommerce:registry=https://npm.pkg.github.com/" >> ~/.npmrc
+          
           git config --global pull.rebase false
           git fetch --unshallow || true
 
