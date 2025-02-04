@@ -38,6 +38,7 @@ jobs:
           echo "cloning ppcp-web until it is made public"
           git clone https://x-access-token:${{ secrets.GH_PPCP_WEB_PAT }}@github.com/BlueFinchCommerce/ppcp-web.git 
           
+          rm package-lock.json  
           npm i
           npm run build
           git add -f ./dist
