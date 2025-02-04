@@ -39,7 +39,8 @@ jobs:
           git clone https://x-access-token:${{ secrets.GH_PPCP_WEB_PAT }}@github.com/BlueFinchCommerce/ppcp-web.git 
           
           rm package-lock.json  
-          npm i --verbose
+          npm i 
+          npm i rollup-plugin-multi-input
           npm run build
           git add -f ./dist
 
