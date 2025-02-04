@@ -146,9 +146,9 @@ jobs:
           command: |
             git clone https://x-access-token:$GH_PAT@github.com/BlueFinchCommerce/ppcp-web.git
       - run:
-          working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp
+          working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp/view/frontend/web/js/checkout/ppcp-web
           name: npm link for ppcp-web
-          command: npm --prefix /view/frontend/web/js/checkout/ppcp-web link
+          command: npm link
       - run:
           working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp
           name: Link ppcp-web
