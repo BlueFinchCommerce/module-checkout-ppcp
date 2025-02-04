@@ -156,7 +156,7 @@ jobs:
       - run:
           name: ESLint run against root module
           working_directory: ~/magento2
-          command: npm --prefix vendor/bluefinchcommerce/module-checkout-ppcp run lint -- --ignore-pattern "ppcp-web/**"
+          command: npm --prefix vendor/bluefinchcommerce/module-checkout-ppcp run lint
       - run:
           name: ESLint run against checkout app
           working_directory: ~/magento2
