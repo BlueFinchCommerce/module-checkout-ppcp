@@ -15,7 +15,8 @@
   "dependencies": {
     "lodash.debounce": "^4.0.8",
     "pinia": "^2.1.7",
-    "vue": "^3.4.20"
+    "vue": "^3.4.20",
+    "ppcp-web": "git+https://github.com/BlueFinchCommerce/ppcp-web#master"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",

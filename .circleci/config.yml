@@ -119,7 +119,7 @@ jobs:
           command: php -d memory_limit=-1 bin/magento setup:di:compile
       - run:
           working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp
-          name: Install composer modules within Better Checkout
+          name: Install composer modules within BlueFinch Checkout
           command: |
             composer install --no-interaction
       - run:
@@ -141,6 +141,13 @@ jobs:
           working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp
           command: ./vendor/bin/phpunit -c phpunit.xml
       - run:
+          name: Configure npm authentication
+          command: |
+            echo "//npm.pkg.github.com/:_authToken=${GH_PAT}" >> ~/.npmrc
+            echo "@bluefinchcommerce:registry=https://npm.pkg.github.com/" >> ~/.npmrc
+          environment:
+            GH_PAT: ${{ secrets.GH_PAT }}
+      - run:
           name: NPM install to root module
           working_directory: ~/magento2
           command: npm --prefix vendor/bluefinchcommerce/module-checkout-ppcp i
@@ -156,7 +163,10 @@ jobs:
           name: ESLint run against checkout app
           working_directory: ~/magento2
           command: npm --prefix vendor/bluefinchcommerce/module-checkout-ppcp/view/frontend/web/js/checkout run lint
-
+      - run:
+          name: Run build for checkout app
+          working_directory: ~/magento2
+          command: npm --prefix vendor/bluefinchcommerce/module-checkout-ppcp/view/frontend/web/js/checkout run build
 workflows:
   build-test:
     jobs:
