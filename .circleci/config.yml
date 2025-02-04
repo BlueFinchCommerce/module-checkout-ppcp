@@ -148,7 +148,7 @@ jobs:
       - run:
           working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp
           name: npm link for ppcp-web
-          command: npm --prefix vendor/bluefinchcommerce/module-checkout-ppcp/view/frontend/web/js/checkout/ppcp-web link
+          command: npm --prefix /view/frontend/web/js/checkout/ppcp-web link
       - run:
           working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp
           name: Link ppcp-web
