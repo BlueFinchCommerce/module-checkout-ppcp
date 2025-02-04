@@ -29,17 +29,15 @@ jobs:
         shell: bash
         run: |
           set -v
-
-
-          git clone https://x-access-token:${{ secrets.GH_PPCP_WEB_PAT }}@github.com/BlueFinchCommerce/ppcp-web.git 
-          
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_PPCP_WEB_PAT }}" >> ~/.npmrc
-          echo "@bluefinchcommerce:registry=https://npm.pkg.github.com/" >> ~/.npmrc
-          
+                    
           git config --global pull.rebase false
           git fetch --unshallow || true
 
           cd view/frontend/web/js/checkout/
+          
+          echo "cloning ppcp-web until it is made public"
+          git clone https://x-access-token:${{ secrets.GH_PPCP_WEB_PAT }}@github.com/BlueFinchCommerce/ppcp-web.git 
+          
           npm ci
           npm run build
           git add -f ./dist
