@@ -148,11 +148,17 @@ jobs:
       - run:
           working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp/view/frontend/web/js/checkout/ppcp-web
           name: npm link for ppcp-web
-          command: npm link
+          command: |
+            mkdir -p ~/.npm-global
+            npm config set prefix '~/.npm-global'
+            export PATH=~/.npm-global/bin:$PATH
+            npm link
       - run:
           working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp
           name: Link ppcp-web
-          command: npm link ppcp-web
+          command: |
+            export PATH=~/.npm-global/bin:$PATH
+            npm link ppcp-web     
       - run:
           name: NPM install to root module
           working_directory: ~/magento2
