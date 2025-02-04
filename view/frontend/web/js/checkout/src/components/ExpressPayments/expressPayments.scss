@@ -20,8 +20,12 @@
   }
 }
 
+.message-active {
+  margin-bottom: var(--indent__base);
+}
+
 .paypal-express--button-container {
-  max-height: var(--ppcp-express-button-height, 45px);
+  max-height: var(--ppcp-express-button-height, 42px);
 
   &#ppcp-express-paypal_ppcp_paylater {
     margin: var(--indent__s) 0;

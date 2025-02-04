@@ -6,6 +6,7 @@ type StoreConfig {
     ppcp_buyer_country: String @doc(description: "PPCP buyer country.")
 
     ppcp_googlepay_active: String @doc(description: "GooglePay enabled.")
+    ppcp_googlepay_top_checkout: String @doc(description: "GooglePay enabled on top of the checkout.")
     ppcp_googlepay_title: String @doc(description: "GooglePay title.")
     ppcp_googlepay_payment_action: String @doc(description: "GooglePay payment action.")
     ppcp_googlepay_button_colour: String @doc(description: "GooglePay button colour.")
@@ -19,12 +20,14 @@ type StoreConfig {
     ppcp_card_sort_order: String @doc(description: "GooglePay sort order.")
 
     ppcp_applepay_active: String @doc(description: "ApplePay enabled.")
+    ppcp_applepay_top_checkout: String @doc(description: "ApplePay enabled on top of the checkout.")
     ppcp_applepay_title: String @doc(description: "ApplePay title.")
     ppcp_applepay_payment_action: String @doc(description: "ApplePay payment action.")
     ppcp_applepay_merchant_name: String @doc(description: "ApplePay merchant name.")
     ppcp_applepay_sort_order: String @doc(description: "ApplePay sort order.")
 
     ppcp_paypal_active: String @doc(description: "Paypal enabled.")
+    ppcp_paypal_top_checkout: String @doc(description: "Paypal enabled on top of the checkout.")
     ppcp_paypal_vault_active: String @doc(description: "Paypal vault enabled.")
     ppcp_paypal_title: String @doc(description: "Paypal title.")
     ppcp_paypal_payment_action: String @doc(description: "Paypal payment action.")
@@ -52,7 +55,7 @@ type StoreConfig {
 
     ppcp_apm_active: String @doc(description: "APM enabled.")
     ppcp_apm_title: String @doc(description: "APM title.")
-    ppcp_apm_allowed_methods: String @doc(description: "APM allowed methods.")
+    ppcp_apm_allowed_methods: String @doc(description: "APM allowed methods.") @resolver(class: "\\Gene\\BetterCheckoutPPCP\\Model\\Resolver\\PpcpApmConfig")
     ppcp_apm_sort_order: String @doc(description: "APM sort order.")
 }
 

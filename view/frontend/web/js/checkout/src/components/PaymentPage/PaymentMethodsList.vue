@@ -19,6 +19,7 @@ import PpcpApplePayPayment from './PaymentMethods/ApplePay/ApplePay.vue';
 import PpcpPayPalPayment from './PaymentMethods/PayPal/PayPal.vue';
 import PpcpVenmoPayment from './PaymentMethods/Venmo/Venmo.vue';
 import PpcpCreditCardPayment from './PaymentMethods/CreditCard/CreditCard.vue';
+import PpcpApmPayment from './PaymentMethods/Apm/Apm.vue';
 
 export default {
   name: 'PpcpPaymentPage',
@@ -29,6 +30,7 @@ export default {
       PpcpPayPalPayment: null,
       PpcpVenmoPayment: null,
       PpcpCreditCardPayment: null,
+      PpcpApmPayment: null,
       dataLoaded: false,
     };
   },
@@ -40,6 +42,7 @@ export default {
       'venmo',
       'paypal',
       'card',
+      'apm',
     ]),
     sortedPaymentMethods() {
       const methods = [
@@ -48,6 +51,7 @@ export default {
         { ...this.paypal, component: this.PpcpPayPalPayment },
         { ...this.venmo, component: this.PpcpVenmoPayment },
         { ...this.card, component: this.PpcpCreditCardPayment },
+        { ...this.apm, component: this.PpcpApmPayment },
       ];
       // Sort based on sortOrder
       return methods
@@ -75,6 +79,7 @@ export default {
     this.PpcpPayPalPayment = PpcpPayPalPayment;
     this.PpcpCreditCardPayment = PpcpCreditCardPayment;
     this.PpcpVenmoPayment = PpcpVenmoPayment;
+    this.PpcpApmPayment = PpcpApmPayment;
 
     await configStore.getInitialConfig();
     await cartStore.getCart();

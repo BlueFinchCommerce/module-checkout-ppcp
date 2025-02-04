@@ -12,6 +12,8 @@ $expressApplePay = $assetViewModel->getDistViewFileUrl('Gene_BetterCheckoutPPCP:
 $expressPayPal = $assetViewModel->getDistViewFileUrl('Gene_BetterCheckoutPPCP::js/checkout/dist/components/ExpressPayments/PayPal/PayPal.min.js');
 $paymentMethods = $assetViewModel->getDistViewFileUrl('Gene_BetterCheckoutPPCP::js/checkout/dist/components/PaymentPage/PaymentMethodsList.min.js');
 $vaultedPaymentMethods = $assetViewModel->getDistViewFileUrl('Gene_BetterCheckoutPPCP::js/checkout/dist/components/PaymentPage/VaultedPayments/VaultedMethodsList.min.js');
+$icons = $assetViewModel->getDistViewFileUrl('Gene_BetterCheckoutPPCP::js/checkout/dist/components/FooterIcons/FooterIcons.min.js');
+$paymentIcons = $assetViewModel->getDistViewFileUrl('Gene_BetterCheckoutPPCP::js/checkout/dist/components/PaymentIcons/PaymentIcons.min.js');
 
 $styles = $assetViewModel->getDistViewFileUrl('Gene_BetterCheckoutPPCP::js/checkout/dist/styles.css');
 ?>
@@ -20,12 +22,18 @@ $styles = $assetViewModel->getDistViewFileUrl('Gene_BetterCheckoutPPCP::js/check
     window.geneCheckout = window.geneCheckout || {};
     window.geneCheckout.expressPaymentMethods = window.geneCheckout.expressPaymentMethods || {};
     window.geneCheckout.paymentMethods = window.geneCheckout.paymentMethods || {};
+    window.geneCheckout.footerPaymentIcons = window.geneCheckout.footerPaymentIcons || {};
+    window.geneCheckout.paymentIcons = window.geneCheckout.paymentIcons || {};
     window.geneCheckout.additionalVaultedMethods = window.geneCheckout.additionalVaultedMethods || {};
 
     // Express Payments
     window.geneCheckout.expressPaymentMethods.PpcpGooglePay = "<?= $escaper->escapeJs($expressGooglePay) ?>";
     window.geneCheckout.expressPaymentMethods.PpcpApplePay = "<?= $escaper->escapeJs($expressApplePay) ?>";
     window.geneCheckout.expressPaymentMethods.PpcpPayPal = "<?= $escaper->escapeJs($expressPayPal) ?>";
+
+    // Icons
+    window.geneCheckout.footerPaymentIcons.AdyenFooterIcons = "<?= $escaper->escapeJs($icons) ?>";
+    window.geneCheckout.paymentIcons.AdyenIcons = "<?= $escaper->escapeJs($paymentIcons) ?>";
 
     // Payment Methods
     window.geneCheckout.paymentMethods.PPCP = "<?= $escaper->escapeJs($paymentMethods) ?>";

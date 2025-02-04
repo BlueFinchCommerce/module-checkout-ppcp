@@ -3,7 +3,8 @@
   .apple-pay,
   .pay-pal,
   .venmo,
-  .card {
+  .card,
+  .apm-payment {
     &-container {
       background-color: var(--radio-input-wrapper__background-color);
       border: var(--radio-input-wrapper__border-weight) var(--base__border-style) var(--radio-input-wrapper__border-color);
@@ -33,6 +34,10 @@
           height: 55px;
         }
       }
+
+      .actions-toolbar {
+        margin-bottom: var(--indent__m);
+      }
     }
 
     &-content {
@@ -54,6 +59,7 @@
   .card-fieldset {
     border: 0;
     padding: 0;
+    min-height: 255px; //remove cls jump
 
     .field {
       margin-bottom: var(--indent__s);
@@ -72,5 +78,11 @@
   .ppcp-store-method,
   .recaptcha {
     margin-bottom: var(--indent__m);
+  }
+
+  #card-number-field-container + .error-message,
+  #card-expiry-field-container + .error-message,
+  #card-cvv-field-container + .error-message {
+    margin: 0 auto var(--indent__base);
   }
 }
