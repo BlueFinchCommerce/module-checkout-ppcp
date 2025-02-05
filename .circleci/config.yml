@@ -155,8 +155,8 @@ jobs:
           command: npm --prefix vendor/bluefinchcommerce/module-checkout-ppcp/view/frontend/web/js/checkout i
       - run:
           name: npm install ./ppcp-web
-          working_directory: ~/magento2
-          command: npm --prefix vendor/bluefinchcommerce/module-checkout-ppcp/view/frontend/web/js/checkout install ./ppcp-web
+          working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp/view/frontend/web/js/checkout
+          command: npm install ../../ppcp-web
       - run:
           name: ESLint run against checkout app
           working_directory: ~/magento2
