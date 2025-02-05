@@ -142,9 +142,9 @@ jobs:
           command: ./vendor/bin/phpunit -c phpunit.xml
       - run:
           working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp/view/frontend/web/js/checkout
-          name: Clone ppcp-web with verbose output
+          name: Clone ppcp-web
           command: |
-            git clone --verbose https://x-access-token:$GH_PAT@github.com/BlueFinchCommerce/ppcp-web.git
+            git clone https://x-access-token:$GH_PAT@github.com/BlueFinchCommerce/ppcp-web.git
       - run:
           name: NPM install to root module
           working_directory: ~/magento2
@@ -154,26 +154,17 @@ jobs:
           working_directory: ~/magento2
           command: npm --prefix vendor/bluefinchcommerce/module-checkout-ppcp/view/frontend/web/js/checkout i
       - run:
-          working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp/view/frontend/web/js/checkout
-          name: Debug Check - List Files
-          command: ls -la
-      - run:
-          working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp/view/frontend/web/js/checkout/ppcp-web
-          name: Debug Check - List Files
-          command: ls -la
-      - run:
           working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp/view/frontend/web/js/checkout/ppcp-web
           name: Debug Check - Show Hidden Files
           command: ls -la
       - run:
-          working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp/view/frontend/web/js/checkout/ppcp-web
-          name: Check .gitignore
-          command: cat .gitignore || echo ".gitignore not found"
-
-      - run:
           name: npm install ./ppcp-web
           working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp/view/frontend/web/js/checkout
           command: npm install ./ppcp-web
+      - run:
+          working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp/view/frontend/web/js/checkout
+          name: Debug Check - Show Hidden Files In App
+          command: ls -la    
       - run:
           name: ESLint run against checkout app
           working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp/view/frontend/web/js/checkout
