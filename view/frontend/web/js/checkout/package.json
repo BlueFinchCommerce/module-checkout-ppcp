@@ -15,6 +15,7 @@
   "dependencies": {
     "lodash.debounce": "^4.0.8",
     "pinia": "^2.1.7",
+    "ppcp-web": "./ppcp-web",
     "vue": "^3.4.20"
   },
   "devDependencies": {
@@ -27,7 +28,7 @@
     "eslint": "^8.57.0",
     "eslint-plugin-jest": "^28.2.0",
     "eslint-plugin-vue": "^9.25.0",
-    "rollup": "^4.14.3",
+    "rollup": "^4.34.3",
     "rollup-plugin-delete": "^2.1.0",
     "rollup-plugin-multi-input": "^1.4.1",
     "rollup-plugin-scss": "^3.0.0",

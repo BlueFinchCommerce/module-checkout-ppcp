@@ -119,7 +119,7 @@ jobs:
           command: php -d memory_limit=-1 bin/magento setup:di:compile
       - run:
           working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp
-          name: Install composer modules within Better Checkout
+          name: Install composer modules within BlueFinch Checkout
           command: |
             composer install --no-interaction
       - run:
@@ -141,6 +141,11 @@ jobs:
           working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp
           command: ./vendor/bin/phpunit -c phpunit.xml
       - run:
+          working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp/view/frontend/web/js/checkout
+          name: Clone ppcp-web
+          command: |
+            git clone https://x-access-token:$GH_PAT@github.com/BlueFinchCommerce/ppcp-web.git
+      - run:
           name: NPM install to root module
           working_directory: ~/magento2
           command: npm --prefix vendor/bluefinchcommerce/module-checkout-ppcp i
@@ -149,14 +154,17 @@ jobs:
           working_directory: ~/magento2
           command: npm --prefix vendor/bluefinchcommerce/module-checkout-ppcp/view/frontend/web/js/checkout i
       - run:
-          name: ESLint run against root module
-          working_directory: ~/magento2
-          command: npm --prefix vendor/bluefinchcommerce/module-checkout-ppcp run lint
+          name: npm install ./ppcp-web
+          working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp/view/frontend/web/js/checkout
+          command: npm install ./ppcp-web   
       - run:
           name: ESLint run against checkout app
+          working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp/view/frontend/web/js/checkout
+          command: npm run lint
+      - run:
+          name: Run build for checkout app
           working_directory: ~/magento2
-          command: npm --prefix vendor/bluefinchcommerce/module-checkout-ppcp/view/frontend/web/js/checkout run lint
-
+          command: npm --prefix vendor/bluefinchcommerce/module-checkout-ppcp/view/frontend/web/js/checkout run build
 workflows:
   build-test:
     jobs:
