@@ -22,7 +22,7 @@ export default function loadScript() {
       const script = document.createElement('script');
       script.src = url;
       script.dataset.namespace = `paypal_${namespace}`;
-      script.dataset.partnerAttributionId = 'GENE_PPCP';
+      script.dataset.partnerAttributionId = 'BLUEFINCH_PPCP';
       script.dataset.pageType = pageType;
 
       if (userIdToken) {

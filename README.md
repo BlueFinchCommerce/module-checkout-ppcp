@@ -1,6 +1,6 @@
 [![CircleCI](https://dl.circleci.com/status-badge/img/gh/bluefinchcommerce/module-checkout-ppcp/tree/main.svg?style=svg&circle-token=CCIPRJ_shdRbwX6CZwdWayXko8Kf_fc053dfb47603a733a4b4265ff8be69118cffec9)](https://dl.circleci.com/status-badge/redirect/gh/bluefinchcommerce/module-checkout-ppcp/tree/main)
 
-![BlueFinch Checkout Powered by GENE](./assets/logo.svg)
+![Checkout Powered by BlueFinch](./assets/logo.svg)
 
 # BlueFinch Checkout PPCP Module
 
@@ -8,11 +8,11 @@
 
 - Magento 2.4.6 or higher
 - Node 16 or higher (for development purposes only)
-- Latest version of Gene BlueFinch Checkout
+- Latest version of the BlueFinch Checkout
 
 ## Installation
 
-Ensure you have installed the latest version of Gene BlueFinch Checkout, which can be found here, [Gene BlueFinch Checkout](https://github.com/bluefinchcommerce/module-checkout).
+Ensure you have installed the latest version of the BlueFinch Checkout, which can be found here, [BlueFinch Checkout](https://github.com/bluefinchcommerce/module-checkout).
 
 To install the BlueFinch Checkout PPCP module, run the following command in your Magento 2 root directory:
 
