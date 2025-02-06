@@ -14,7 +14,7 @@ export default async () => {
     request,
     {},
     {},
-    'BetterCheckoutVaultedPPCP',
+    'BlueFinchCheckoutVaultedPPCP',
   ).then((response) => response.data.customerPaymentTokens?.items || []);
 
   return methods

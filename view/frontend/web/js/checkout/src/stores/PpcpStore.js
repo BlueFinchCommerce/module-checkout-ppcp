@@ -163,7 +163,7 @@ export default defineStore('ppcpStore', {
           ppcp_card_three_d_secure
           ppcp_card_sort_order
         }
-      }`, {}, {}, 'BetterCheckoutStoreConfigPPCP').then(this.handleInitialConfig);
+      }`, {}, {}, 'BlueFinchCheckoutStoreConfigPPCP').then(this.handleInitialConfig);
 
       await this.getCachedResponse(request, 'getInitialConfig');
     },
