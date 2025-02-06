@@ -154,10 +154,6 @@ jobs:
           working_directory: ~/magento2
           command: npm --prefix vendor/bluefinchcommerce/module-checkout-ppcp/view/frontend/web/js/checkout i
       - run:
-          working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp/view/frontend/web/js/checkout/ppcp-web
-          name: Debug Check - Show Hidden Files
-          command: ls -la
-      - run:
           name: npm install ./ppcp-web
           working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp/view/frontend/web/js/checkout
           command: npm install ./ppcp-web   
