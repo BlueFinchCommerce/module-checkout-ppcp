@@ -16,7 +16,7 @@ Ensure you have installed the latest version of the BlueFinch Checkout, which ca
 
 To install the BlueFinch Checkout PPCP module, run the following command in your Magento 2 root directory:
 
-``` composer require bluefinchcommerce/module-checkout-ppcp:^1.0 ```
+``` composer require bluefinchcommerce/module-checkout-ppcp ```
 
 BlueFinch Checkout PPCP follows the standard installation process for Adobe Commerce.
 
