@@ -28,7 +28,7 @@
     "eslint": "^8.57.0",
     "eslint-plugin-jest": "^28.2.0",
     "eslint-plugin-vue": "^9.25.0",
-    "rollup": "^4.34.4",
+    "rollup": "^4.34.5",
     "rollup-plugin-delete": "^2.1.0",
     "rollup-plugin-multi-input": "^1.4.1",
     "rollup-plugin-scss": "^3.0.0",
