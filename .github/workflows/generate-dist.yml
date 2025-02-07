@@ -34,7 +34,7 @@ jobs:
 
           cd view/frontend/web/js/checkout/
           
-          echo "cloning ppcp-web until it is made public"
+          echo "cloning blufinch-ppcp-web until it is made public"
           git clone https://x-access-token:${{ secrets.GH_PPCP_WEB_PAT }}@github.com/BlueFinchCommerce/ppcp-web.git 
           
           npm i rollup
