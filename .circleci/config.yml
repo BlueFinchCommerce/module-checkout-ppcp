@@ -144,7 +144,7 @@ jobs:
           working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp/view/frontend/web/js/checkout
           name: Clone blufinch-ppcp-web
           command: |
-            git clone https://x-access-token:$GH_PAT@github.com/BlueFinchCommerce/ppcp-web.git
+            git clone https://x-access-token:$GH_PAT@github.com/BlueFinchCommerce/ppcp-web.git blufinch-ppcp-web
       - run:
           name: NPM install to root module
           working_directory: ~/magento2
