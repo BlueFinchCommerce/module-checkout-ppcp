@@ -15,7 +15,7 @@
   "dependencies": {
     "lodash.debounce": "^4.0.8",
     "pinia": "^2.1.7",
-    "ppcp-web": "./ppcp-web",
+    "blufinch-ppcp-web": "./blufinch-ppcp-web",
     "vue": "^3.4.20"
   },
   "devDependencies": {
