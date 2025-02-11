@@ -8,7 +8,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
-blufinch-ppcp-web
+bluefinch-ppcp-web
 dist-ssr
 dist-dev
 *.local

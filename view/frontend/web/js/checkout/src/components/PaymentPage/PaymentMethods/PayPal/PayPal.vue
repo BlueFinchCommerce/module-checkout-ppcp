@@ -79,7 +79,7 @@
 
 <script>
 /* eslint-disable import/no-extraneous-dependencies */
-import ppcp from 'blufinch-ppcp-web';
+import ppcp from 'bluefinch-ppcp-web';
 import { mapActions, mapState } from 'pinia';
 import usePpcpStore from '../../../../stores/PpcpStore';
 
