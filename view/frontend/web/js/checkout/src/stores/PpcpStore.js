@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import getVaultedMethods from '../services/getVaultedMethods';
 
 export default defineStore('ppcpStore', {
   state: () => ({
@@ -9,9 +10,11 @@ export default defineStore('ppcpStore', {
     productionClientId: '',
     buyerCountry: '',
     errorMessage: null,
+    vaultedMethods: [],
     apple: {
       merchantName: '',
       enabled: false,
+      showOnTopCheckout: false,
       paymentAction: '',
       sortOrder: null,
       title: '',
@@ -32,12 +35,14 @@ export default defineStore('ppcpStore', {
     google: {
       buttonColor: 'white',
       enabled: false,
+      showOnTopCheckout: false,
       paymentAction: '',
       sortOrder: null,
       title: '',
     },
     paypal: {
       enabled: false,
+      showOnTopCheckout: false,
       vaultActive: false,
       title: '',
       paymentAction: '',
@@ -72,14 +77,20 @@ export default defineStore('ppcpStore', {
       changeShippingAddressUrl: '',
       finishOrderUrl: '',
     },
+    ppcpPaymentsIcons: [],
   }),
+  getters: {
+    selectedVaultMethod: (state) => (
+      Object.values(state.vaultedMethods).find(({ selected }) => selected)
+    ),
+  },
   actions: {
     setData(data) {
       this.$patch(data);
     },
 
     async getInitialConfigValues() {
-      const graphQlRequest = await window.geneCheckout.helpers.loadFromCheckout([
+      const graphQlRequest = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'services.graphQlRequest',
       ]);
 
@@ -100,18 +111,21 @@ export default defineStore('ppcpStore', {
           ppcp_buyer_country
 
           ppcp_googlepay_active
+          ppcp_googlepay_top_checkout
           ppcp_googlepay_title
           ppcp_googlepay_payment_action
           ppcp_googlepay_button_colour
           ppcp_googlepay_sort_order
 
           ppcp_applepay_active
+          ppcp_applepay_top_checkout
           ppcp_applepay_title
           ppcp_applepay_payment_action
           ppcp_applepay_merchant_name
           ppcp_applepay_sort_order
 
           ppcp_paypal_active
+          ppcp_paypal_top_checkout
           ppcp_paypal_vault_active
           ppcp_paypal_title
           ppcp_paypal_payment_action
@@ -136,7 +150,7 @@ export default defineStore('ppcpStore', {
           ppcp_venmo_payment_action
           ppcp_venmo_vault_active
           ppcp_venmo_sort_order
-          
+
           ppcp_apm_active
           ppcp_apm_title
           ppcp_apm_allowed_methods
@@ -149,7 +163,7 @@ export default defineStore('ppcpStore', {
           ppcp_card_three_d_secure
           ppcp_card_sort_order
         }
-      }`).then(this.handleInitialConfig);
+      }`, {}, {}, 'BlueFinchCheckoutStoreConfigPPCP').then(this.handleInitialConfig);
 
       await this.getCachedResponse(request, 'getInitialConfig');
     },
@@ -172,7 +186,7 @@ export default defineStore('ppcpStore', {
           },
           card: {
             enabled: storeconfig.ppcp_card_active === '1',
-            vaultActive: storeconfig.ppcp_card_vault_active,
+            vaultActive: storeconfig.ppcp_card_vault_active === '1',
             title: storeconfig.ppcp_card_title,
             paymentAction: storeconfig.ppcp_card_payment_action
               === 'authorize_capture' ? 'capture' : storeconfig.ppcp_card_payment_action,
@@ -182,6 +196,7 @@ export default defineStore('ppcpStore', {
           google: {
             buttonColor: storeconfig.ppcp_googlepay_button_colour,
             enabled: storeconfig.ppcp_googlepay_active === '1',
+            showOnTopCheckout: storeconfig.ppcp_googlepay_top_checkout === '1',
             paymentAction: storeconfig.ppcp_googlepay_payment_action
             === 'authorize_capture' ? 'capture' : storeconfig.ppcp_googlepay_payment_action,
             sortOrder: storeconfig.ppcp_googlepay_sort_order,
@@ -190,13 +205,14 @@ export default defineStore('ppcpStore', {
           apple: {
             merchantName: storeconfig.ppcp_applepay_merchant_name,
             enabled: storeconfig.ppcp_applepay_active === '1',
+            showOnTopCheckout: storeconfig.ppcp_applepay_top_checkout === '1',
             paymentAction: storeconfig.ppcp_applepay_payment_action
             === 'authorize_capture' ? 'capture' : storeconfig.ppcp_applepay_payment_action,
             sortOrder: storeconfig.ppcp_applepay_sort_order,
             title: storeconfig.ppcp_applepay_title,
           },
           venmo: {
-            vaultActive: storeconfig.ppcp_venmo_payment_action,
+            vaultActive: storeconfig.ppcp_venmo_vault_active === '1',
             enabled: storeconfig.ppcp_venmo_active === '1',
             paymentAction: storeconfig.ppcp_venmo_payment_action
             === 'authorize_capture' ? 'capture' : storeconfig.ppcp_venmo_payment_action,
@@ -204,14 +220,15 @@ export default defineStore('ppcpStore', {
             title: storeconfig.ppcp_venmo_title,
           },
           apm: {
-            enabled: storeconfig.ppcp_apm_active,
-            title: storeconfig.ppcp_apm_title === '1',
+            enabled: storeconfig.ppcp_apm_active === '1',
+            title: storeconfig.ppcp_apm_title,
             sortOrder: storeconfig.ppcp_apm_sort_order,
-            allowedPayments: storeconfig.ppcp_apm_allowed_methods,
+            allowedPayments: JSON.parse(storeconfig.ppcp_apm_allowed_methods),
           },
           paypal: {
             enabled: storeconfig.ppcp_paypal_active === '1',
-            vaultActive: storeconfig.ppcp_paypal_vault_active,
+            showOnTopCheckout: storeconfig.ppcp_paypal_top_checkout === '1',
+            vaultActive: storeconfig.ppcp_paypal_vault_active === '1',
             title: storeconfig.ppcp_paypal_title,
             paymentAction: storeconfig.ppcp_paypal_payment_action
             === 'authorize_capture' ? 'capture' : storeconfig.ppcp_paypal_payment_action,
@@ -227,7 +244,7 @@ export default defineStore('ppcpStore', {
             payLaterButtonShape: storeconfig
               .ppcp_paypal_paylater_button_paylater_shape,
             payLaterMessageActive: storeconfig
-              .ppcp_paypal_paylater_message_enable,
+              .ppcp_paypal_paylater_message_enable === '1',
             payLaterMessageLayout: storeconfig
               .ppcp_paypal_paylater_message_layout,
             payLaterMessageLogoType: storeconfig
@@ -245,6 +262,24 @@ export default defineStore('ppcpStore', {
       }
     },
 
+    async setPaymentIcons() {
+      const cartStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
+        'stores.useCartStore',
+      ]);
+
+      // Retrieve available payment methods from the cart store
+      const paymentMethods = cartStore.cart.available_payment_methods;
+
+      // Filter and transform the payment methods
+      const ppcpPaymentsIcons = paymentMethods
+        .filter((method) => method.code.includes('ppcp'))
+        .map((method) => ({
+          name: method.code,
+        }));
+
+      this.setData({ ppcpPaymentsIcons });
+    },
+
     getEnvironment() {
       return this.$state.environment === 'sandbox'
         ? 'TEST'
@@ -252,7 +287,7 @@ export default defineStore('ppcpStore', {
     },
 
     async mapAddress(address, email, telephone) {
-      const configStore = await window.geneCheckout.helpers.loadFromCheckout([
+      const configStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useConfigStore',
       ]);
       const [firstname, ...lastname] = address.name.split(' ');
@@ -278,7 +313,7 @@ export default defineStore('ppcpStore', {
     },
 
     async mapAppleAddress(address, email, telephone) {
-      const configStore = await window.geneCheckout.helpers.loadFromCheckout([
+      const configStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useConfigStore',
       ]);
 
@@ -303,33 +338,7 @@ export default defineStore('ppcpStore', {
       };
     },
 
-    async mapSelectedAddress(address) {
-      const configStore = await window.geneCheckout.helpers.loadFromCheckout([
-        'stores.useConfigStore',
-      ]);
-
-      const regionId = configStore.getRegionId(
-        address.countryCode,
-        address.administrativeArea,
-      );
-
-      return {
-        street: address.street,
-        postcode: address.postcode,
-        country_code: address.country.code,
-        company: address.company || '',
-        firstname: address.firstname,
-        lastname: address.lastname,
-        city: address.city,
-        telephone: address.telephone,
-        region: {
-          ...(address.region.code ? { region: address.region.code } : {}),
-          ...(regionId ? { region_id: regionId } : {}),
-        },
-      };
-    },
-
-    async makePayment(email, orderID, method, express) {
+    async makePayment(email, orderID, method, express, vault = false, apmMethod = false) {
       const payment = {
         email,
         paymentMethod: {
@@ -337,12 +346,56 @@ export default defineStore('ppcpStore', {
           additional_data: {
             'express-payment': express,
             'paypal-order-id': orderID,
+            is_active_payment_token_enabler: vault,
           },
-          extension_attributes: window.geneCheckout.helpers.getPaymentExtensionAttributes(),
+          extension_attributes: window.bluefinchCheckout.helpers.getPaymentExtensionAttributes(),
         },
       };
 
-      return window.geneCheckout.services.createPaymentRest(payment);
+      if (apmMethod) {
+        payment.paymentMethod.additional_data['apm-method'] = apmMethod;
+      }
+
+      return window.bluefinchCheckout.services.createPaymentRest(payment);
+    },
+
+    selectVaultedMethod(vaultedMethod) {
+      this.unselectVaultedMethods();
+      this.setData({
+        vaultedMethods: {
+          [vaultedMethod.publicHash]: {
+            selected: true,
+          },
+        },
+      });
+    },
+
+    unselectVaultedMethods() {
+      Object.keys(this.vaultedMethods).forEach((publicHash) => {
+        this.setData({
+          vaultedMethods: {
+            [publicHash]: {
+              selected: false,
+            },
+          },
+        });
+      });
+    },
+
+    async getVaultedMethodsData() {
+      const paymentStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
+        'stores.usePaymentStore',
+      ]);
+
+      const result = await getVaultedMethods();
+
+      this.setData({
+        vaultedMethods: result,
+      });
+
+      if (Object.keys(result).length) {
+        paymentStore.setHasVaultedMethods(true);
+      }
     },
 
     getCachedResponse(request, cacheKey, args = {}) {

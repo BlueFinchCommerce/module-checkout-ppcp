@@ -1,23 +1,23 @@
 {
-  "name": "gene-better-checkout-ppcp",
-  "version": "1.0.0",
-  "description": "## What is this?",
-  "main": "index.js",
+  "name": "bluefinchcommerce-checkout-ppcp",
+  "description": "",
+  "main": ".eslintrc",
   "scripts": {
     "lint": "eslint . --rulesdir ./vendor/magento/magento-coding-standard/eslint/rules",
     "lint-fix": "eslint . --rulesdir ./vendor/magento/magento-coding-standard/eslint/rules --fix"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/genecommerce/template-module.git"
+    "url": "git+https://github.com/bluefinchcommerce/module-checkout-ppcp.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/genecommerce/template-module/issues"
+    "url": "https://github.com/bluefinchcommerce/module-checkout-ppcp/issues"
   },
-  "homepage": "https://github.com/genecommerce/template-module#readme",
+  "homepage": "https://github.com/bluefinchcommerce/module-checkout-ppcp#readme",
   "devDependencies": {
-    "eslint": "^8"
+    "eslint": "^8.50.0"
   }
 }
+  

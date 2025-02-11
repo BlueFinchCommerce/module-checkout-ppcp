@@ -1,11 +1,11 @@
 import buildPpcpCartUrl from '../helpers/buildPpcpCartUrl';
 
-export default async (method) => {
+export default async (method, vault = null, fromCheckout = 0, hash = '') => {
   const [
     paymentStore,
     customerStore,
     cartStore,
-  ] = await window.geneCheckout.helpers.loadFromCheckout([
+  ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
     'stores.usePaymentStore',
     'stores.useCustomerStore',
     'stores.useCartStore',
@@ -20,20 +20,30 @@ export default async (method) => {
   let cartId;
 
   if (customerStore.customer.tokenType
-    === window.geneCheckout.helpers.getTokenTypes.guestUser) {
+    === window.bluefinchCheckout.helpers.getTokenTypes.guestUser) {
     if (!maskedId) {
       cartId = await getMaskedId();
     } else {
       cartId = maskedId;
     }
   } else {
-    const quote = await window.geneCheckout.services.getQuote();
+    const quote = await window.bluefinchCheckout.services.getQuote();
     cartId = quote.id;
   }
 
+  let url;
+
+  if (vault !== null && fromCheckout !== 0) {
+    url = `${await buildPpcpCartUrl()}?vault=${vault}&fromCheckout=${fromCheckout}`;
+  } else if (hash !== '' && fromCheckout !== 0) {
+    url = `${await buildPpcpCartUrl()}?public_hash=${hash}&fromCheckout=${fromCheckout}`;
+  } else {
+    url = await buildPpcpCartUrl();
+  }
+
   try {
-    const response = await window.geneCheckout.services.authenticatedRequest().post(
-      await buildPpcpCartUrl(),
+    const response = await window.bluefinchCheckout.services.authenticatedRequest().post(
+      url,
       {
         cartId,
         method,

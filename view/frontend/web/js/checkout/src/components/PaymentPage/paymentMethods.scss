@@ -1,44 +1,88 @@
-.google-pay,
-.apple-pay,
-.pay-pal {
-  &-container {
-    background-color: var(--radio-input-wrapper__background-color);
-    border: var(--radio-input-wrapper__border-weight) var(--base__border-style) var(--radio-input-wrapper__border-color);
-    border-radius: var(--radio-input-wrapper__border-radius);
-    flex-wrap: wrap;
-    line-height: 1;
-    margin-top: var(--indent__base);
-    padding: var(--indent__base);
+.ppcp-payment-methods-list {
+  .google-pay,
+  .apple-pay,
+  .pay-pal,
+  .venmo,
+  .card,
+  .apm-payment {
+    &-container {
+      background-color: var(--radio-input-wrapper__background-color);
+      border: var(--radio-input-wrapper__border-weight) var(--base__border-style) var(--radio-input-wrapper__border-color);
+      border-radius: var(--radio-input-wrapper__border-radius);
+      flex-wrap: wrap;
+      line-height: 1;
+      margin-top: var(--indent__base);
+      padding: var(--indent__base);
 
-    .selected {
-      margin-bottom: var(--indent__base);
-    }
+      .selected {
+        margin-bottom: var(--indent__base);
+      }
 
-    .ppcp-apple-pay-button {
-      apple-pay-button,
-      &.text-loading {
-        height:55px;
-        --apple-pay-button-height: var(--ppcp-express-button-height, 55px);
-        width: 100%;
+      .ppcp-apple-pay-button {
+        apple-pay-button,
+        &.text-loading {
+          height: 55px;
+          --apple-pay-button-height: var(--ppcp-express-button-height, 55px);
+          width: 100%;
+        }
+      }
+
+      #ppcp-google-pay {
+        max-height: 55px;
+
+        button {
+          height: 55px;
+        }
+      }
+
+      .actions-toolbar {
+        margin-bottom: var(--indent__m);
       }
     }
 
-    #ppcp-google-pay {
-      max-height: 55px;
+    &-content {
+      margin-top: var(--indent__base);
+    }
 
-      button {
-        height: 55px;
+    &-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+  }
+
+  .paypal-button-container {
+    max-height: none;
+    margin-bottom: var(--indent__m);
+  }
+
+  .card-fieldset {
+    border: 0;
+    padding: 0;
+    min-height: 255px; //remove cls jump
+
+    .field {
+      margin-bottom: var(--indent__s);
+    }
+
+    label {
+      padding-left: var(--indent__xs);
+      margin-bottom: var(--indent__xs);
+
+      span {
+        font-size: var(--font__s) !important;
       }
     }
   }
 
-  &-content {
-    margin-top: var(--indent__base);
+  .ppcp-store-method,
+  .recaptcha {
+    margin-bottom: var(--indent__m);
   }
 
-  &-title {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  #card-number-field-container + .error-message,
+  #card-expiry-field-container + .error-message,
+  #card-cvv-field-container + .error-message {
+    margin: 0 auto var(--indent__base);
   }
 }

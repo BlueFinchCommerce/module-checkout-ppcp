@@ -15,8 +15,8 @@ export default async (address, carrierCode, methodCode, setShippingInfo) => {
   }
 
   try {
-    const response = await window.geneCheckout.services.authenticatedRequest().post(
-      window.geneCheckout.helpers.buildCartUrl('totals-information'),
+    const response = await window.bluefinchCheckout.services.authenticatedRequest().post(
+      window.bluefinchCheckout.helpers.buildCartUrl('totals-information'),
       body,
       { headers },
     );

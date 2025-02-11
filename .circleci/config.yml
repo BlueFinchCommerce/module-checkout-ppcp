@@ -1,0 +1,172 @@
+version: 2.1
+jobs:
+  build:
+    docker:
+      - image: cimg/php:8.3-browsers
+      - image: cimg/mariadb:10.6
+        environment:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: m2build
+      - image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+        environment:
+          transport.host: 127.0.0.1
+          network.host: 127.0.0.1
+          http.port: 9200
+          cluster.name: es-cluster
+          discovery.type: single-node
+          xpack.security.enabled: "false"
+          ES_JAVA_OPTS: "-Xms256m -Xmx256m"
+    steps:
+      - checkout
+      - run:
+          name: Create magento2 working directory
+          command: |
+            mkdir -p ~/magento2
+      - run:
+          name: Waiting for MySQL startup
+          command: |
+            for i in `seq 1 20`;
+            do
+              nc -z 127.0.0.1 3306 && echo Success && exit 0
+              echo -n .
+              sleep 1
+            done
+            echo MySQL failed to start && exit 1
+      - run:
+          name: Wait for ES startup
+          command: dockerize -wait tcp://localhost:9200 -timeout 30s
+      - run:
+          name: Install System Packages
+          command: |
+            sudo apt-get update -y && sudo apt-get install -y \
+            cron \
+            git \
+            gzip \
+            libbz2-dev \
+            libfreetype6-dev \
+            libicu-dev \
+            libjpeg-dev \
+            libmcrypt-dev \
+            libonig-dev \
+            libpng-dev \
+            libsodium-dev \
+            libssh2-1-dev \
+            libxslt1-dev \
+            libzip-dev \
+            lsof \
+            default-mysql-client \
+            vim \
+            zip \
+            zlib1g-dev \
+            sendmail \
+            procps \
+            nginx
+      - run:
+          name: Install PHP Packages
+          command: |
+            sudo docker-php-ext-install \
+            sysvshm \
+            xsl
+            sudo composer self-update
+            composer config --global github-oauth.github.com $GITHUB_CHECKOUT_TOKEN
+            composer config -g allow-plugins true
+      - run:
+          working_directory: ~/magento2
+          name: Composer Create Project
+          command: php -d memory_limit=-1 /usr/local/bin/composer create-project --no-interaction --repository-url=https://mirror.mage-os.org/ magento/project-community-edition=2.4.7 .
+      - run:
+          working_directory: ~/magento2
+          name: Install Module @ CI Build Branch/Commit
+          command: |
+            REPODIR=$(realpath ~/project)
+            composer config "repositories.1" "{\"type\": \"path\", \"canonical\":true, \"url\": \"$REPODIR\", \"options\": {\"symlink\":false}}"
+            composer config "repositories.2" "{\"type\": \"path\", \"canonical\":true, \"url\": \"$REPODIR/dev/composerstub/ppcp\"}"
+            composer config "repositories.3" "{\"type\": \"vcs\", \"url\": \"https://github.com/bluefinchcommerce/module-checkout\"}"
+            composer config minimum-stability dev
+            composer config prefer-stable true
+            composer require bluefinchcommerce/module-checkout-ppcp:dev-${CIRCLE_BRANCH} --no-interaction
+      - run:
+          name: Install Magento
+          working_directory: ~/magento2
+          command: |
+            php -d memory_limit=-1 bin/magento setup:install \
+            --base-url=http://m2build.test/ \
+            --db-host=127.0.0.1 \
+            --db-name=m2build \
+            --db-user=root \
+            --db-password=root \
+            --admin-firstname=Admin \
+            --admin-lastname=User \
+            --admin-email=admin@bluefinchcommerce.co.uk \
+            --admin-user=admin \
+            --admin-password=password1 \
+            --language=en_GB \
+            --currency=GBP \
+            --timezone=Europe/London \
+            --cleanup-database \
+            --sales-order-increment-prefix="ORD$" \
+            --session-save=db \
+            --use-rewrites=1 \
+            --search-engine=elasticsearch7 \
+            --elasticsearch-host=127.0.0.1 \
+            --elasticsearch-port=9200 \
+            --elasticsearch-enable-auth=0 \
+            --elasticsearch-index-prefix="local" \
+            --elasticsearch-timeout=15
+      - run:
+          working_directory: ~/magento2
+          name: DI Compile
+          command: php -d memory_limit=-1 bin/magento setup:di:compile
+      - run:
+          working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp
+          name: Install composer modules within BlueFinch Checkout
+          command: |
+            composer install --no-interaction
+      - run:
+          name: PHPCS
+          working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp
+          command: |
+            ./vendor/bin/phpcs . --standard=Magento2 --ignore=vendor,*.css,Test --extensions=php --colors -s -p -v --runtime-set installed_paths vendor/magento/magento-coding-standard,vendor/magento/php-compatibility-fork
+      - run:
+          name: PHPStan
+          working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp
+          command: ./vendor/bin/phpstan analyse . --configuration=./phpstan.neon
+      - run:
+          name: Configure PHPunit
+          working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp
+          command: |
+            mkdir -p ~/phpunit
+      - run:
+          name: PHPUnit
+          working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp
+          command: ./vendor/bin/phpunit -c phpunit.xml
+      - run:
+          working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp/view/frontend/web/js/checkout
+          name: Clone bluefinch-ppcp-web
+          command: |
+            git clone https://x-access-token:$GH_PAT@github.com/BlueFinchCommerce/ppcp-web.git bluefinch-ppcp-web
+      - run:
+          name: NPM install to root module
+          working_directory: ~/magento2
+          command: npm --prefix vendor/bluefinchcommerce/module-checkout-ppcp i
+      - run:
+          name: NPM install to checkout app
+          working_directory: ~/magento2
+          command: npm --prefix vendor/bluefinchcommerce/module-checkout-ppcp/view/frontend/web/js/checkout i
+      - run:
+          name: npm install ./bluefinch-ppcp-web
+          working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp/view/frontend/web/js/checkout
+          command: npm install ./bluefinch-ppcp-web
+      - run:
+          name: ESLint run against checkout app
+          working_directory: ~/magento2/vendor/bluefinchcommerce/module-checkout-ppcp/view/frontend/web/js/checkout
+          command: npm run lint
+      - run:
+          name: Run build for checkout app
+          working_directory: ~/magento2
+          command: npm --prefix vendor/bluefinchcommerce/module-checkout-ppcp/view/frontend/web/js/checkout run build
+workflows:
+  build-test:
+    jobs:
+      - build:
+          context: bluefinch checkout extension

@@ -1,5 +1,5 @@
 <template>
-  <div class="ppcp-payment-methods-list" v-if="dataLoaded">
+  <div class="ppcp-payment-methods-list" v-if="dataLoaded && isPPCPenabled">
     <component
       v-for="(method, index) in sortedPaymentMethods"
       :key="index"
@@ -19,6 +19,7 @@ import PpcpApplePayPayment from './PaymentMethods/ApplePay/ApplePay.vue';
 import PpcpPayPalPayment from './PaymentMethods/PayPal/PayPal.vue';
 import PpcpVenmoPayment from './PaymentMethods/Venmo/Venmo.vue';
 import PpcpCreditCardPayment from './PaymentMethods/CreditCard/CreditCard.vue';
+import PpcpApmPayment from './PaymentMethods/Apm/Apm.vue';
 
 export default {
   name: 'PpcpPaymentPage',
@@ -29,16 +30,19 @@ export default {
       PpcpPayPalPayment: null,
       PpcpVenmoPayment: null,
       PpcpCreditCardPayment: null,
+      PpcpApmPayment: null,
       dataLoaded: false,
     };
   },
   computed: {
     ...mapState(usePpcpStore, [
+      'isPPCPenabled',
       'apple',
       'google',
       'venmo',
       'paypal',
       'card',
+      'apm',
     ]),
     sortedPaymentMethods() {
       const methods = [
@@ -47,6 +51,7 @@ export default {
         { ...this.paypal, component: this.PpcpPayPalPayment },
         { ...this.venmo, component: this.PpcpVenmoPayment },
         { ...this.card, component: this.PpcpCreditCardPayment },
+        { ...this.apm, component: this.PpcpApmPayment },
       ];
       // Sort based on sortOrder
       return methods
@@ -59,10 +64,12 @@ export default {
       cartStore,
       configStore,
       loadingStore,
-    ] = await window.geneCheckout.helpers.loadFromCheckout([
+      customerStore,
+    ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
       'stores.useCartStore',
       'stores.useConfigStore',
       'stores.useLoadingStore',
+      'stores.useCustomerStore',
     ]);
 
     loadingStore.setLoadingState(true);
@@ -72,15 +79,19 @@ export default {
     this.PpcpPayPalPayment = PpcpPayPalPayment;
     this.PpcpCreditCardPayment = PpcpCreditCardPayment;
     this.PpcpVenmoPayment = PpcpVenmoPayment;
+    this.PpcpApmPayment = PpcpApmPayment;
 
     await configStore.getInitialConfig();
     await cartStore.getCart();
     await this.getInitialConfigValues();
+    if (customerStore.isLoggedIn) {
+      await this.getVaultedMethodsData();
+    }
     this.dataLoaded = true;
     loadingStore.setLoadingState(false);
   },
   methods: {
-    ...mapActions(usePpcpStore, ['getInitialConfigValues']),
+    ...mapActions(usePpcpStore, ['getInitialConfigValues', 'getVaultedMethodsData']),
   },
 };
 </script>

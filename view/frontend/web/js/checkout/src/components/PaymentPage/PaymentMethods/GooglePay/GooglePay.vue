@@ -38,23 +38,24 @@
     />
     <div class="google-pay-content" v-if="isMethodSelected">
       <component :is="PrivacyPolicy" />
-      <component
-        :is="Recaptcha"
-        v-if="isRecaptchaVisible('placeOrder')"
-        id="placeOrder"
-        location="ppcpPayment"
-      />
+      <div class="recaptcha">
+        <component
+          :is="Recaptcha"
+          v-if="isRecaptchaVisible('placeOrder')"
+          id="placeOrder"
+          location="ppcpPaymentGoogle"
+        />
+      </div>
       <component :is="Agreements" id="ppcp-checkout-google-pay" />
     </div>
   </div>
 </template>
 
 <script>
+/* eslint-disable import/no-extraneous-dependencies */
+import ppcp from 'bluefinch-ppcp-web';
 import { mapActions, mapState } from 'pinia';
 import usePpcpStore from '../../../../stores/PpcpStore';
-
-// Helpers
-import loadScript from '../../../../helpers/addScript';
 
 // Services
 import createPPCPPaymentRest from '../../../../services/createPPCPPaymentRest';
@@ -78,6 +79,7 @@ export default {
       paymentEmitter: null,
       isPaymentMethodAvailable: null,
       selectedMethod: 'ppcp_googlepay',
+      method: 'ppcp_googlepay',
       isRecaptchaVisible: () => {},
       orderID: null,
     };
@@ -111,26 +113,13 @@ export default {
           Agreements,
         },
       },
-    } = await import(window.geneCheckout.main);
+    } = await import(window.bluefinchCheckout.main);
 
     this.Agreements = Agreements;
     this.ErrorMessage = ErrorMessage;
     this.RadioButton = RadioButton;
     this.Recaptcha = Recaptcha;
     this.PrivacyPolicy = PrivacyPolicy;
-
-    // Check if the script is already included
-    const scriptSrc = 'https://pay.google.com/gp/p/js/pay.js';
-    const existingScript = Array.from(document.scripts).find(
-      (script) => script.src === scriptSrc,
-    );
-
-    if (!existingScript) {
-      // Script not found, insert it
-      const googlePayScript = document.createElement('script');
-      googlePayScript.setAttribute('src', scriptSrc);
-      document.head.appendChild(googlePayScript);
-    }
   },
   async created() {
     const [
@@ -138,7 +127,7 @@ export default {
       paymentStore,
       configStore,
       cartStore,
-    ] = await window.geneCheckout.helpers.loadFromCheckout([
+    ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
       'stores.useRecaptchaStore',
       'stores.usePaymentStore',
       'stores.useConfigStore',
@@ -183,7 +172,6 @@ export default {
       'getEnvironment',
       'mapAddress',
       'makePayment',
-      'mapSelectedAddress',
     ]),
 
     async selectPaymentMethod() {
@@ -194,176 +182,74 @@ export default {
         this.googlePayLoaded = true;
       }
 
-      const paymentStore = await window.geneCheckout.helpers.loadFromCheckout(
+      const paymentStore = await window.bluefinchCheckout.helpers.loadFromCheckout(
         'stores.usePaymentStore',
       );
       paymentStore.selectPaymentMethod('ppcp_googlepay');
     },
 
     async initGooglePay() {
-      try {
-        await this.addSdkScript();
-        const googlePayConfig = await this.deviceSupported();
-        const clientConfig = await this.createGooglePayClient(googlePayConfig);
-        this.button = await this.createGooglePayButton(clientConfig);
-      } catch (err) {
-        console.warn(err);
-      }
-    },
-
-    async addSdkScript() {
-      const configStore = await window.geneCheckout.helpers.loadFromCheckout([
-        'stores.useConfigStore',
-      ]);
-
-      const loadPayPalScript = loadScript();
-      const params = {
-        intent: this.google.paymentAction,
-        currency: configStore.currencyCode,
-        components: 'googlepay',
-      };
-
-      if (this.environment === 'sandbox') {
-        params['buyer-country'] = this.buyerCountry;
-        params['client-id'] = this.sandboxClientId;
-      } else {
-        params['client-id'] = this.productionClientId;
-      }
-
-      return loadPayPalScript(
-        'https://www.paypal.com/sdk/js',
-        params,
-        'ppcp_googlepay',
-      );
-    },
-
-    deviceSupported() {
-      return new Promise((resolve, reject) => {
-        if (window.location.protocol !== 'https:') {
-          console.warn('Google Pay requires your checkout be served over HTTPS');
-          reject(new Error('Insecure protocol: HTTPS is required for Google Pay'));
-          return;
-        }
-
-        this.googlepay = window.paypal_ppcp_googlepay.Googlepay();
-
-        this.googlepay.config()
-          .then(async (googlePayConfig) => {
-            if (googlePayConfig.isEligible) {
-              googlePayConfig.allowedPaymentMethods.forEach((method) => {
-                //  eslint-disable-next-line no-param-reassign
-                method.parameters.billingAddressParameters.phoneNumberRequired = true;
-              });
-              resolve(googlePayConfig);
-            } else {
-              reject(new Error('Device not eligible for Google Pay'));
-            }
-          })
-          .catch((error) => {
-            reject(error);
-          });
-      });
-    },
-
-    createGooglePayClient(googlePayConfig) {
-      const paymentDataCallbacks = {
-        onPaymentAuthorized: this.onPaymentAuthorized,
-      };
-
-      if (this.onPaymentDataChanged) {
-        paymentDataCallbacks.onPaymentDataChanged = (data) => this.onPaymentDataChanged(
-          data,
-          googlePayConfig,
-        );
-      }
-
-      this.googlePayClient = new window.google.payments.api.PaymentsClient({
-        environment: this.getEnvironment(),
-        paymentDataCallbacks,
-      });
-
-      return this.googlePayClient.isReadyToPay({
-        apiVersion: googlePayConfig.apiVersion,
-        apiVersionMinor: googlePayConfig.apiVersionMinor,
-        allowedPaymentMethods: googlePayConfig.allowedPaymentMethods,
-      })
-        .then((response) => {
-          if (response.result) {
-            return googlePayConfig;
-          }
-          return null;
-        });
-    },
-
-    createGooglePayButton(clientConfig) {
-      return this.googlePayClient.createButton({
-        allowedPaymentMethods: clientConfig.allowedPaymentMethods,
-        buttonColor: this.google.buttonColor.toLowerCase(),
-        buttonType: 'short',
-        buttonSizeMode: 'fill',
-        onClick: () => this.onClick(clientConfig),
-      });
-    },
-
-    async onClick(googlePayConfig) {
       const [
-        agreementStore,
         cartStore,
         configStore,
-        loadingStore,
-        paymentStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
-        'stores.useAgreementStore',
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useCartStore',
         'stores.useConfigStore',
-        'stores.useLoadingStore',
-        'stores.usePaymentStore',
       ]);
 
-      paymentStore.setErrorMessage('');
-      // Check that the agreements (if any) is valid.
-      const agreementsValid = agreementStore.validateAgreements();
+      const element = 'ppcp-google-pay';
 
-      if (!agreementsValid) {
-        return false;
-      }
-
-      const paymentDataRequest = { ...googlePayConfig };
-      const callbackIntents = ['PAYMENT_AUTHORIZATION'];
-      const requiresShipping = this.onPaymentDataChanged && !cartStore.cart.is_virtual;
-
-      if (requiresShipping) {
-        callbackIntents.push('SHIPPING_ADDRESS', 'SHIPPING_OPTION');
-      }
-
-      paymentDataRequest.allowedPaymentMethods = googlePayConfig.allowedPaymentMethods;
-      paymentDataRequest.transactionInfo = {
-        countryCode: googlePayConfig.countryCode,
-        currencyCode: configStore.currencyCode,
-        totalPriceStatus: 'FINAL',
-        totalPrice: (cartStore.cartGrandTotal / 100).toString(),
+      const configuration = {
+        sandboxClientId: this.sandboxClientId,
+        productionClientId: this.productionClientId,
+        intent: this.google.paymentAction,
+        pageType: 'checkout',
+        environment: this.environment,
+        buyerCountry: this.buyerCountry,
+        googlePayVersion: 2,
+        transactionInfo: {
+          currencyCode: configStore.currencyCode,
+          totalPriceStatus: 'FINAL',
+          totalPrice: (cartStore.cartGrandTotal / 100).toString(),
+        },
+        button: {
+          buttonColor: this.google.buttonColor.toLowerCase(),
+        },
       };
-      paymentDataRequest.merchantInfo = googlePayConfig.merchantInfo;
-      paymentDataRequest.shippingAddressRequired = requiresShipping;
-      paymentDataRequest.shippingAddressParameters = {
-        phoneNumberRequired: requiresShipping,
+
+      const callbacks = {
+        placeOrder: (paymentData) => this.placeOrder(paymentData),
+        onPaymentAuthorized: (paymentData, googlepay) => this.onPaymentAuthorized(paymentData, googlepay),
+        onError: (error) => this.onError(error),
+        onCancel: () => this.onCancel(),
+        onValidate: () => this.onValidate(),
       };
-      paymentDataRequest.emailRequired = true;
-      paymentDataRequest.shippingOptionRequired = requiresShipping;
-      paymentDataRequest.callbackIntents = callbackIntents;
-      delete paymentDataRequest.countryCode;
-      delete paymentDataRequest.isEligible;
 
-      loadingStore.setLoadingState(true);
+      const options = { ...configuration, ...callbacks };
 
-      return this.googlePayClient.loadPaymentData(paymentDataRequest)
-        .catch((err) => {
-          console.warn(err);
-        });
+      ppcp.googlePayment(options, element);
+      this.googlePayLoaded = true;
     },
 
-    async onPaymentAuthorized(data) {
-      const cartStore = await window.geneCheckout.helpers.loadFromCheckout([
+    async onValidate() {
+      const [
+        agreementStore,
+        paymentStore,
+        recaptchaStore,
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
+        'stores.useAgreementStore',
+        'stores.usePaymentStore',
+        'stores.useRecaptchaStore',
+      ]);
+      paymentStore.setErrorMessage('');
+      const agreementsValid = agreementStore.validateAgreements();
+      const captchaValid = await recaptchaStore.validateToken('placeOrder');
+
+      return agreementsValid && captchaValid;
+    },
+
+    async onPaymentAuthorized(data, googlepay) {
+      const cartStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useCartStore',
       ]);
       //  eslint-disable-next-line no-async-promise-executor
@@ -381,22 +267,9 @@ export default {
           return;
         }
 
-        const mapBillingAddress = await this.mapAddress(
-          data.paymentMethodData.info.billingAddress,
-          data.email,
-          data.paymentMethodData.info.billingAddress.phoneNumber,
-        );
-
         try {
-          await window.geneCheckout.services
-            .setAddressesOnCart(
-              await this.mapSelectedAddress(cartStore.cart.shipping_addresses[0]),
-              mapBillingAddress,
-              data.email,
-            );
-
           // Create PPCP Payment and get the orderID
-          const ppcpOrderId = await createPPCPPaymentRest(this.selectedMethod);
+          const ppcpOrderId = await createPPCPPaymentRest(this.method);
           [this.orderID] = JSON.parse(ppcpOrderId);
 
           const confirmOrderData = {
@@ -405,7 +278,7 @@ export default {
           };
 
           // Confirm the order using Google Pay
-          const response = await this.googlepay.confirmOrder(confirmOrderData);
+          const response = await googlepay.confirmOrder(confirmOrderData);
 
           // Handle the onApprove callback
           await this.onApprove(response, data);
@@ -426,31 +299,52 @@ export default {
     },
 
     async onApprove(data, paymentData) {
-      const [
-        loadingStore,
-        paymentStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
-        'stores.useLoadingStore',
-        'stores.usePaymentStore',
-      ]);
-
       if (data.liabilityShift && data.liabilityShift !== 'POSSIBLE') {
         throw new Error('Cannot validate payment');
       } else {
-        return this.makePayment(paymentData.email, this.orderID, this.selectedMethod, false)
-          .then(() => window.geneCheckout.services.refreshCustomerData(['cart']))
-          .then(() => {
-            window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
-          })
-          .catch((err) => {
-            loadingStore.setLoadingState(false);
-            try {
-              window.geneCheckout.helpers.handleServiceError(err);
-            } catch (formattedError) {
-              paymentStore.setErrorMessage(formattedError);
-            }
-          });
+        await this.placeOrder(paymentData);
       }
+    },
+
+    async onCancel() {
+      const loadingStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
+        'stores.useLoadingStore',
+      ]);
+      loadingStore.setLoadingState(false);
+    },
+
+    async onError(error) {
+      const [
+        loadingStore,
+        paymentStore,
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
+        'stores.useLoadingStore',
+        'stores.usePaymentStore',
+      ]);
+      loadingStore.setLoadingState(false);
+      paymentStore.setErrorMessage(error);
+    },
+
+    async placeOrder(paymentData) {
+      const [
+        loadingStore,
+        paymentStore,
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
+        'stores.useLoadingStore',
+        'stores.usePaymentStore',
+      ]);
+      return this.makePayment(paymentData.email, this.orderID, this.method, false)
+        .then(() => {
+          window.location.href = window.bluefinchCheckout.helpers.getSuccessPageUrl();
+        })
+        .catch((err) => {
+          loadingStore.setLoadingState(false);
+          try {
+            window.bluefinchCheckout.helpers.handleServiceError(err);
+          } catch (formattedError) {
+            paymentStore.setErrorMessage(formattedError);
+          }
+        });
     },
   },
 };

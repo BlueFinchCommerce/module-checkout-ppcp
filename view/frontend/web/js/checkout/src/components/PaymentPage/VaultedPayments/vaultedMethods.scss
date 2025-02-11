@@ -1,0 +1,204 @@
+.ppcp-vault {
+  display: grid;
+  gap: var(--indent__base);
+  padding-bottom: var(--indent__m);
+
+  &__title {
+    display: flex;
+    padding-bottom: var(--indent__s);
+    margin-bottom: var(--ppcp-payment-title-margin, 0);
+    align-items: center;
+
+    .divider-line {
+      border-bottom: var(--divider__border);
+      margin-left: var(--indent__base);
+      flex-grow: 1;
+      display: var(--divider-line-display, block);
+    }
+  }
+
+  &__header {
+    font-size: var(--payment-page-title-mobile-font, var(--font__heading--mobile));
+    color: var(--font__color);
+    font-weight: var(--payment-page-header-font-weight, var(--font-weight__semibold));
+    font-family: var(--payment-page-header-font-family, var(--font-family__copy));
+    margin-left: var(--payment-page-title-left-margin, var(--indent__s));
+    white-space: nowrap;
+  }
+}
+
+.vaulted-paypal,
+.vaulted-venmo {
+  grid-template-columns: repeat(2, 1fr) !important;
+  grid-template-rows: auto auto !important;
+  grid-template-areas:
+        "col1 col2"
+        "col3 col3";
+
+  .ppcp-payment__payment-method-select {
+    grid-area: col2;
+  }
+
+  img {
+    grid-area: col1 !important;
+  }
+
+  .email {
+    grid-area: col3;
+  }
+}
+
+.ppcp-vaulted-methods-container {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 75%;
+  grid-gap: var(--indent__s);
+  grid-template-columns: unset;
+  overflow-x: auto;
+  padding-bottom: var(--indent__s);
+  overflow-y: hidden;
+
+  .vaulted-method {
+    display: flex;
+  }
+
+  img {
+    max-width: 30px;
+    grid-column: 1;
+    grid-row: 1;
+    height: var(--indent__base);
+    margin: 0 0 var(--indent__xl);
+
+    &.ppcp_venmo {
+      max-width: 35px;
+      height: 8px;
+      margin-bottom: 51px;
+    }
+
+    &.ppcp_paypal {
+      height: 20px;
+    }
+  }
+
+  &::-webkit-scrollbar {
+    height: var(--scroll-bar-height, 4px);
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--color__primary-grey5);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--color__primary-grey2);
+    border-radius: var(--button__border-radius);
+  }
+
+  &-1 {
+    grid-auto-columns: 100%;
+  }
+
+  .ppcp-payment__payment-method {
+    border: none;
+
+    &__header__title {
+      background: var(--selectable__background-color-active);
+      border: var(--selectable__border-weight-active) var(--base__border-style) var(--selectable__border-color-active);
+      border-radius: var(--selectable__border-radius);
+      box-shadow: none;
+      color: var(--font__color-light);
+      cursor: pointer;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: repeat(3, auto);
+      margin: 0;
+      padding: var(--indent__base);
+      min-height: 135px;
+
+      &.ppcp-payment__payment-method-disabled {
+        background: var(--selectable__background-color);
+        border: var(--selectable__border-weight) var(--base__border-style) var(--selectable__border-color);
+
+        img {
+          &.ppcp_venmo {
+            margin-bottom: 55px;
+          }
+        }
+      }
+    }
+
+    &__card-number,
+    &__name {
+      font-size: var(--font__xs);
+      grid-column: 1;
+      text-align: left;
+    }
+
+    &__expiry-label,
+    &__expiry {
+      font-size: var(--font__xs);
+      grid-column: 2;
+      text-align: right;
+    }
+
+    &__card-number,
+    &__expiry-label {
+      font-weight: var(--font-weight__regular);
+      padding-bottom: var(--indent__xs);
+    }
+
+    &__name,
+    &__expiry {
+      font-weight: var(--font-weight__semibold);
+    }
+
+    &__name {
+      grid-column: 1 / -1;
+      overflow-wrap: break-word;
+    }
+
+    &__expiry {
+      margin-top: -15px;
+    }
+
+    &-tick {
+      align-self: self-start;
+      display: flex;
+      fill: var(--ppcp-saved-card-tick-color, var(--color__semantic-success));
+      grid-column: 2;
+      grid-row: 1;
+      justify-self: flex-end;
+    }
+
+    &-select {
+      font-size: var(--font__s);
+      font-weight: var(--font-weight__regular);
+      align-self: flex-start;
+      justify-self: flex-end;
+      text-decoration: underline;
+    }
+
+    &__radio {
+      display: none;
+    }
+
+    &__expiry-label {
+      grid-row: 2;
+    }
+  }
+
+  .ppcp-store-method,
+  .recaptcha {
+    margin-bottom: var(--indent__m);
+  }
+}
+
+@media screen and (min-width: 1024px) {
+  .ppcp-vaulted-methods-container {
+    grid-auto-columns: 40%;
+
+    &-1,
+    &-2 {
+      grid-auto-columns: calc(50% - var(--indent__xs));
+    }
+  }
+}
