@@ -13,7 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "blufinch-ppcp-web": "./blufinch-ppcp-web",
+    "bluefinch-ppcp-web": "./bluefinch-ppcp-web",
     "lodash.debounce": "^4.0.8",
     "pinia": "^2.1.7",
     "vue": "^3.4.20"
