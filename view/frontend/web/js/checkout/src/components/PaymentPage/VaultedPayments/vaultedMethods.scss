@@ -27,6 +27,27 @@
   }
 }
 
+.vaulted-paypal,
+.vaulted-venmo {
+  grid-template-columns: repeat(2, 1fr) !important;
+  grid-template-rows: auto auto !important;
+  grid-template-areas:
+        "col1 col2"
+        "col3 col3";
+
+  .ppcp-payment__payment-method-select {
+    grid-area: col2;
+  }
+
+  img {
+    grid-area: col1 !important;
+  }
+
+  .email {
+    grid-area: col3;
+  }
+}
+
 .ppcp-vaulted-methods-container {
   display: grid;
   grid-auto-flow: column;
@@ -35,6 +56,11 @@
   grid-template-columns: unset;
   overflow-x: auto;
   padding-bottom: var(--indent__s);
+  overflow-y: hidden;
+
+  .vaulted-method {
+    display: flex;
+  }
 
   img {
     max-width: 30px;
@@ -45,12 +71,12 @@
 
     &.ppcp_venmo {
       max-width: 35px;
-      height: 10px;
+      height: 8px;
       margin-bottom: 51px;
     }
 
     &.ppcp_paypal {
-      height: 25px;
+      height: 20px;
     }
   }
 
@@ -74,10 +100,6 @@
   .ppcp-payment__payment-method {
     border: none;
 
-    .email {
-      max-width: 120px;
-    }
-
     &__header__title {
       background: var(--selectable__background-color-active);
       border: var(--selectable__border-weight-active) var(--base__border-style) var(--selectable__border-color-active);
@@ -90,6 +112,7 @@
       grid-template-rows: repeat(3, auto);
       margin: 0;
       padding: var(--indent__base);
+      min-height: 135px;
 
       &.ppcp-payment__payment-method-disabled {
         background: var(--selectable__background-color);
@@ -126,6 +149,15 @@
     &__name,
     &__expiry {
       font-weight: var(--font-weight__semibold);
+    }
+
+    &__name {
+      grid-column: 1 / -1;
+      overflow-wrap: break-word;
+    }
+
+    &__expiry {
+      margin-top: -15px;
     }
 
     &-tick {

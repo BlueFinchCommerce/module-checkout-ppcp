@@ -13,6 +13,7 @@
 
                 <!-- PPCP Google Pay Config -->
                 <item name="ppcp_googlepay_active" xsi:type="string">payment/ppcp_googlepay/active</item>
+                <item name="ppcp_googlepay_top_checkout" xsi:type="string">payment/ppcp_googlepay/show_on_shipping</item>
                 <item name="ppcp_googlepay_title" xsi:type="string">payment/ppcp_googlepay/title</item>
                 <item name="ppcp_googlepay_payment_action" xsi:type="string">payment/ppcp_googlepay/payment_action</item>
                 <item name="ppcp_googlepay_button_colour" xsi:type="string">payment/ppcp_googlepay/button_colour</item>
@@ -28,6 +29,7 @@
 
                 <!-- PPCP Apple Pay Config -->
                 <item name="ppcp_applepay_active" xsi:type="string">payment/ppcp_applepay/active</item>
+                <item name="ppcp_applepay_top_checkout" xsi:type="string">payment/ppcp_applepay/show_on_shipping</item>
                 <item name="ppcp_applepay_title" xsi:type="string">payment/ppcp_applepay/title</item>
                 <item name="ppcp_applepay_payment_action" xsi:type="string">payment/ppcp_applepay/payment_action</item>
                 <item name="ppcp_applepay_merchant_name" xsi:type="string">payment/ppcp_applepay/merchant_name</item>
@@ -35,6 +37,7 @@
 
                 <!-- PPCP PayPal Config -->
                 <item name="ppcp_paypal_active" xsi:type="string">payment/ppcp_paypal/active</item>
+                <item name="ppcp_paypal_top_checkout" xsi:type="string">payment/ppcp_paypal/show_on_shipping</item>
                 <item name="ppcp_paypal_vault_active" xsi:type="string">payment/ppcp_paypal_vault/active</item>
                 <item name="ppcp_paypal_title" xsi:type="string">payment/ppcp_paypal/title</item>
                 <item name="ppcp_paypal_payment_action" xsi:type="string">payment/ppcp_paypal/payment_action</item>

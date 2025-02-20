@@ -5,7 +5,7 @@ export default async (method, vault = null, fromCheckout = 0, hash = '') => {
     paymentStore,
     customerStore,
     cartStore,
-  ] = await window.geneCheckout.helpers.loadFromCheckout([
+  ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
     'stores.usePaymentStore',
     'stores.useCustomerStore',
     'stores.useCartStore',
@@ -20,14 +20,14 @@ export default async (method, vault = null, fromCheckout = 0, hash = '') => {
   let cartId;
 
   if (customerStore.customer.tokenType
-    === window.geneCheckout.helpers.getTokenTypes.guestUser) {
+    === window.bluefinchCheckout.helpers.getTokenTypes.guestUser) {
     if (!maskedId) {
       cartId = await getMaskedId();
     } else {
       cartId = maskedId;
     }
   } else {
-    const quote = await window.geneCheckout.services.getQuote();
+    const quote = await window.bluefinchCheckout.services.getQuote();
     cartId = quote.id;
   }
 
@@ -42,7 +42,7 @@ export default async (method, vault = null, fromCheckout = 0, hash = '') => {
   }
 
   try {
-    const response = await window.geneCheckout.services.authenticatedRequest().post(
+    const response = await window.bluefinchCheckout.services.authenticatedRequest().post(
       url,
       {
         cartId,

@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - develop
+      - "develop*"
       - "hotfix/*"
 
 jobs:
@@ -28,12 +28,17 @@ jobs:
         shell: bash
         run: |
           set -v
-
+                    
           git config --global pull.rebase false
           git fetch --unshallow || true
 
           cd view/frontend/web/js/checkout/
-          npm ci
+          
+          echo "cloning bluefinch-ppcp-web until it is made public"
+          git clone https://x-access-token:${{ secrets.GH_PPCP_WEB_PAT }}@github.com/BlueFinchCommerce/ppcp-web.git 
+          
+          npm i rollup
+          npm i 
           npm run build
           git add -f ./dist
 

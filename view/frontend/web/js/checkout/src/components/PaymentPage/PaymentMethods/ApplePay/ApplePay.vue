@@ -26,27 +26,17 @@
         alt="apple-pay-logo">
     </div>
     <div
-      v-if="applePayAvailable && isMethodSelected"
-      class="ppcp-apple-pay-button"
-      :class='!applePayLoaded ? "text-loading" : "ppcp-apple-pay"'>
-      <apple-pay-button
-        v-if="applePayLoaded"
-        @click="onClick"
-        id="ppcp-apple-pay"
-        type="plain"
-        locale="en" />
-    </div>
+      :style="{ display: isMethodSelected ? 'block' : 'none' }"
+      id="ppcp-apple-pay"
+      class="ppcp-apple-pay-container"
+      :class="!applePayLoaded && isMethodSelected ? 'text-loading' : ''"
+      :data-cy="'checkout-PPCPApplePay'"
+    />
     <component
       :is="ErrorMessage"
       v-if="errorMessage"
       :message="errorMessage"
       :attached="false"
-    />
-    <div
-      v-show="isMethodSelected"
-      id="ppcp-apple-pay"
-      :class="!applePayLoaded && isMethodSelected ? 'text-loading' : ''"
-      :data-cy="'checkout-PPCPApplePay'"
     />
     <div class="apple-pay-content" v-if="isMethodSelected">
       <component :is="PrivacyPolicy" />
@@ -64,11 +54,10 @@
 </template>
 
 <script>
+/* eslint-disable import/no-extraneous-dependencies */
+import ppcp from 'bluefinch-ppcp-web';
 import { mapActions, mapState } from 'pinia';
 import usePpcpStore from '../../../../stores/PpcpStore';
-
-// Helpers
-import loadScript from '../../../../helpers/addScript';
 
 // Services
 import createPPCPPaymentRest from '../../../../services/createPPCPPaymentRest';
@@ -128,7 +117,7 @@ export default {
           Agreements,
         },
       },
-    } = await import(window.geneCheckout.main);
+    } = await import(window.bluefinchCheckout.main);
 
     this.Agreements = Agreements;
     this.ErrorMessage = ErrorMessage;
@@ -142,7 +131,7 @@ export default {
       paymentStore,
       configStore,
       cartStore,
-    ] = await window.geneCheckout.helpers.loadFromCheckout([
+    ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
       'stores.useRecaptchaStore',
       'stores.usePaymentStore',
       'stores.useConfigStore',
@@ -165,10 +154,7 @@ export default {
 
     await configStore.getInitialConfig();
     await cartStore.getCart();
-    if (!window[`paypal_${this.method}`]) {
-      await this.addSdkScript();
-    }
-    this.showApplePay();
+    this.renderApplePayButton();
 
     if (this.open) {
       await this.selectPaymentMethod();
@@ -188,176 +174,115 @@ export default {
   methods: {
     ...mapActions(usePpcpStore, [
       'makePayment',
-      'mapSelectedAddress',
       'mapAppleAddress',
     ]),
 
     async selectPaymentMethod() {
       this.isMethodSelected = true;
-      const paymentStore = await window.geneCheckout.helpers.loadFromCheckout(
+      const paymentStore = await window.bluefinchCheckout.helpers.loadFromCheckout(
         'stores.usePaymentStore',
       );
       paymentStore.selectPaymentMethod('ppcp_applepay');
     },
 
-    async addSdkScript() {
-      const configStore = await window.geneCheckout.helpers.loadFromCheckout([
+    async renderApplePayButton() {
+      const configStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useConfigStore',
       ]);
 
-      const loadPayPalScript = loadScript();
-      const params = {
+      const element = 'ppcp-apple-pay';
+      const configuration = {
+        sandboxClientId: this.sandboxClientId,
+        productionClientId: this.productionClientId,
         intent: this.apple.paymentAction,
+        pageType: 'checkout',
+        environment: this.environment,
         currency: configStore.currencyCode,
-        components: 'applepay',
+        buyerCountry: this.buyerCountry,
       };
 
-      if (this.environment === 'sandbox') {
-        params['buyer-country'] = this.buyerCountry;
-        params['client-id'] = this.sandboxClientId;
-      } else {
-        params['client-id'] = this.productionClientId;
-      }
+      const callbacks = {
+        getPaymentRequest: (applePayConfig) => this.getPaymentRequest(applePayConfig),
+        onShippingContactSelect: (data, session) => this.onShippingContactSelect(data, session),
+        onShippingMethodSelect: (data, session) => this.onShippingMethodSelect(data, session),
+        onPaymentAuthorized: (data, session, applepay) => this.onPaymentAuthorized(data, session, applepay),
+        onValidate: () => this.onValidate(),
+      };
 
-      try {
-        await Promise.all([
-          loadPayPalScript(
-            'https://www.paypal.com/sdk/js',
-            params,
-            'ppcp_applepay',
-          ),
-          loadPayPalScript(
-            'https://applepay.cdn-apple.com/jsapi/v1.1.0/apple-pay-sdk.js',
-            {},
-            '',
-          ),
-        ]);
-      } catch (error) {
-        console.error('Error loading SDK scripts:', error);
-        throw new Error('Failed to load required SDK scripts.');
-      }
+      const options = { ...configuration, ...callbacks };
+
+      ppcp.applePayment(options, element);
     },
 
-    showApplePay() {
-      // If the browser doesn't support Apple Pay then return early.
-      if (
-        !window.ApplePaySession
-        || !window.ApplePaySession.canMakePayments
-        || window.location.protocol !== 'https:'
-      ) {
-        return;
-      }
-
-      this.applePayAvailable = true;
-
-      const applepay = window[`paypal_${this.method}`].Applepay();
-
-      applepay.config()
-        .then((applepayConfig) => {
-          this.applePayConfig = applepayConfig;
-          this.isEligible = !!applepayConfig.isEligible;
-          this.applePayLoaded = true;
-        })
-        .catch(() => {
-          console.error('Error while fetching Apple Pay configuration.');
-        });
-    },
-
-    async onClick() {
+    async onValidate() {
       const [
         agreementStore,
-        cartStore,
-        configStore,
-        loadingStore,
         paymentStore,
         recaptchaStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useAgreementStore',
-        'stores.useCartStore',
-        'stores.useConfigStore',
-        'stores.useLoadingStore',
         'stores.usePaymentStore',
         'stores.useRecaptchaStore',
       ]);
-
       paymentStore.setErrorMessage('');
-
-      // Check that the agreements (if any) is valid.
       const agreementsValid = agreementStore.validateAgreements();
       const captchaValid = await recaptchaStore.validateToken('placeOrder');
 
-      if (!agreementsValid || !captchaValid) {
-        return;
-      }
-
-      const applepay = window[`paypal_${this.method}`].Applepay();
-
-      try {
-        const paymentRequest = {
-          countryCode: configStore.countryCode,
-          currencyCode: configStore.currencyCode,
-          merchantCapabilities: this.applePayConfig.merchantCapabilities,
-          supportedNetworks: this.applePayConfig.supportedNetworks,
-          requiredBillingContactFields: [
-            'name',
-            'phone',
-            'email',
-            'postalAddress',
-          ],
-          requiredShippingContactFields: [],
-          total: {
-            label: this.apple.merchantName,
-            amount: (cartStore.cartGrandTotal / 100).toString(),
-            type: 'final',
-          },
-        };
-
-        const session = new window.ApplePaySession(4, paymentRequest);
-
-        session.onvalidatemerchant = (event) => {
-          applepay.validateMerchant({
-            validationUrl: event.validationURL,
-          }).then((payload) => {
-            session.completeMerchantValidation(payload.merchantSession);
-          }).catch((err) => {
-            console.error(err);
-            session.abort();
-            loadingStore.setLoadingState(false);
-          });
-        };
-
-        session.onpaymentauthorized = (data) => this.onAuthorized(data, session);
-
-        session.begin();
-      } catch (err) {
-        console.log(err);
-        paymentStore.setErrorMessage('We`re unable to take payments through Apple Pay at the moment. '
-          + 'Please try an alternative payment method.');
-      }
+      return agreementsValid && captchaValid;
     },
 
-    async onAuthorized(data, session) {
+    async getPaymentRequest(applePayConfig) {
+      this.applePayAvailable = true;
       const [
         cartStore,
         configStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
+        'stores.useCartStore',
+        'stores.useConfigStore',
+      ]);
+      const {
+        countryCode,
+        merchantCapabilities,
+        supportedNetworks,
+      } = applePayConfig;
+
+      return {
+        countryCode,
+        currencyCode: configStore.currencyCode,
+        merchantCapabilities,
+        supportedNetworks,
+        requiredBillingContactFields: [
+          'name',
+          'phone',
+          'email',
+          'postalAddress',
+        ],
+        requiredShippingContactFields: [],
+        total: {
+          label: this.apple.merchantName,
+          amount: (cartStore.cartGrandTotal / 100).toString(),
+          type: 'final',
+        },
+      };
+    },
+
+    async onPaymentAuthorized(data, session, applepay) {
+      const [
+        cartStore,
+        configStore,
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useCartStore',
         'stores.useConfigStore',
       ]);
 
-      const applepay = window[`paypal_${this.method}`].Applepay();
-
       const { billingContact } = data.payment;
+
       const billingAddress = await this.mapAppleAddress(
         billingContact,
         cartStore.cart.email,
-        cartStore.cart.shipping_addresses[0].telephone,
+        cartStore.cart.shipping_addresses[0]?.telephone
+        || cartStore.cart.billing_address?.telephone,
       );
-
-      let shippingAddress = null;
-      if (!cartStore.cart.is_virtual) {
-        shippingAddress = await this.mapSelectedAddress(cartStore.cart.shipping_addresses[0]);
-      }
 
       if (!configStore.countries.some(({ id }) => id === billingAddress.country_code)) {
         session.completePayment(window.ApplePaySession.STATUS_FAILURE);
@@ -373,18 +298,14 @@ export default {
         billingContact: data.payment.billingContact,
       }).then(async () => {
         try {
-          window.geneCheckout.services.setAddressesOnCart(
-            shippingAddress,
-            billingAddress,
-            cartStore.cart.email,
-          ).then(() => this.makePayment(
+          this.makePayment(
             cartStore.cart.email,
             this.orderID,
             this.method,
             false,
-          )).then(async () => {
+          ).then(async () => {
             session.completePayment(window.ApplePaySession.STATUS_SUCCESS);
-            window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
+            window.location.href = window.bluefinchCheckout.helpers.getSuccessPageUrl();
           });
         } catch (error) {
           console.log(error);
@@ -398,6 +319,12 @@ export default {
         }
       });
     },
+
+    // we are not using those callbacks on payment page,
+    // but they are required by ppcp-web
+    onShippingContactSelect() {},
+
+    onShippingMethodSelect() {},
   },
 };
 </script>

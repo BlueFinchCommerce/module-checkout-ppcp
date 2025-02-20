@@ -1,23 +1,18 @@
 <template>
   <div
-    v-if="applePayAvailable"
+    v-if="applePayAvailable && apple.showOnTopCheckout && apple.enabled"
+    id="ppcp-apple-pay"
+    :style="{ order: apple.sortOrder }"
     class="ppcp-apple-pay-container"
-    :class='!applePayLoaded ? "text-loading" : "ppcp-apple-pay"'>
-    <apple-pay-button
-      v-if="applePayLoaded"
-      @click="onClick"
-      id="ppcp-apple-pay"
-      type="buy"
-      locale="en" />
-  </div>
+    :class="!applePayLoaded ? 'text-loading' : 'ppcp-apple-pay'"
+  />
 </template>
 
 <script>
+/* eslint-disable import/no-extraneous-dependencies */
+import ppcp from 'bluefinch-ppcp-web';
 import { mapActions, mapState } from 'pinia';
 import usePpcpStore from '../../../stores/PpcpStore';
-
-// Helpers
-import loadScript from '../../../helpers/addScript';
 
 // Services
 import createPPCPPaymentRest from '../../../services/createPPCPPaymentRest';
@@ -52,7 +47,7 @@ export default {
       cartStore,
       paymentStore,
       configStore,
-    ] = await window.geneCheckout.helpers.loadFromCheckout([
+    ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
       'stores.useCartStore',
       'stores.usePaymentStore',
       'stores.useConfigStore',
@@ -70,9 +65,8 @@ export default {
       method.code === this.method
     ));
 
-    if (applePayConfig) {
-      await this.addSdkScript();
-      this.showApplePay();
+    if (applePayConfig && this.apple.showOnTopCheckout) {
+      this.renderApplePayButton();
     } else {
       paymentStore.removeExpressMethod(this.key);
       this.applePayLoaded = true;
@@ -81,165 +75,91 @@ export default {
   methods: {
     ...mapActions(usePpcpStore, ['getInitialConfigValues', 'makePayment', 'mapAppleAddress']),
 
-    async addSdkScript() {
-      const configStore = await window.geneCheckout.helpers.loadFromCheckout([
+    async renderApplePayButton() {
+      const configStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useConfigStore',
       ]);
 
-      const loadPayPalScript = loadScript();
-      const params = {
+      const element = 'ppcp-apple-pay';
+      const configuration = {
+        sandboxClientId: this.sandboxClientId,
+        productionClientId: this.productionClientId,
         intent: this.apple.paymentAction,
+        pageType: 'checkout',
+        environment: this.environment,
         currency: configStore.currencyCode,
-        components: 'applepay',
+        buyerCountry: this.buyerCountry,
       };
 
-      if (this.environment === 'sandbox') {
-        params['buyer-country'] = this.buyerCountry;
-        params['client-id'] = this.sandboxClientId;
-      } else {
-        params['client-id'] = this.productionClientId;
-      }
+      const callbacks = {
+        getPaymentRequest: (applePayConfig) => this.getPaymentRequest(applePayConfig),
+        onShippingContactSelect: (data, session) => this.onShippingContactSelect(data, session),
+        onShippingMethodSelect: (data, session) => this.onShippingMethodSelect(data, session),
+        onPaymentAuthorized: (data, session, applepay) => this.onPaymentAuthorized(data, session, applepay),
+        onValidate: () => this.onValidate(),
+        onClose: () => this.onClose(),
+      };
 
-      try {
-        await Promise.all([
-          loadPayPalScript(
-            'https://www.paypal.com/sdk/js',
-            params,
-            'ppcp_applepay',
-          ),
-          loadPayPalScript(
-            'https://applepay.cdn-apple.com/jsapi/v1.1.0/apple-pay-sdk.js',
-            {},
-            '',
-          ),
-        ]);
-      } catch (error) {
-        console.error('Error loading SDK scripts:', error);
-        throw new Error('Failed to load required SDK scripts.');
-      }
+      const options = { ...configuration, ...callbacks };
+
+      ppcp.applePayment(options, element);
     },
 
-    showApplePay() {
-      // If the browser doesn't support Apple Pay then return early.
-      if (
-        !window.ApplePaySession
-        || !window.ApplePaySession.canMakePayments
-        || window.location.protocol !== 'https:'
-      ) {
-        return;
-      }
-
-      this.applePayAvailable = true;
-
-      const applepay = window[`paypal_${this.method}`].Applepay();
-
-      applepay.config()
-        .then((applepayConfig) => {
-          this.applePayConfig = applepayConfig;
-          this.isEligible = !!applepayConfig.isEligible;
-          this.applePayLoaded = true;
-        })
-        .catch(() => {
-          console.error('Error while fetching Apple Pay configuration.');
-        });
-    },
-
-    async onClick() {
+    async onValidate() {
       const [
         agreementStore,
-        cartStore,
-        customerStore,
-        configStore,
-        loadingStore,
         paymentStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useAgreementStore',
-        'stores.useCartStore',
-        'stores.useCustomerStore',
-        'stores.useConfigStore',
-        'stores.useLoadingStore',
         'stores.usePaymentStore',
       ]);
-
       paymentStore.setErrorMessage('');
-
-      // Check that the agreements (if any) is valid.
-      const agreementsValid = agreementStore.validateAgreements();
-
-      if (!agreementsValid) {
-        return;
-      }
-
-      const applepay = window[`paypal_${this.method}`].Applepay();
-
-      try {
-        const requiredShippingContactFields = ['name', 'email', 'phone'];
-
-        if (!cartStore.cart.is_virtual) {
-          requiredShippingContactFields.push('postalAddress');
-        }
-
-        const paymentRequest = {
-          countryCode: configStore.countryCode,
-          currencyCode: configStore.currencyCode,
-          merchantCapabilities: this.applePayConfig.merchantCapabilities,
-          supportedNetworks: this.applePayConfig.supportedNetworks,
-          requiredShippingContactFields,
-          requiredBillingContactFields: ['postalAddress', 'name'],
-          total: {
-            label: this.apple.merchantName,
-            amount: (cartStore.cartGrandTotal / 100).toString(),
-            type: 'final',
-          },
-        };
-
-        const session = new window.ApplePaySession(4, paymentRequest);
-
-        session.onvalidatemerchant = (event) => {
-          applepay.validateMerchant({
-            validationUrl: event.validationURL,
-          }).then((payload) => {
-            session.completeMerchantValidation(payload.merchantSession);
-          }).catch((err) => {
-            // clear shipping address form
-            customerStore.createNewAddress('shipping');
-            console.error(err);
-            session.abort();
-            loadingStore.setLoadingState(false);
-          });
-        };
-
-        if (!cartStore.cart.is_virtual) {
-          session.onshippingcontactselected = (data) => this.onShippingContactSelect(data, session);
-          session.onshippingmethodselected = (data) => this.onShippingMethodSelect(data, session);
-        }
-
-        // Handle session cancellation
-        session.oncancel = () => {
-          // clear shipping address form
-          customerStore.createNewAddress('shipping');
-        };
-
-        session.onpaymentauthorized = (data) => this.onAuthorized(data, session);
-
-        session.begin();
-      } catch (err) {
-        // clear shipping address form
-        customerStore.createNewAddress('shipping');
-        await this.setApplePayError();
-      }
+      return agreementStore.validateAgreements();
     },
 
-    async onAuthorized(data, session) {
+    async getPaymentRequest(applePayConfig) {
+      this.applePayAvailable = true;
       const [
         cartStore,
         configStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useCartStore',
         'stores.useConfigStore',
       ]);
+      const {
+        countryCode,
+        merchantCapabilities,
+        supportedNetworks,
+      } = applePayConfig;
+      const requiredShippingContactFields = ['name', 'email', 'phone'];
 
-      const applepay = window[`paypal_${this.method}`].Applepay();
+      if (!cartStore.cart.is_virtual) {
+        requiredShippingContactFields.push('postalAddress');
+      }
+
+      return {
+        countryCode,
+        currencyCode: configStore.currencyCode,
+        merchantCapabilities,
+        supportedNetworks,
+        requiredShippingContactFields,
+        requiredBillingContactFields: ['postalAddress', 'name'],
+        total: {
+          label: this.apple.merchantName,
+          amount: (cartStore.cartGrandTotal / 100).toString(),
+          type: 'final',
+        },
+      };
+    },
+
+    async onPaymentAuthorized(data, session, applepay) {
+      const [
+        cartStore,
+        configStore,
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
+        'stores.useCartStore',
+        'stores.useConfigStore',
+      ]);
 
       const { shippingContact, billingContact } = data.payment;
       const email = shippingContact.emailAddress;
@@ -266,11 +186,11 @@ export default {
         billingContact: data.payment.billingContact,
       }).then(async () => {
         try {
-          window.geneCheckout.services.setAddressesOnCart(shippingAddress, billingAddress, email)
+          window.bluefinchCheckout.services.setAddressesOnCart(shippingAddress, billingAddress, email)
             .then(() => this.makePayment(email, this.orderID, this.method, true))
             .then(async () => {
               session.completePayment(window.ApplePaySession.STATUS_SUCCESS);
-              window.location.href = window.geneCheckout.helpers.getSuccessPageUrl();
+              window.location.href = window.bluefinchCheckout.helpers.getSuccessPageUrl();
             });
         } catch (error) {
           console.log(error);
@@ -290,7 +210,7 @@ export default {
         cartStore,
         configStore,
         shippingMethodsStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useCartStore',
         'stores.useConfigStore',
         'stores.useShippingMethodsStore',
@@ -313,24 +233,87 @@ export default {
       };
 
       this.address = address;
-      const result = await window.geneCheckout.services.getShippingMethods(
-        address,
-        this.method,
-        true,
-      );
-      const methods = result.shipping_addresses[0].available_shipping_methods;
 
-      const filteredMethods = methods.filter(({ method_code: methodCode }) => (
-        methodCode !== 'nominated_delivery'
-      ));
+      try {
+        const result = await window.bluefinchCheckout.services.getShippingMethods(
+          address,
+          this.method,
+          true,
+        );
 
-      this.shippingMethods = filteredMethods;
+        const methods = result.shipping_addresses[0].available_shipping_methods;
 
-      // If there are no shipping methods available show an error.
-      if (!filteredMethods.length) {
+        const filteredMethods = methods.filter(({ method_code: methodCode }) => (
+          methodCode !== 'nominated_delivery'
+        ));
+
+        this.shippingMethods = filteredMethods;
+
+        // If there are no shipping methods available show an error.
+        if (!filteredMethods.length) {
+          const errors = {
+            errors: [
+              new window.ApplePayError('addressUnserviceable', 'postalAddress', this.applePayNoShippingMethods),
+            ],
+            newTotal: {
+              label: configStore.websiteName,
+              amount: '0.00',
+              type: 'pending',
+            },
+          };
+          session.completeShippingContactSelection(errors);
+          return;
+        }
+
+        // Set the shipping method back to the first available method.
+        const selectedShipping = filteredMethods[0];
+
+        await shippingMethodsStore.submitShippingInfo(
+          selectedShipping.carrier_code,
+          selectedShipping.method_code,
+        );
+        const newShippingMethods = this.mapShippingMethods(filteredMethods);
+
+        const applePayShippingContactUpdate = {
+          newShippingMethods,
+          newTotal: {
+            label: this.applePayTotal,
+            amount: parseFloat(cartStore.cartGrandTotal / 100).toFixed(2),
+          },
+          newLineItems: [
+            {
+              type: 'final',
+              label: 'Subtotal',
+              amount: cartStore.cart.prices.subtotal_including_tax.value.toString(),
+            },
+            {
+              type: 'final',
+              label: 'Shipping',
+              amount: selectedShipping.amount.value.toString(),
+            },
+          ],
+        };
+
+        // Add discount price if available.
+        if (cartStore.cartDiscountTotal) {
+          applePayShippingContactUpdate.newLineItems.push({
+            type: 'final',
+            label: 'Discount',
+            amount: cartStore.cartDiscountTotal.toString(),
+          });
+        }
+
+        session.completeShippingContactSelection(applePayShippingContactUpdate);
+      } catch (error) {
+        console.error('Error fetching shipping methods:', error);
+
         const errors = {
           errors: [
-            new window.ApplePayError('addressUnserviceable', 'postalAddress', this.applePayNoShippingMethods),
+            new window.ApplePayError(
+              'addressUnserviceable',
+              'postalAddress',
+              'Unable to fetch shipping methods. Please try again later.',
+            ),
           ],
           newTotal: {
             label: configStore.websiteName,
@@ -339,55 +322,14 @@ export default {
           },
         };
         session.completeShippingContactSelection(errors);
-        return;
       }
-
-      // Set the shipping method back to the first available method.
-      const selectedShipping = filteredMethods[0];
-
-      await shippingMethodsStore.submitShippingInfo(
-        selectedShipping.carrier_code,
-        selectedShipping.method_code,
-      );
-      const newShippingMethods = this.mapShippingMethods(filteredMethods);
-
-      const applePayShippingContactUpdate = {
-        newShippingMethods,
-        newTotal: {
-          label: this.applePayTotal,
-          amount: parseFloat(cartStore.cartGrandTotal / 100).toFixed(2),
-        },
-        newLineItems: [
-          {
-            type: 'final',
-            label: 'Subtotal',
-            amount: cartStore.cart.prices.subtotal_including_tax.value.toString(),
-          },
-          {
-            type: 'final',
-            label: 'Shipping',
-            amount: selectedShipping.amount.value.toString(),
-          },
-        ],
-      };
-
-      // Add discount price if available.
-      if (cartStore.cartDiscountTotal) {
-        applePayShippingContactUpdate.newLineItems.push({
-          type: 'final',
-          label: 'Discount',
-          amount: cartStore.cartDiscountTotal.toString(),
-        });
-      }
-
-      session.completeShippingContactSelection(applePayShippingContactUpdate);
     },
 
     async onShippingMethodSelect(data, session) {
       const [
         cartStore,
         shippingMethodsStore,
-      ] = await window.geneCheckout.helpers.loadFromCheckout([
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useCartStore',
         'stores.useShippingMethodsStore',
       ]);
@@ -431,6 +373,15 @@ export default {
       session.completeShippingMethodSelection(applePayShippingContactUpdate);
     },
 
+    async onClose() {
+      // clear shipping address form
+
+      const customerStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
+        'stores.useCustomerStore',
+      ]);
+      customerStore.createNewAddress('shipping');
+    },
+
     mapShippingMethods(shippingMethods) {
       return shippingMethods.map((shippingMethod) => (
         {
@@ -441,16 +392,6 @@ export default {
           carrierCode: shippingMethod.carrier_code,
         }
       ));
-    },
-
-    async setApplePayError() {
-      const paymentStore = await window.geneCheckout.helpers.loadFromCheckout([
-        'stores.usePaymentStore',
-      ]);
-
-      paymentStore.setErrorMessage(
-        "We're unable to take payments through Apple Pay at the moment. Please try an alternative payment method.",
-      );
     },
   },
 };

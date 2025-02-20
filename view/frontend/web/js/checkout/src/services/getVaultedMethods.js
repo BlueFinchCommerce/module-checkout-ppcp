@@ -10,11 +10,11 @@ export default async () => {
       }
     }
   }`;
-  const methods = await window.geneCheckout.services.graphQlRequest(
+  const methods = await window.bluefinchCheckout.services.graphQlRequest(
     request,
     {},
     {},
-    'BetterCheckoutVaultedPPCP',
+    'BlueFinchCheckoutVaultedPPCP',
   ).then((response) => response.data.customerPaymentTokens?.items || []);
 
   return methods

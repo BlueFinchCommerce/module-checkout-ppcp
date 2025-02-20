@@ -1,5 +1,5 @@
 {
-    "name": "gene/module-better-checkout-ppcp",
+    "name": "bluefinchcommerce/module-checkout-ppcp",
     "description": "",
     "type": "magento2-module",
     "autoload": {
@@ -7,12 +7,14 @@
             "registration.php"
         ],
         "psr-4": {
-            "Gene\\BetterCheckoutPPCP\\": ""
+            "BlueFinch\\CheckoutPPCP\\": ""
         }
     },
     "require": {
         "magento/framework": "*",
-        "gene/module-better-checkout": "^1.0"
+        "bluefinchcommerce/module-checkout": "^1.0",
+        "paypal/module-ppcp": "*",
+        "magento/module-vault-graph-ql": "*"
     },
     "require-dev": {
         "magento/magento-coding-standard": "*",
@@ -22,22 +24,20 @@
         "squizlabs/php_codesniffer": "^3.6",
         "dealerdirect/phpcodesniffer-composer-installer": "^1.0"
     },
-    "repositories": [
-        {
+    "repositories": {
+        "magento": {
             "type": "composer",
-            "url": "https://repo.magento.com/"
+            "url": "https://mirror.mage-os.org/"
         },
-        {
-            "type": "composer",
-            "url": "https://repo.packagist.com/gene/"
+        "checkout": {
+            "type": "vcs",
+            "url": "https://github.com/bluefinchcommerce/module-checkout"
+        },
+        "stub": {
+            "type": "path",
+            "url": "./dev/composerstub/ppcp"
         }
-    ],
-    "authors": [
-        {
-            "name": "",
-            "role": "Developer"
-        }
-    ],
+    },
     "config": {
         "allow-plugins": {
             "magento/composer-dependency-version-audit-plugin": true,
