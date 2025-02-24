@@ -26,6 +26,10 @@ Remember to clear any appropriate caches.
 
 Once installed the module follows the same configuration settings as prescribed by the official PPCP for Magento integration documentation, see [PPCP for Magento](https://commercemarketplace.adobe.com/media/catalog/product/paypal-module-ppcp-1-0-0-ece/user_guides.pdf?1732699597).
 
+## Local frontend development workflow
+
+Please refer to the local frontend development workflow section of the [BlueFinch Checkout contributing guidelines](https://github.com/BlueFinchCommerce/module-checkout/blob/main/.github/CONTRIBUTING.md), that applies to all BlueFinch Checkout extension modules, such as this one.
+
 ## CircleCi
 
 CircleCi is a tool for us to use to allow for tested to be run on our modules before they are deployed.
