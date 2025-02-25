@@ -1,4 +1,4 @@
-[![CircleCI](https://dl.circleci.com/status-badge/img/gh/bluefinchcommerce/module-checkout-ppcp/tree/main.svg?style=svg&circle-token=CCIPRJ_shdRbwX6CZwdWayXko8Kf_fc053dfb47603a733a4b4265ff8be69118cffec9)](https://dl.circleci.com/status-badge/redirect/gh/bluefinchcommerce/module-checkout-ppcp/tree/main)
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/BlueFinchCommerce/module-checkout-ppcp/tree/develop.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/BlueFinchCommerce/module-checkout-ppcp/tree/develop)
 
 ![Checkout Powered by BlueFinch](./assets/logo.svg)
 
