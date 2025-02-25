@@ -78,6 +78,8 @@ jobs:
           name: Install Module @ CI Build Branch/Commit
           command: |
             REPODIR=$(realpath ~/project)
+            composer config allow-plugins.magento/* false
+            composer config allow-plugins.magento/composer-installer true
             composer config "repositories.1" "{\"type\": \"path\", \"canonical\":true, \"url\": \"$REPODIR\", \"options\": {\"symlink\":false}}"
             composer config "repositories.2" "{\"type\": \"path\", \"canonical\":true, \"url\": \"$REPODIR/dev/composerstub/ppcp\"}"
             composer config minimum-stability dev
