@@ -20,6 +20,7 @@ import PpcpPayPalPayment from './PaymentMethods/PayPal/PayPal.vue';
 import PpcpVenmoPayment from './PaymentMethods/Venmo/Venmo.vue';
 import PpcpCreditCardPayment from './PaymentMethods/CreditCard/CreditCard.vue';
 import PpcpApmPayment from './PaymentMethods/Apm/Apm.vue';
+import PpcpFastlanePayment from './PaymentMethods/Fastlane/Fastlane.vue';
 
 export default {
   name: 'PpcpPaymentPage',
@@ -31,6 +32,7 @@ export default {
       PpcpVenmoPayment: null,
       PpcpCreditCardPayment: null,
       PpcpApmPayment: null,
+      PpcpFastlanePayment: null,
       dataLoaded: false,
     };
   },
@@ -52,6 +54,7 @@ export default {
         { ...this.venmo, component: this.PpcpVenmoPayment },
         { ...this.card, component: this.PpcpCreditCardPayment },
         { ...this.apm, component: this.PpcpApmPayment },
+        { ...this.fastlane, component: this.PpcpFastlanePayment },
       ];
       // Sort based on sortOrder
       return methods
@@ -80,6 +83,7 @@ export default {
     this.PpcpCreditCardPayment = PpcpCreditCardPayment;
     this.PpcpVenmoPayment = PpcpVenmoPayment;
     this.PpcpApmPayment = PpcpApmPayment;
+    this.PpcpFastlanePayment = PpcpFastlanePayment;
 
     await configStore.getInitialConfig();
     await cartStore.getCart();
