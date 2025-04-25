@@ -12,6 +12,7 @@
 <script>
 import { mapActions, mapState } from 'pinia';
 import usePpcpStore from '../../stores/PpcpStore';
+import useFastlaneStore from '../../stores/FastlaneStore';
 
 // Components
 import PpcpGooglePayPayment from './PaymentMethods/GooglePay/GooglePay.vue';
@@ -46,16 +47,27 @@ export default {
       'card',
       'apm',
     ]),
+    ...mapState(useFastlaneStore, [
+      'config'
+    ]),
     sortedPaymentMethods() {
       const methods = [
         { ...this.google, component: this.PpcpGooglePayPayment },
         { ...this.apple, component: this.PpcpApplePayPayment },
         { ...this.paypal, component: this.PpcpPayPalPayment },
         { ...this.venmo, component: this.PpcpVenmoPayment },
-        { ...this.card, component: this.PpcpCreditCardPayment },
+        {
+          ...this.card,
+          component: this.config.paypal_ppcp_fastlane_is_active
+            ? this.PpcpFastlanePayment
+            : this.PpcpCreditCardPayment
+        },
         { ...this.apm, component: this.PpcpApmPayment },
-        { ...this.fastlane, component: this.PpcpFastlanePayment },
+        { ...this.config.paypal_ppcp_fastlane_is_active, component: this.PpcpFastlanePayment },
       ];
+
+      console.log(methods)
+
       // Sort based on sortOrder
       return methods
         .filter((method) => method.enabled)

@@ -6,6 +6,11 @@ import getAllowedBrands from '../helpers/getAllowedBrands';
 import getAllowedLocations from '../helpers/getAllowedLocations';
 import mapAddress from '../helpers/mapAddress';
 import mapAddressToFastlane from '../helpers/mapAddressToFastlane';
+import getFastlaneUserIdToken from '../helpers/getFastlaneUserIdToken';
+import loadScript from '../helpers/addScript';
+
+import usePpcpStore from './PpcpStore';
+
 
 export default defineStore('fastlaneStore', {
   state: () => ({
@@ -31,87 +36,69 @@ export default defineStore('fastlaneStore', {
       this.$patch(data);
     },
 
-    buildJsPromises() {
-      const files = [
-        'https://js.braintreegateway.com/web/3.104.0/js/client.min.js',
-        'https://js.braintreegateway.com/web/3.104.0/js/data-collector.min.js',
-        'https://js.braintreegateway.com/web/3.104.0/js/three-d-secure.min.js',
-        'https://js.braintreegateway.com/web/3.104.0/js/fastlane.min.js',
-      ];
-      const promises = [];
-
-      files.forEach((file) => {
-        const promise = new Promise((resolve) => {
-          const braintreeScript = document.createElement('script');
-          braintreeScript.setAttribute('src', file);
-          braintreeScript.onload = resolve;
-          document.head.appendChild(braintreeScript);
-        });
-        promises.push(promise);
-      });
-
-      return Promise.all(promises);
-    },
-
-    addRequiredJs() {
-      return this.getCachedResponse(this.buildJsPromises, 'addRequiredJs');
-    },
-
     async setup() {
       const { default: { stores: { useCustomerStore } } } = await import(window.bluefinchCheckout.main);
       const customerStore = useCustomerStore();
-
+      
       if (!customerStore.isLoggedIn) {
         return this.getCachedResponse(async () => {
           await this.getConfiguration();
-
+          
           // Early return if Fastlane is not active.
           if (!this.$state.config.paypal_ppcp_fastlane_is_active) {
             return;
           }
   
-  
-          const {
-            default: { stores: { useBraintreeStore } },
-          } = await import(window.bluefinchCheckout.main);
-          const braintreeStore = useBraintreeStore();
-          const { environment } = braintreeStore;
+          const ppcpStore = usePpcpStore();
+          const { environment, sandboxClientId, productionClientId } = ppcpStore;
           
-          await this.addRequiredJs();
+          // await this.addRequiredJs();
           window.localStorage.setItem('axoEnv', environment);
+  
+          const clientToken = await getFastlaneUserIdToken();
+          const params = {
+                  'client-id': environment === 'sandbox' ? sandboxClientId : productionClientId,
+                  'components': 'buttons,fastlane'
+                };
+  
+          const addPaypalScript = loadScript();
+  
+          await addPaypalScript(
+            'https://www.paypal.com/sdk/js',
+            params,
+            'ppcp_fastlane',
+            'checkout',
+            null,
+            clientToken
+          );
 
-          await braintreeStore.createClientToken();
-          const { clientToken } = braintreeStore;
-
-          const clientInstance = await window.braintree.client.create({
-            authorization: clientToken,
-          });
-          this.setData({ clientInstance });
-
-          const dataCollectorInstance = await window.braintree.dataCollector.create({
-            client: clientInstance,
-          });
-          this.setData({ dataCollectorInstance });
-
-          const fastlaneInstance = await window.braintree.fastlane.create({
-            cardOptions: {
-              allowedBrands: await getAllowedBrands(),
-            },
+          const fastlaneInstance = await window.paypal_ppcp_fastlane.Connect({
             shippingAddressOptions: {
-              allowedLocations: await getAllowedLocations(),
+              allowedLocations: getAllowedLocations(),
             },
-            authorization: clientToken,
-            client: clientInstance,
-            deviceData: dataCollectorInstance.deviceData,
-            platformOptions: {
-              authorization: clientToken,
-              client: clientInstance,
-              deviceData: dataCollectorInstance.deviceData,
-              platform: 'BT',
+            styles: {
+              root: {
+                backgroundColor: '',
+                errorColor: '',
+                fontFamily: '',
+                fontSize: '',
+                padding: '',
+                primaryColor: '',
+                textColor: '',
+              },
+              input: {
+                backgroundColor: '',
+                borderColor: '',
+                borderRadius: '',
+                borderWidth: '',
+                focusBorderColor: '',
+                textColor: '',
+              }
             },
           });
+          
           this.setData({ fastlaneInstance });
-
+          
           this.overrideGoToYouDetails();
         }, 'setup');
       }
@@ -368,7 +355,7 @@ export default defineStore('fastlaneStore', {
       const recaptchStore = useRecaptchaStore();
 
       const agreementsValid = agreementStore.validateAgreements();
-      const recaptchaValid = await recaptchStore.validateToken('braintree', 'fastlane');
+      const recaptchaValid = await recaptchStore.validateToken('placeOrder', 'ppcp_fastlane');
 
       if (!this.$state.fastlanePaymentComponent || !agreementsValid || !recaptchaValid) {
         return;
@@ -443,7 +430,7 @@ export default defineStore('fastlaneStore', {
       const paymentMethod = {
         email: customerStore.customer.email,
         paymentMethod: {
-          method: 'braintree',
+          method: 'ppcp_fastlane',
           additional_data: {
             fastlane: this.$state.profileData ? 'Yes' : 'No',
             payment_method_nonce: id,
@@ -561,7 +548,7 @@ export default defineStore('fastlaneStore', {
     async renderWatermark(selector) {
       if (this.$state.fastlaneInstance) {
         // Return early if we are on the email component but with branding disabled.
-        if (selector === '#fastlaneEmailWatermark' && !this.$state.config.paypal_ppcp_fastlane_show_branding) {
+        if (selector === '#fastlaneEmailWatermark' && !this.$state.config.paypal_ppcp_fastlane_is_active) {
           return;
         }
 
@@ -570,7 +557,7 @@ export default defineStore('fastlaneStore', {
         });
 
         fastlaneWatermark.render(selector);
-
+        
         this.setData({ fastlaneWatermark });
       }
     },

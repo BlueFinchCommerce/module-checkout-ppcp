@@ -10,6 +10,7 @@
 <script>
 import { mapActions, mapState } from 'pinia';
 import useFastlaneStore from '../../stores/FastlaneStore';
+import usePpcpStore from "../../stores/PpcpStore.js";
 
 export default {
   name: 'FastlaneWatermark',
@@ -28,11 +29,15 @@ export default {
   async mounted() {
     const {
       default: {
-        stores: { useCustomerStore },
+        stores: { useConfigStore, useCustomerStore },
       },
     } = await import(window.bluefinchCheckout.main);
     const customerStore = useCustomerStore();
-    this.userLoggedIn = customerStore.isLoggedIn;
+    const configStore = useConfigStore();
+
+    await configStore.getInitialConfig();
+    await this.getInitialConfigValues();
+    this.userLoggedIn = !!customerStore.isLoggedIn;
 
     if (!this.userLoggedIn) {
       await this.setup();
@@ -46,6 +51,7 @@ export default {
 
   methods: {
     ...mapActions(useFastlaneStore, ['setup', 'attachEmailListener', 'renderWatermark']),
+    ...mapActions(usePpcpStore, ['getInitialConfigValues']),
   },
 };
 
