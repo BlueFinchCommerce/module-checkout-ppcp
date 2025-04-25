@@ -78,6 +78,12 @@ export default defineStore('ppcpStore', {
       finishOrderUrl: '',
     },
     ppcpPaymentsIcons: [],
+    fastlane: {
+      enabled: false,
+      showCardholderName: false,
+      insightsEnabled: false,
+      policyActive: false,
+    },
   }),
   getters: {
     selectedVaultMethod: (state) => (
@@ -162,6 +168,11 @@ export default defineStore('ppcpStore', {
           ppcp_card_payment_action
           ppcp_card_three_d_secure
           ppcp_card_sort_order
+          
+          paypal_ppcp_fastlane_is_active
+          paypal_ppcp_fastlane_show_cardholder_name
+          paypal_ppcp_fastlane_insights_enabled
+          paypal_ppcp_fastlane_policy_active
         }
       }`, {}, {}, 'BlueFinchCheckoutStoreConfigPPCP').then(this.handleInitialConfig);
 
@@ -258,6 +269,12 @@ export default defineStore('ppcpStore', {
             payLaterMessageTextAlign: storeconfig
               .ppcp_paypal_paylater_message_text_align,
           },
+          fastlane: {
+            enabled: storeconfig.paypal_ppcp_fastlane_is_active === '1',
+            showCardholderName: storeconfig.paypal_ppcp_fastlane_show_cardholder_name === '1',
+            insightsEnabled: storeconfig.paypal_ppcp_fastlane_insights_enabled === '1',
+            policyActive: storeconfig.paypal_ppcp_fastlane_policy_active === '1',
+          }
         });
       }
     },

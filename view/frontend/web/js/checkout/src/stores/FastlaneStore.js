@@ -15,9 +15,6 @@ import usePpcpStore from './PpcpStore';
 export default defineStore('fastlaneStore', {
   state: () => ({
     cache: {},
-    config: {
-      paypal_ppcp_fastlane_is_active: false,
-    },
     clientInstance: null,
     threeDSecureInstance: null,
     customerContextId: null,
@@ -42,17 +39,17 @@ export default defineStore('fastlaneStore', {
       
       if (!customerStore.isLoggedIn) {
         return this.getCachedResponse(async () => {
-          await this.getConfiguration();
-          
-          // Early return if Fastlane is not active.
-          if (!this.$state.config.paypal_ppcp_fastlane_is_active) {
-            return;
-          }
-  
           const ppcpStore = usePpcpStore();
+          
+          await ppcpStore.getInitialConfigValues();
+          const { enabled } = ppcpStore.fastlane;
           const { environment, sandboxClientId, productionClientId } = ppcpStore;
           
-          // await this.addRequiredJs();
+          // Early return if Fastlane is not active.
+          if (!enabled) {
+            return;
+          }
+          
           window.localStorage.setItem('axoEnv', environment);
   
           const clientToken = await getFastlaneUserIdToken();
@@ -106,29 +103,7 @@ export default defineStore('fastlaneStore', {
       return undefined;
     },
 
-    async getConfiguration() {
-      const { default: { services: { getStoreConfig } } } = await import(window.bluefinchCheckout.main);
-
-      const configs = [
-        'paypal_ppcp_fastlane_is_active',
-        'paypal_ppcp_fastlane_show_branding',
-        'paypal_ppcp_fastlane_show_cardholder_name',
-        'paypal_ppcp_fastlane_insights_enabled',
-        'paypal_ppcp_fastlane_client_id',
-        'paypal_ppcp_fastlane_policy_active',
-      ];
-
-      const config = await getStoreConfig(configs);
-
-      this.setData({ config });
-    },
-
     async attachEmailListener() {
-      // Early return if Fastlane is not active.
-      if (!this.$state.config.paypal_ppcp_fastlane_is_active) {
-        return;
-      }
-
       const { default: { stores: { useCustomerStore } } } = await import(window.bluefinchCheckout.main);
       const customerStore = useCustomerStore();
 
@@ -326,9 +301,12 @@ export default defineStore('fastlaneStore', {
         const shippingAddress = cartStore.cart.shipping_addresses[0]
           ? mapAddressToFastlane(cartStore.cart.shipping_addresses[0])
           : {};
-
+  
+        const ppcpStore = usePpcpStore();
+        const { showCardholderName } = ppcpStore.fastlane;
+        
         // Add the card holder name field if enabled in config.
-        if (this.$state.config.paypal_ppcp_fastlane_show_cardholder_name) {
+        if (showCardholderName) {
           fields.cardholderName = {};
         }
 
@@ -341,214 +319,13 @@ export default defineStore('fastlaneStore', {
       }
     },
 
-    async createPayment() {
-      const {
-        default: {
-          stores: {
-            useAgreementStore,
-            useRecaptchaStore,
-          },
-        },
-      } = await import(window.bluefinchCheckout.main);
-
-      const agreementStore = useAgreementStore();
-      const recaptchStore = useRecaptchaStore();
-
-      const agreementsValid = agreementStore.validateAgreements();
-      const recaptchaValid = await recaptchStore.validateToken('placeOrder', 'ppcp_fastlane');
-
-      if (!this.$state.fastlanePaymentComponent || !agreementsValid || !recaptchaValid) {
-        return;
-      }
-
-      const {
-        id,
-        paymentSource: { card: { billingAddress, name } },
-      } = await this.$state.fastlanePaymentComponent.getPaymentToken();
-      const {
-        default: {
-          helpers: {
-            getSuccessPageUrl,
-            handleServiceError,
-          },
-          services: {
-            refreshCustomerData,
-          },
-          stores: {
-            useCustomerStore,
-            useLoadingStore,
-            usePaymentStore,
-            useShippingMethodsStore,
-            useValidationStore,
-          },
-        },
-      } = await import(window.bluefinchCheckout.main);
-      const customerStore = useCustomerStore();
-      const loadingStore = useLoadingStore();
-      const paymentStore = usePaymentStore();
-      const validationStore = useValidationStore();
-
-      loadingStore.setLoadingState(true);
-      paymentStore.setErrorMessage('');
-
-      const mappedAddress = await mapAddress(billingAddress);
-      const splitName = name.split(' ');
-      /* eslint-disable prefer-destructuring */
-      mappedAddress.firstname = splitName[0];
-      mappedAddress.lastname = splitName[1];
-      mappedAddress.telephone = customerStore.selected.shipping.telephone;
-
-      customerStore.createNewBillingAddress('billing');
-      customerStore.setAddressToStore(mappedAddress, 'billing');
-
-      const isValid = validationStore.validateAddress('billing') && validationStore.validateField(
-        'billing',
-        'postcode',
-        true,
-      );
-
-      if (!isValid) {
-        loadingStore.setLoadingState(false);
-        paymentStore.setErrorMessage('Please check your address format.');
-        return;
-      }
-
-      const shippingMethodsStore = useShippingMethodsStore();
-      await shippingMethodsStore.setAddressesOnCart();
-
-      const {
-        default: {
-          helpers: {
-            getPaymentExtensionAttributes,
-          },
-          services: {
-            createPaymentRest,
-          },
-        },
-      } = await import(window.bluefinchCheckout.main);
-
-      const paymentMethod = {
-        email: customerStore.customer.email,
-        paymentMethod: {
-          method: 'ppcp_fastlane',
-          additional_data: {
-            fastlane: this.$state.profileData ? 'Yes' : 'No',
-            payment_method_nonce: id,
-            is_active_payment_token_enabler: false,
-          },
-          extension_attributes: getPaymentExtensionAttributes(),
-        },
-      };
-
-      loadingStore.setLoadingState(true);
-      this.handleThreeDS(id)
-        .then((nonce) => {
-          paymentMethod.paymentMethod.additional_data.payment_method_nonce = nonce;
-          return nonce;
-        })
-        .then(() => createPaymentRest(paymentMethod))
-        .then(() => refreshCustomerData(['cart']))
-        .then(() => {
-          window.location.href = getSuccessPageUrl();
-        })
-        .catch((error) => {
-          try {
-            handleServiceError(error);
-          } catch (formattedError) {
-            paymentStore.setErrorMessage(formattedError);
-          }
-          loadingStore.setLoadingState(false);
-        });
-    },
-
-    handleThreeDS(nonce) {
-      return new Promise((resolve, reject) => {
-        import(window.bluefinchCheckout.main)
-          .then(async ({
-            default: {
-              helpers: {
-                deepClone,
-              },
-              stores: { useBraintreeStore, useCartStore, useCustomerStore },
-            },
-          }) => {
-            const braintreeStore = useBraintreeStore();
-            const cartStore = useCartStore();
-            const customerStore = useCustomerStore();
-
-            // If 3DS is disabled, skip over this step.
-            if (!braintreeStore.threeDSEnabled) {
-              resolve(nonce);
-              return;
-            }
-
-            const billingAddress = deepClone(customerStore.selected.billing);
-            billingAddress.countryCodeAlpha2 = billingAddress.country_code;
-            billingAddress.region = billingAddress.region.region_code
-              || billingAddress.region.region;
-
-            const price = cartStore.cartGrandTotal / 100;
-            const threshold = braintreeStore.threeDSThresholdAmount;
-            const challengeRequested = braintreeStore.alwaysRequestThreeDS || price >= threshold;
-
-            const threeDSecureParameters = {
-              amount: parseFloat(cartStore.cartGrandTotal / 100).toFixed(2),
-              nonce,
-              bin: {},
-              challengeRequested,
-              billingAddress,
-              onLookupComplete: (lookupData, next) => {
-                next();
-              },
-            };
-
-            const threeDSecureInstance = braintreeStore.$state.threeDSecureInstance
-              || window.braintree.threeDSecure
-                .create({
-                  version: 2,
-                  client: this.$state.clientInstance,
-                });
-
-            this.$state.threeDSecureInstance = await threeDSecureInstance;
-
-            this.$state.threeDSecureInstance.verifyCard(
-              threeDSecureParameters,
-            ).then((threeDSResponse) => {
-              const liability = {
-                shifted: threeDSResponse.liabilityShifted,
-                shiftPossible: threeDSResponse.liabilityShiftPossible,
-              };
-
-              if (liability.shifted || (!liability.shifted && !liability.shiftPossible)) {
-                resolve(threeDSResponse.nonce);
-              } else {
-                reject(new Error('Please try again with another form of payment.'));
-              }
-
-              return true;
-            })
-              .catch((error) => {
-                if (error.code === 'THREEDS_LOOKUP_VALIDATION_ERROR') {
-                  const errorMessage = error.details.originalError.details
-                    .originalError.error.message;
-                  const message = 'Please update the address and try again.';
-                  if (errorMessage === 'Billing line1 format is invalid.' && billingAddress.street[0].length > 50) {
-                    return reject(new Error(`Billing line1 must be string and less than 50 characters. ${message}`));
-                  }
-                  if (errorMessage === 'Billing line2 format is invalid.' && billingAddress.street[1].length > 50) {
-                    return reject(new Error(`Billing line2 must be string and less than 50 characters. ${message}`));
-                  }
-                }
-                return reject(error);
-              });
-          });
-      });
-    },
-
     async renderWatermark(selector) {
+      const ppcpStore = usePpcpStore();
+      const { policyActive } = ppcpStore.fastlane;
+      
       if (this.$state.fastlaneInstance) {
         // Return early if we are on the email component but with branding disabled.
-        if (selector === '#fastlaneEmailWatermark' && !this.$state.config.paypal_ppcp_fastlane_is_active) {
+        if (selector === '#fastlaneEmailWatermark' && !policyActive) {
           return;
         }
 

@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="config.paypal_fastlane_is_active && MyButton && !userLoggedIn"
+    v-if="fastlane.enabled && MyButton && !userLoggedIn"
     class="fastlane-payment"
     :class="{ active: isMethodSelected }"
   >
@@ -9,8 +9,8 @@
       :text="paymentTitle"
       :checked="isMethodSelected"
       class="fastlane-payment-radio"
-      @click="selectFastlane"
-      @keydown="selectFastlane"
+      @click="selectPaymentMethod"
+      @keydown="selectPaymentMethod"
     />
     <component
       :is="ErrorMessage"
@@ -27,12 +27,15 @@
       v-if="isMethodSelected"
       id="fastlane"
     />
-    <component :is="PrivacyPolicy" v-if="isMethodSelected" />
-    <component
-      :is="Recaptcha"
-      v-show="getTypeByPlacement"
-      id="braintree"
-      location="fastlane" />
+    <component :is="PrivacyPolicy" v-if="isMethodSelected"/>
+    <div class="recaptcha" v-if="isMethodSelected">
+      <component
+        :is="Recaptcha"
+        v-if="isRecaptchaVisible('placeOrder')"
+        id="placeOrder"
+        location="fastlane"
+      />
+    </div>
     <component
       :is="MyButton"
       v-if="isMethodSelected"
@@ -40,18 +43,27 @@
       :label="$t('Pay')"
       primary
       :disabled="buttonDisabled"
-      @click="createPayment()"
+      @click="placeFastlaneOrder"
+      @keydown="placeFastlaneOrder"
     />
   </div>
 </template>
 
 <script>
-import { mapActions, mapState } from 'pinia';
+import {mapActions, mapState} from 'pinia';
 import useFastlaneStore from '../../../../stores/FastlaneStore';
+import usePpcpStore from '../../../../stores/PpcpStore';
+
+import createPPCPPaymentRest from "../../../../services/createPPCPPaymentRest.js";
 
 export default {
   name: 'FastlanePaymentMethod',
-
+  props: {
+    open: {
+      type: Boolean,
+      required: false,
+    },
+  },
   data() {
     return {
       errorMessage: '',
@@ -68,10 +80,14 @@ export default {
       RadioButton: null,
       Recaptcha: null,
       userLoggedIn: false,
+      orderID: null,
+      isRecaptchaVisible: () => {
+      },
     };
   },
   computed: {
-    ...mapState(useFastlaneStore, ['config', 'profileData']),
+    ...mapState(useFastlaneStore, ['profileData']),
+    ...mapState(usePpcpStore, ['fastlane']),
   },
   watch: {
     selectedMethod: {
@@ -83,6 +99,11 @@ export default {
       immediate: true,
       deep: true,
     },
+  },
+  async created() {
+    if (this.open) {
+      await this.selectPaymentMethod();
+    }
   },
   async mounted() {
     const {
@@ -114,13 +135,15 @@ export default {
     const recaptchaStore = useRecaptchaStore();
     const customerStore = useCustomerStore();
 
+    this.isRecaptchaVisible = recaptchaStore.isRecaptchaVisible;
+
     this.userLoggedIn = customerStore.isLoggedIn;
     if (!this.userLoggedIn) {
       await configStore.getInitialConfig();
       await cartStore.getCart();
 
-      this.getTypeByPlacement = recaptchaStore.getTypeByPlacement('braintree');
-      this.paymentTitle = paymentStore.getPaymentMethodTitle('braintree');
+      this.getTypeByPlacement = recaptchaStore.getTypeByPlacement('placeOrder');
+      this.paymentTitle = 'Credit or Debit Card';
 
       paymentStore.$subscribe((mutation) => {
         if (typeof mutation.payload !== 'undefined'
@@ -141,25 +164,134 @@ export default {
       await this.setup();
 
       this.renderFastlanePaymentComponent(`#${this.id}`);
-
-      this.selectFastlane();
     }
   },
 
   methods: {
     ...mapActions(useFastlaneStore, [
-      'createPayment',
       'renderFastlanePaymentComponent',
       'setup',
       'unmountComponent',
     ]),
+    ...mapActions(usePpcpStore, ['makePayment']),
 
-    async selectFastlane() {
+    async selectPaymentMethod() {
       this.isMethodSelected = true;
 
-      const { default: { stores: { usePaymentStore } } } = await import(window.bluefinchCheckout.main);
-      const paymentStore = usePaymentStore();
-      paymentStore.selectPaymentMethod('fastlane');
+      const paymentStore = await window.bluefinchCheckout.helpers.loadFromCheckout(
+        'stores.usePaymentStore',
+      );
+
+      paymentStore.selectPaymentMethod('ppcp_card');
+    },
+
+    async placeFastlaneOrder() {
+      try {
+        const isValid = await this.onValidate();
+
+        if (isValid) {
+          try {
+            await this.createPayment(this);
+          } catch (error) {
+            console.error(error);
+            this.handleErrors('Cannot validate payment.');
+          }
+        } else {
+          this.handleErrors(data.errors);
+        }
+      } catch (error) {
+        console.error('Validation error:', error);
+      }
+    },
+
+    handleErrors: async (errors, self) => {
+      const [
+        paymentStore,
+        loadingStore,
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
+        'stores.usePaymentStore',
+        'stores.useLoadingStore',
+      ]);
+
+      if (typeof errors === 'string') {
+        paymentStore.setErrorMessage(errors);
+        loadingStore.setLoadingState(false);
+        self.errorMessage = errors;
+        return;
+      }
+    },
+
+    async onValidate() {
+      const [
+        agreementStore,
+        paymentStore,
+        recaptchaStore,
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
+        'stores.useAgreementStore',
+        'stores.usePaymentStore',
+        'stores.useRecaptchaStore',
+      ]);
+      paymentStore.setErrorMessage('');
+      const agreementsValid = agreementStore.validateAgreements();
+      const captchaValid = await recaptchaStore.validateToken('placeOrder');
+
+      return agreementsValid && captchaValid;
+    },
+
+
+    onApprove: async (self) => {
+      const [
+        loadingStore,
+        paymentStore,
+        cartStore,
+      ] = await window.bluefinchCheckout.helpers.loadFromCheckout([
+        'stores.useLoadingStore',
+        'stores.usePaymentStore',
+        'stores.useCartStore',
+      ]);
+
+      return self.makePayment(
+        cartStore.cart.email,
+        self.orderID,
+        'ppcp_card',
+        false,
+        false,
+      ).then(() => {
+        window.location.href = window.bluefinchCheckout.helpers.getSuccessPageUrl();
+      })
+        .catch((err) => {
+          loadingStore.setLoadingState(false);
+          paymentStore.setErrorMessage(err.message);
+        });
+    },
+
+    createPayment: async (self) => {
+      const loadingStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
+        'stores.useLoadingStore',
+      ]);
+      loadingStore.setLoadingState(true);
+
+      try {
+        const data = await createPPCPPaymentRest(
+          'ppcp_card',
+          false,
+          1,
+        );
+        const orderData = JSON.parse(data);
+
+        const [orderID] = orderData;
+        /* eslint-disable no-param-reassign */
+        self.orderID = orderID;
+
+        if (orderID) {
+          self.onApprove(self);
+        }
+
+      } catch (error) {
+        loadingStore.setLoadingState(false);
+        console.error('Error during createOrder:', error);
+        return null;
+      }
     },
   },
   unmounted() {

@@ -12,7 +12,6 @@
 <script>
 import { mapActions, mapState } from 'pinia';
 import usePpcpStore from '../../stores/PpcpStore';
-import useFastlaneStore from '../../stores/FastlaneStore';
 
 // Components
 import PpcpGooglePayPayment from './PaymentMethods/GooglePay/GooglePay.vue';
@@ -35,6 +34,7 @@ export default {
       PpcpApmPayment: null,
       PpcpFastlanePayment: null,
       dataLoaded: false,
+      userLoggedIn: false,
     };
   },
   computed: {
@@ -46,31 +46,38 @@ export default {
       'paypal',
       'card',
       'apm',
-    ]),
-    ...mapState(useFastlaneStore, [
-      'config'
+      'fastlane',
     ]),
     sortedPaymentMethods() {
-      const methods = [
-        { ...this.google, component: this.PpcpGooglePayPayment },
-        { ...this.apple, component: this.PpcpApplePayPayment },
-        { ...this.paypal, component: this.PpcpPayPalPayment },
-        { ...this.venmo, component: this.PpcpVenmoPayment },
-        {
-          ...this.card,
-          component: this.config.paypal_ppcp_fastlane_is_active
-            ? this.PpcpFastlanePayment
-            : this.PpcpCreditCardPayment
-        },
-        { ...this.apm, component: this.PpcpApmPayment },
-        { ...this.config.paypal_ppcp_fastlane_is_active, component: this.PpcpFastlanePayment },
-      ];
+      const fastlaneActive = this.fastlane.enabled && !this.userLoggedIn;
 
-      console.log(methods)
+      const regular = [
+        { ...this.google,  component: this.PpcpGooglePayPayment },
+        { ...this.apple,   component: this.PpcpApplePayPayment },
+        { ...this.paypal,  component: this.PpcpPayPalPayment   },
+        { ...this.venmo,   component: this.PpcpVenmoPayment    },
+        { ...this.apm,     component: this.PpcpApmPayment      },
+      ]
+        .filter(m => m.enabled)
+        .sort((a, b) => a.sortOrder - b.sortOrder);
 
-      // Sort based on sortOrder
-      return methods
-        .filter((method) => method.enabled)
+      if (fastlaneActive) {
+        return [
+          {
+            ...this.card,
+            sortOrder: -999,
+            component: this.PpcpFastlanePayment,
+            enabled: true,
+          },
+          ...regular,
+        ];
+      }
+
+      return [
+        ...regular,
+        { ...this.card, component: this.PpcpCreditCardPayment },
+      ]
+        .filter(m => m.enabled)
         .sort((a, b) => a.sortOrder - b.sortOrder);
     },
   },
@@ -100,7 +107,9 @@ export default {
     await configStore.getInitialConfig();
     await cartStore.getCart();
     await this.getInitialConfigValues();
-    if (customerStore.isLoggedIn) {
+
+    this.userLoggedIn = customerStore.isLoggedIn;
+    if (this.userLoggedIn) {
       await this.getVaultedMethodsData();
     }
     this.dataLoaded = true;

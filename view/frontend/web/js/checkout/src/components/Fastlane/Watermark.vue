@@ -1,7 +1,7 @@
 <template>
   <div
-    v-if="config.paypal_ppcp_fastlane_is_active
-      && config.paypal_ppcp_fastlane_policy_active && !userLoggedIn"
+    v-if="fastlane.enabled
+      && fastlane.policyActive && !userLoggedIn"
     :id="id">
     <img :alt="id" src="https://www.paypalobjects.com/fastlane-v1/assets/fastlane-with-tooltip_en_sm_light.0808.svg" />
   </div>
@@ -23,7 +23,7 @@ export default {
   },
 
   computed: {
-    ...mapState(useFastlaneStore, ['config']),
+    ...mapState(usePpcpStore, ['fastlane']),
   },
 
   async mounted() {
@@ -36,14 +36,13 @@ export default {
     const configStore = useConfigStore();
 
     await configStore.getInitialConfig();
-    await this.getInitialConfigValues();
     this.userLoggedIn = !!customerStore.isLoggedIn;
 
     if (!this.userLoggedIn) {
       await this.setup();
       this.attachEmailListener();
 
-      if (this.config.paypal_ppcp_fastlane_is_active && this.config.paypal_ppcp_fastlane_policy_active) {
+      if (this.fastlane.enabled && this.fastlane.policyActive) {
         this.renderWatermark(`#${this.id}`);
       }
     }
@@ -51,7 +50,6 @@ export default {
 
   methods: {
     ...mapActions(useFastlaneStore, ['setup', 'attachEmailListener', 'renderWatermark']),
-    ...mapActions(usePpcpStore, ['getInitialConfigValues']),
   },
 };
 
