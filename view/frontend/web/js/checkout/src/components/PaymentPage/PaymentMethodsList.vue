@@ -52,13 +52,13 @@ export default {
       const fastlaneActive = this.fastlane.enabled && !this.userLoggedIn;
 
       const regular = [
-        { ...this.google,  component: this.PpcpGooglePayPayment },
-        { ...this.apple,   component: this.PpcpApplePayPayment },
-        { ...this.paypal,  component: this.PpcpPayPalPayment   },
-        { ...this.venmo,   component: this.PpcpVenmoPayment    },
-        { ...this.apm,     component: this.PpcpApmPayment      },
+        { ...this.google, component: this.PpcpGooglePayPayment },
+        { ...this.apple, component: this.PpcpApplePayPayment },
+        { ...this.paypal, component: this.PpcpPayPalPayment },
+        { ...this.venmo, component: this.PpcpVenmoPayment },
+        { ...this.apm, component: this.PpcpApmPayment },
       ]
-        .filter(m => m.enabled)
+        .filter((m) => m.enabled)
         .sort((a, b) => a.sortOrder - b.sortOrder);
 
       if (fastlaneActive) {
@@ -77,7 +77,7 @@ export default {
         ...regular,
         { ...this.card, component: this.PpcpCreditCardPayment },
       ]
-        .filter(m => m.enabled)
+        .filter((m) => m.enabled)
         .sort((a, b) => a.sortOrder - b.sortOrder);
     },
   },

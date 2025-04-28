@@ -1,4 +1,4 @@
-export default async (id) => {
+export default async () => {
   const paymentStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
     'stores.usePaymentStore',
   ]);

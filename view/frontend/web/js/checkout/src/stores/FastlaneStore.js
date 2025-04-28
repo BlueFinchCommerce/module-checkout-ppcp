@@ -2,7 +2,6 @@ import { defineStore } from 'pinia';
 
 import debounce from 'lodash.debounce';
 
-import getAllowedBrands from '../helpers/getAllowedBrands';
 import getAllowedLocations from '../helpers/getAllowedLocations';
 import mapAddress from '../helpers/mapAddress';
 import mapAddressToFastlane from '../helpers/mapAddressToFastlane';
@@ -10,7 +9,6 @@ import getFastlaneUserIdToken from '../helpers/getFastlaneUserIdToken';
 import loadScript from '../helpers/addScript';
 
 import usePpcpStore from './PpcpStore';
-
 
 export default defineStore('fastlaneStore', {
   state: () => ({
@@ -26,6 +24,7 @@ export default defineStore('fastlaneStore', {
     email: null,
     isLookingUpUser: false,
     profileEmail: null,
+    profileAddress: null,
   }),
   getters: {},
   actions: {
@@ -36,37 +35,37 @@ export default defineStore('fastlaneStore', {
     async setup() {
       const { default: { stores: { useCustomerStore } } } = await import(window.bluefinchCheckout.main);
       const customerStore = useCustomerStore();
-      
+
       if (!customerStore.isLoggedIn) {
         return this.getCachedResponse(async () => {
           const ppcpStore = usePpcpStore();
-          
+
           await ppcpStore.getInitialConfigValues();
           const { enabled } = ppcpStore.fastlane;
           const { environment, sandboxClientId, productionClientId } = ppcpStore;
-          
+
           // Early return if Fastlane is not active.
           if (!enabled) {
             return;
           }
-          
+
           window.localStorage.setItem('axoEnv', environment);
-  
+
           const clientToken = await getFastlaneUserIdToken();
           const params = {
-                  'client-id': environment === 'sandbox' ? sandboxClientId : productionClientId,
-                  'components': 'buttons,fastlane'
-                };
-  
+            'client-id': environment === 'sandbox' ? sandboxClientId : productionClientId,
+            components: 'buttons,fastlane',
+          };
+
           const addPaypalScript = loadScript();
-  
+
           await addPaypalScript(
             'https://www.paypal.com/sdk/js',
             params,
             'ppcp_fastlane',
             'checkout',
             null,
-            clientToken
+            clientToken,
           );
 
           const fastlaneInstance = await window.paypal_ppcp_fastlane.Connect({
@@ -90,12 +89,12 @@ export default defineStore('fastlaneStore', {
                 borderWidth: '',
                 focusBorderColor: '',
                 textColor: '',
-              }
+              },
             },
           });
-          
+
           this.setData({ fastlaneInstance });
-          
+
           this.overrideGoToYouDetails();
         }, 'setup');
       }
@@ -175,23 +174,27 @@ export default defineStore('fastlaneStore', {
             || (this.$state.profileEmail && this.$state.profileEmail !== email)) {
             await this.handleShippingAddress(profileData.shippingAddress);
 
-            const address = profileData.shippingAddress;
+            const profileDataAddress = profileData.shippingAddress;
             let mappedAddress;
-            if (address) {
+
+            if (profileDataAddress) {
               mappedAddress = {
                 id: null,
                 street: [
-                  address.streetAddress,
+                  profileDataAddress.address.addressLine1,
                 ],
-                city: address.locality,
-                region: address.region,
-                region_id: configStore.getRegionId(address.countryCodeAlpha2, address.region),
-                country_code: address.countryCodeAlpha2,
-                postcode: address.postalCode,
-                company: address.company !== 'undefined' ? address.company : '',
-                telephone: address.phoneNumber,
-                firstname: address.firstName,
-                lastname: address.lastName,
+                city: profileDataAddress.address.adminArea2,
+                region: profileDataAddress.address.adminArea1,
+                region_id: configStore.getRegionId(
+                  profileDataAddress.address.countryCode,
+                  profileDataAddress.address.adminArea1,
+                ),
+                country_code: profileDataAddress.address.countryCode,
+                postcode: profileDataAddress.address.postalCode,
+                company: profileDataAddress.address.company !== 'undefined' ? profileDataAddress.address.company : '',
+                telephone: profileDataAddress.phoneNumber.nationalNumber,
+                firstname: profileDataAddress.name.firstName,
+                lastname: profileDataAddress.name.lastName,
               };
 
               const result = await getShippingMethods(mappedAddress);
@@ -301,10 +304,10 @@ export default defineStore('fastlaneStore', {
         const shippingAddress = cartStore.cart.shipping_addresses[0]
           ? mapAddressToFastlane(cartStore.cart.shipping_addresses[0])
           : {};
-  
+
         const ppcpStore = usePpcpStore();
         const { showCardholderName } = ppcpStore.fastlane;
-        
+
         // Add the card holder name field if enabled in config.
         if (showCardholderName) {
           fields.cardholderName = {};
@@ -322,7 +325,7 @@ export default defineStore('fastlaneStore', {
     async renderWatermark(selector) {
       const ppcpStore = usePpcpStore();
       const { policyActive } = ppcpStore.fastlane;
-      
+
       if (this.$state.fastlaneInstance) {
         // Return early if we are on the email component but with branding disabled.
         if (selector === '#fastlaneEmailWatermark' && !policyActive) {
@@ -334,7 +337,7 @@ export default defineStore('fastlaneStore', {
         });
 
         fastlaneWatermark.render(selector);
-        
+
         this.setData({ fastlaneWatermark });
       }
     },

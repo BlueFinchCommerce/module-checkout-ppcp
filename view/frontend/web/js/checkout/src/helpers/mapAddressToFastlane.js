@@ -1,22 +1,19 @@
-export default (address) => {
-  const formattedAddress = {
-    firstName: address.firstname,
-    lastName: address.lastname,
-    company: address.company,
-    locality: address.city,
-    region: address.region.code,
-    postalCode: address.postcode,
-    countryCodeAlpha2: address.country.code,
-    phoneNumber: address.telephone,
+export default function mapAddressToFastlane(address = {}) {
+  return {
+    countryId: address.country?.code ?? null,
+    regionId: address.region?.id ?? null,
+    regionCode: address.region?.code ?? null,
+    region: address.region?.name ?? null,
+    street: [
+      address.street?.[0] ?? '',
+      address.street?.[1] ?? '',
+    ],
+    company: address.company ?? '',
+    telephone: address.telephone ?? '',
+    postcode: address.postcode ?? '',
+    city: address.city ?? '',
+    firstname: address.firstname ?? '',
+    lastname: address.lastname ?? '',
+    saveInAddressBook: null,
   };
-
-  // Street needs a little bit of extra work because it can be more than two lines.
-  formattedAddress.streetAddress = address.street?.[0];
-
-  // If there is a second line available then join all of the remaining array properties together.
-  if (address.street?.[1]) {
-    formattedAddress.extendedAddress = address.street.slice(1).join(', ');
-  }
-
-  return formattedAddress;
-};
+}

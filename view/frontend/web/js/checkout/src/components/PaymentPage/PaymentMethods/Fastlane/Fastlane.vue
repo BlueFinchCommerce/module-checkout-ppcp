@@ -27,7 +27,7 @@
       v-if="isMethodSelected"
       id="fastlane"
     />
-    <component :is="PrivacyPolicy" v-if="isMethodSelected"/>
+    <component :is="PrivacyPolicy" v-if="isMethodSelected" />
     <div class="recaptcha" v-if="isMethodSelected">
       <component
         :is="Recaptcha"
@@ -50,11 +50,11 @@
 </template>
 
 <script>
-import {mapActions, mapState} from 'pinia';
+import { mapActions, mapState } from 'pinia';
 import useFastlaneStore from '../../../../stores/FastlaneStore';
 import usePpcpStore from '../../../../stores/PpcpStore';
 
-import createPPCPPaymentRest from "../../../../services/createPPCPPaymentRest.js";
+import createPPCPPaymentRest from '../../../../services/createPPCPPaymentRest';
 
 export default {
   name: 'FastlanePaymentMethod',
@@ -86,7 +86,7 @@ export default {
     };
   },
   computed: {
-    ...mapState(useFastlaneStore, ['profileData']),
+    ...mapState(useFastlaneStore, ['profileData', 'fastlanePaymentComponent']),
     ...mapState(usePpcpStore, ['fastlane']),
   },
   watch: {
@@ -191,20 +191,19 @@ export default {
 
         if (isValid) {
           try {
-            await this.createPayment(this);
+            const { id } = await this.getPaymentToken();
+            await this.createPayment(this, id);
           } catch (error) {
             console.error(error);
             this.handleErrors('Cannot validate payment.');
           }
-        } else {
-          this.handleErrors(data.errors);
         }
       } catch (error) {
         console.error('Validation error:', error);
       }
     },
 
-    handleErrors: async (errors, self) => {
+    async handleErrors(errors) {
       const [
         paymentStore,
         loadingStore,
@@ -216,8 +215,7 @@ export default {
       if (typeof errors === 'string') {
         paymentStore.setErrorMessage(errors);
         loadingStore.setLoadingState(false);
-        self.errorMessage = errors;
-        return;
+        this.errorMessage = errors;
       }
     },
 
@@ -238,7 +236,6 @@ export default {
       return agreementsValid && captchaValid;
     },
 
-
     onApprove: async (self) => {
       const [
         loadingStore,
@@ -250,12 +247,17 @@ export default {
         'stores.useCartStore',
       ]);
 
+      const fastlaneProfile = self.profileData !== null ? 'Yes' : 'No';
+
       return self.makePayment(
         cartStore.cart.email,
         self.orderID,
         'ppcp_card',
         false,
         false,
+        false,
+        true,
+        fastlaneProfile,
       ).then(() => {
         window.location.href = window.bluefinchCheckout.helpers.getSuccessPageUrl();
       })
@@ -265,7 +267,11 @@ export default {
         });
     },
 
-    createPayment: async (self) => {
+    async getPaymentToken() {
+      return this.fastlanePaymentComponent.getPaymentToken();
+    },
+
+    createPayment: async (self, singleUseToken) => {
       const loadingStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useLoadingStore',
       ]);
@@ -276,6 +282,8 @@ export default {
           'ppcp_card',
           false,
           1,
+          '',
+          singleUseToken,
         );
         const orderData = JSON.parse(data);
 
@@ -287,6 +295,7 @@ export default {
           self.onApprove(self);
         }
 
+        return orderID;
       } catch (error) {
         loadingStore.setLoadingState(false);
         console.error('Error during createOrder:', error);

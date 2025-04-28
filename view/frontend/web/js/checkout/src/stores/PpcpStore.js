@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import getVaultedMethods from '../services/getVaultedMethods';
+import mapAddressToFastlane from '../helpers/mapAddressToFastlane';
 
 export default defineStore('ppcpStore', {
   state: () => ({
@@ -274,7 +275,7 @@ export default defineStore('ppcpStore', {
             showCardholderName: storeconfig.paypal_ppcp_fastlane_show_cardholder_name === '1',
             insightsEnabled: storeconfig.paypal_ppcp_fastlane_insights_enabled === '1',
             policyActive: storeconfig.paypal_ppcp_fastlane_policy_active === '1',
-          }
+          },
         });
       }
     },
@@ -355,22 +356,49 @@ export default defineStore('ppcpStore', {
       };
     },
 
-    async makePayment(email, orderID, method, express, vault = false, apmMethod = false) {
+    async makePayment(
+      email,
+      orderID,
+      method,
+      express,
+      vault = false,
+      apmMethod = false,
+      fastlaneActive = false,
+      fastlaneProfile = null,
+    ) {
+      const data = {
+        'express-payment': express,
+        'paypal-order-id': orderID,
+        is_active_payment_token_enabler: vault,
+      };
+
+      const cartStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
+        'stores.useCartStore',
+      ]);
+
       const payment = {
         email,
         paymentMethod: {
           method,
-          additional_data: {
-            'express-payment': express,
-            'paypal-order-id': orderID,
-            is_active_payment_token_enabler: vault,
-          },
+          additional_data: data,
           extension_attributes: window.bluefinchCheckout.helpers.getPaymentExtensionAttributes(),
         },
       };
 
+      if (fastlaneActive) {
+        data.fastlane = fastlaneActive;
+        data['fastlane-profile'] = fastlaneProfile;
+
+        if (fastlaneProfile === 'Yes') {
+          // Retrieve shipping/billing address from the cart store
+          const profileBillingAddress = cartStore.cart.billing_address
+            ? cartStore.cart.billing_addres : cartStore.cart.shipping_addresses[0];
+          payment.billingAddress = mapAddressToFastlane(profileBillingAddress);
+        }
+      }
+
       if (apmMethod) {
-        payment.paymentMethod.additional_data['apm-method'] = apmMethod;
+        data['apm-method'] = apmMethod;
       }
 
       return window.bluefinchCheckout.services.createPaymentRest(payment);

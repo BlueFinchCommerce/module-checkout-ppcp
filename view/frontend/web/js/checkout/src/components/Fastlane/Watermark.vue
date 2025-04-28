@@ -10,7 +10,7 @@
 <script>
 import { mapActions, mapState } from 'pinia';
 import useFastlaneStore from '../../stores/FastlaneStore';
-import usePpcpStore from "../../stores/PpcpStore.js";
+import usePpcpStore from '../../stores/PpcpStore';
 
 export default {
   name: 'FastlaneWatermark',
