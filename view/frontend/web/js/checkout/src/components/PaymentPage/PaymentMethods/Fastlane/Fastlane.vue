@@ -117,7 +117,7 @@ export default {
           Recaptcha,
         },
         stores: {
-          useCartStore, useConfigStore, usePaymentStore, useRecaptchaStore, useCustomerStore,
+          useCartStore, useConfigStore, usePaymentStore, useRecaptchaStore, useCustomerStore, useLoadingStore
         },
       },
     } = await import(window.bluefinchCheckout.main);
@@ -134,11 +134,14 @@ export default {
     const paymentStore = usePaymentStore();
     const recaptchaStore = useRecaptchaStore();
     const customerStore = useCustomerStore();
+    const loadingStore = useLoadingStore();
 
     this.isRecaptchaVisible = recaptchaStore.isRecaptchaVisible;
 
     this.userLoggedIn = customerStore.isLoggedIn;
     if (!this.userLoggedIn) {
+      loadingStore.setLoadingState(true);
+
       await configStore.getInitialConfig();
       await cartStore.getCart();
 
@@ -164,6 +167,8 @@ export default {
       await this.setup();
 
       this.renderFastlanePaymentComponent(`#${this.id}`);
+
+      loadingStore.setLoadingState(false);
     }
   },
 

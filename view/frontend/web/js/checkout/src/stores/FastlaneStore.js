@@ -316,6 +316,8 @@ export default defineStore('fastlaneStore', {
         const fastlanePaymentComponent = await this.$state.fastlaneInstance
           .FastlanePaymentComponent({ fields, shippingAddress });
 
+        console.log(selector)
+        
         fastlanePaymentComponent.render(selector);
 
         this.setData({ fastlanePaymentComponent });
