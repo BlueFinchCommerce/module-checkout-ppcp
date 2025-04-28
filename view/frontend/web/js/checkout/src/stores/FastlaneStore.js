@@ -41,7 +41,7 @@ export default defineStore('fastlaneStore', {
           const ppcpStore = usePpcpStore();
 
           await ppcpStore.getInitialConfigValues();
-          const { enabled } = ppcpStore.fastlane;
+          const { enabled, styles } = ppcpStore.fastlane;
           const { environment, sandboxClientId, productionClientId } = ppcpStore;
 
           // Early return if Fastlane is not active.
@@ -74,21 +74,21 @@ export default defineStore('fastlaneStore', {
             },
             styles: {
               root: {
-                backgroundColor: '',
-                errorColor: '',
-                fontFamily: '',
-                fontSize: '',
-                padding: '',
-                primaryColor: '',
-                textColor: '',
+                backgroundColor: styles.root.bg,
+                errorColor: styles.root.errorColor,
+                fontFamily: styles.root.fontFamily,
+                fontSize: styles.root.fontSize,
+                padding: styles.root.paddings,
+                primaryColor: styles.root.primaryColor,
+                textColor: styles.root.textColor,
               },
               input: {
-                backgroundColor: '',
-                borderColor: '',
-                borderRadius: '',
-                borderWidth: '',
-                focusBorderColor: '',
-                textColor: '',
+                backgroundColor: styles.inputs.bg,
+                borderColor: styles.inputs.borderColor,
+                borderRadius: styles.inputs.borderRadius,
+                borderWidth: styles.inputs.borderWidth,
+                focusBorderColor: styles.inputs.focusBorderColor,
+                textColor: styles.inputs.textColor,
               },
             },
           });
@@ -316,8 +316,6 @@ export default defineStore('fastlaneStore', {
         const fastlanePaymentComponent = await this.$state.fastlaneInstance
           .FastlanePaymentComponent({ fields, shippingAddress });
 
-        console.log(selector)
-        
         fastlanePaymentComponent.render(selector);
 
         this.setData({ fastlanePaymentComponent });

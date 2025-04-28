@@ -84,6 +84,25 @@ export default defineStore('ppcpStore', {
       showCardholderName: false,
       insightsEnabled: false,
       policyActive: false,
+      styles: {
+        root: {
+          bg: '',
+          errorColor: '',
+          fontFamily: '',
+          fontSize: '',
+          paddings: '',
+          primaryColor: '',
+          textColor: '',
+        },
+        inputs: {
+          bg: '',
+          borderColor: '',
+          borderRadius: '',
+          borderWidth: '',
+          focusBorderColor: '',
+          textColor: '',
+        },
+      },
     },
   }),
   getters: {
@@ -174,6 +193,21 @@ export default defineStore('ppcpStore', {
           paypal_ppcp_fastlane_show_cardholder_name
           paypal_ppcp_fastlane_insights_enabled
           paypal_ppcp_fastlane_policy_active
+          
+          paypal_ppcp_fastlane_root_styles_bg
+          paypal_ppcp_fastlane_root_styles_error_colour
+          paypal_ppcp_fastlane_root_styles_font_family
+          paypal_ppcp_fastlane_root_styles_font_size
+          paypal_ppcp_fastlane_root_styles_padding
+          paypal_ppcp_fastlane_root_styles_primary_color
+          paypal_ppcp_fastlane_root_styles_text_color
+          
+          paypal_ppcp_fastlane_styling_input_bg
+          paypal_ppcp_fastlane_styling_input_border_color
+          paypal_ppcp_fastlane_styling_input_border_radius
+          paypal_ppcp_fastlane_styling_input_border_width
+          paypal_ppcp_fastlane_styling_input_focus_border_color
+          paypal_ppcp_fastlane_styling_input_text_color
         }
       }`, {}, {}, 'BlueFinchCheckoutStoreConfigPPCP').then(this.handleInitialConfig);
 
@@ -275,6 +309,25 @@ export default defineStore('ppcpStore', {
             showCardholderName: storeconfig.paypal_ppcp_fastlane_show_cardholder_name === '1',
             insightsEnabled: storeconfig.paypal_ppcp_fastlane_insights_enabled === '1',
             policyActive: storeconfig.paypal_ppcp_fastlane_policy_active === '1',
+            styles: {
+              root: {
+                bg: storeconfig.paypal_ppcp_fastlane_root_styles_bg,
+                errorColor: storeconfig.paypal_ppcp_fastlane_root_styles_error_colour,
+                fontFamily: storeconfig.paypal_ppcp_fastlane_root_styles_font_family,
+                fontSize: storeconfig.paypal_ppcp_fastlane_root_styles_font_size,
+                paddings: storeconfig.paypal_ppcp_fastlane_root_styles_padding,
+                primaryColor: storeconfig.paypal_ppcp_fastlane_root_styles_primary_color,
+                textColor: storeconfig.paypal_ppcp_fastlane_root_styles_text_color,
+              },
+              inputs: {
+                bg: storeconfig.paypal_ppcp_fastlane_styling_input_bg,
+                borderColor: storeconfig.paypal_ppcp_fastlane_styling_input_border_color,
+                borderRadius: storeconfig.paypal_ppcp_fastlane_styling_input_border_radius,
+                borderWidth: storeconfig.paypal_ppcp_fastlane_styling_input_border_width,
+                focusBorderColor: storeconfig.paypal_ppcp_fastlane_styling_input_focus_border_color,
+                textColor: storeconfig.paypal_ppcp_fastlane_styling_input_text_color,
+              },
+            },
           },
         });
       }

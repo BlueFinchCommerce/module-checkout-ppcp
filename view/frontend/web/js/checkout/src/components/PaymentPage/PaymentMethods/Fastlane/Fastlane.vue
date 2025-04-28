@@ -117,7 +117,7 @@ export default {
           Recaptcha,
         },
         stores: {
-          useCartStore, useConfigStore, usePaymentStore, useRecaptchaStore, useCustomerStore, useLoadingStore
+          useCartStore, useConfigStore, usePaymentStore, useRecaptchaStore, useCustomerStore, useLoadingStore,
         },
       },
     } = await import(window.bluefinchCheckout.main);
