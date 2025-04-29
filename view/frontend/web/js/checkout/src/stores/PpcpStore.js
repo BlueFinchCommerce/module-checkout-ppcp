@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import getVaultedMethods from '../services/getVaultedMethods';
-import mapAddressToFastlane from '../helpers/mapAddressToFastlane';
+import mapAddressToMagento from '../helpers/mapAddressToMagento';
 
 export default defineStore('ppcpStore', {
   state: () => ({
@@ -445,8 +445,9 @@ export default defineStore('ppcpStore', {
         if (fastlaneProfile === 'Yes') {
           // Retrieve shipping/billing address from the cart store
           const profileBillingAddress = cartStore.cart.billing_address
-            ? cartStore.cart.billing_addres : cartStore.cart.shipping_addresses[0];
-          payment.billingAddress = mapAddressToFastlane(profileBillingAddress);
+            ? cartStore.cart.billing_address : cartStore.cart.shipping_addresses[0];
+
+          payment.billingAddress = await mapAddressToMagento(profileBillingAddress);
         }
       }
 

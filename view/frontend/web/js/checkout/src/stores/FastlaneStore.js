@@ -2,11 +2,12 @@ import { defineStore } from 'pinia';
 
 import debounce from 'lodash.debounce';
 
-import getAllowedLocations from '../helpers/getAllowedLocations';
-import mapAddress from '../helpers/mapAddress';
-import mapAddressToFastlane from '../helpers/mapAddressToFastlane';
-import getFastlaneUserIdToken from '../helpers/getFastlaneUserIdToken';
+import getAllowedLocations from '../helpers/fastlane/getAllowedLocations';
+import mapShippingAddress from '../helpers/fastlane/mapShippingAddress';
+import mapAddressToFastlane from '../helpers/fastlane/mapAddressToFastlane';
+import getFastlaneUserIdToken from '../helpers/fastlane/getFastlaneUserIdToken';
 import loadScript from '../helpers/addScript';
+import mapFastlaneProfileToFormatted from '../helpers/fastlane/mapFastlaneProfileToFormatted';
 
 import usePpcpStore from './PpcpStore';
 
@@ -252,7 +253,7 @@ export default defineStore('fastlaneStore', {
       customerStore.setEmailEntered();
       customerStore.setAddressAsCustom('shipping');
 
-      const mappedAddress = await mapAddress(shippingAddress);
+      const mappedAddress = await mapShippingAddress(shippingAddress);
       customerStore.setAddressToStore(mappedAddress, 'shipping');
       customerStore.setAddressAsCustom('shipping');
 
@@ -354,7 +355,8 @@ export default defineStore('fastlaneStore', {
           } = await this.$state.fastlaneInstance.profile.showShippingAddressSelector();
 
           if (selectionChanged) {
-            this.handleShippingAddress(selectedAddress);
+            const formattedProfileAddress = mapFastlaneProfileToFormatted(selectedAddress);
+            this.handleShippingAddress(formattedProfileAddress);
           }
         } else {
           stepsStore.goToYouDetails();
