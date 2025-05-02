@@ -3,7 +3,7 @@ export default function loadScript() {
 
   const generateKey = (url, namespace, token = '') => `${url}${namespace}${token}`;
 
-  return async function (url, params, namespace = 'paypal', pageType = 'checkout', userIdToken = '') {
+  return async function (url, params, namespace = 'paypal', pageType = 'checkout', userIdToken = '', clientToken = '') {
     if (params) {
       const queryString = new URLSearchParams(params).toString();
       /* eslint-disable no-param-reassign */
@@ -27,6 +27,11 @@ export default function loadScript() {
 
       if (userIdToken) {
         script.dataset.userIdToken = userIdToken;
+      }
+
+      if (clientToken) {
+        script.dataset.sdkClientToken = clientToken;
+        script.dataset.sdkIntegrationSource = 'developer-studio';
       }
 
       script.onload = () => {

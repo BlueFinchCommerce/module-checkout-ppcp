@@ -20,6 +20,7 @@ import PpcpPayPalPayment from './PaymentMethods/PayPal/PayPal.vue';
 import PpcpVenmoPayment from './PaymentMethods/Venmo/Venmo.vue';
 import PpcpCreditCardPayment from './PaymentMethods/CreditCard/CreditCard.vue';
 import PpcpApmPayment from './PaymentMethods/Apm/Apm.vue';
+import PpcpFastlanePayment from './PaymentMethods/Fastlane/Fastlane.vue';
 
 export default {
   name: 'PpcpPaymentPage',
@@ -31,7 +32,9 @@ export default {
       PpcpVenmoPayment: null,
       PpcpCreditCardPayment: null,
       PpcpApmPayment: null,
+      PpcpFastlanePayment: null,
       dataLoaded: false,
+      userLoggedIn: false,
     };
   },
   computed: {
@@ -43,20 +46,30 @@ export default {
       'paypal',
       'card',
       'apm',
+      'fastlane',
     ]),
-    sortedPaymentMethods() {
-      const methods = [
-        { ...this.google, component: this.PpcpGooglePayPayment },
-        { ...this.apple, component: this.PpcpApplePayPayment },
-        { ...this.paypal, component: this.PpcpPayPalPayment },
-        { ...this.venmo, component: this.PpcpVenmoPayment },
-        { ...this.card, component: this.PpcpCreditCardPayment },
-        { ...this.apm, component: this.PpcpApmPayment },
-      ];
-      // Sort based on sortOrder
-      return methods
-        .filter((method) => method.enabled)
-        .sort((a, b) => a.sortOrder - b.sortOrder);
+    computed: {
+      sortedPaymentMethods() {
+        const fastlaneActive = this.fastlane.enabled && !this.userLoggedIn;
+
+        const regular = [
+          { ...this.google, component: this.PpcpGooglePayPayment },
+          { ...this.apple, component: this.PpcpApplePayPayment },
+          { ...this.paypal, component: this.PpcpPayPalPayment },
+          { ...this.venmo, component: this.PpcpVenmoPayment },
+          { ...this.apm, component: this.PpcpApmPayment },
+          {
+            ...this.card,
+            component: fastlaneActive
+              ? this.PpcpFastlanePayment
+              : this.PpcpCreditCardPayment,
+          },
+        ];
+
+        return regular
+          .filter((m) => m.enabled)
+          .sort((a, b) => a.sortOrder - b.sortOrder);
+      },
     },
   },
   async created() {
@@ -80,11 +93,14 @@ export default {
     this.PpcpCreditCardPayment = PpcpCreditCardPayment;
     this.PpcpVenmoPayment = PpcpVenmoPayment;
     this.PpcpApmPayment = PpcpApmPayment;
+    this.PpcpFastlanePayment = PpcpFastlanePayment;
 
     await configStore.getInitialConfig();
     await cartStore.getCart();
     await this.getInitialConfigValues();
-    if (customerStore.isLoggedIn) {
+
+    this.userLoggedIn = customerStore.isLoggedIn;
+    if (this.userLoggedIn) {
       await this.getVaultedMethodsData();
     }
     this.dataLoaded = true;

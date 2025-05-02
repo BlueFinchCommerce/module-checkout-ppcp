@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import getVaultedMethods from '../services/getVaultedMethods';
+import mapAddressToMagento from '../helpers/mapAddressToMagento';
 
 export default defineStore('ppcpStore', {
   state: () => ({
@@ -78,6 +79,31 @@ export default defineStore('ppcpStore', {
       finishOrderUrl: '',
     },
     ppcpPaymentsIcons: [],
+    fastlane: {
+      enabled: false,
+      showCardholderName: false,
+      insightsEnabled: false,
+      policyActive: false,
+      styles: {
+        root: {
+          bg: '',
+          errorColor: '',
+          fontFamily: '',
+          fontSize: '',
+          paddings: '',
+          primaryColor: '',
+          textColor: '',
+        },
+        inputs: {
+          bg: '',
+          borderColor: '',
+          borderRadius: '',
+          borderWidth: '',
+          focusBorderColor: '',
+          textColor: '',
+        },
+      },
+    },
   }),
   getters: {
     selectedVaultMethod: (state) => (
@@ -162,6 +188,26 @@ export default defineStore('ppcpStore', {
           ppcp_card_payment_action
           ppcp_card_three_d_secure
           ppcp_card_sort_order
+          
+          paypal_ppcp_fastlane_is_active
+          paypal_ppcp_fastlane_show_cardholder_name
+          paypal_ppcp_fastlane_insights_enabled
+          paypal_ppcp_fastlane_policy_active
+          
+          paypal_ppcp_fastlane_root_styles_bg
+          paypal_ppcp_fastlane_root_styles_error_colour
+          paypal_ppcp_fastlane_root_styles_font_family
+          paypal_ppcp_fastlane_root_styles_font_size
+          paypal_ppcp_fastlane_root_styles_padding
+          paypal_ppcp_fastlane_root_styles_primary_color
+          paypal_ppcp_fastlane_root_styles_text_color
+          
+          paypal_ppcp_fastlane_styling_input_bg
+          paypal_ppcp_fastlane_styling_input_border_color
+          paypal_ppcp_fastlane_styling_input_border_radius
+          paypal_ppcp_fastlane_styling_input_border_width
+          paypal_ppcp_fastlane_styling_input_focus_border_color
+          paypal_ppcp_fastlane_styling_input_text_color
         }
       }`, {}, {}, 'BlueFinchCheckoutStoreConfigPPCP').then(this.handleInitialConfig);
 
@@ -258,6 +304,31 @@ export default defineStore('ppcpStore', {
             payLaterMessageTextAlign: storeconfig
               .ppcp_paypal_paylater_message_text_align,
           },
+          fastlane: {
+            enabled: storeconfig.paypal_ppcp_fastlane_is_active === '1',
+            showCardholderName: storeconfig.paypal_ppcp_fastlane_show_cardholder_name === '1',
+            insightsEnabled: storeconfig.paypal_ppcp_fastlane_insights_enabled === '1',
+            policyActive: storeconfig.paypal_ppcp_fastlane_policy_active === '1',
+            styles: {
+              root: {
+                bg: storeconfig.paypal_ppcp_fastlane_root_styles_bg,
+                errorColor: storeconfig.paypal_ppcp_fastlane_root_styles_error_colour,
+                fontFamily: storeconfig.paypal_ppcp_fastlane_root_styles_font_family,
+                fontSize: storeconfig.paypal_ppcp_fastlane_root_styles_font_size,
+                paddings: storeconfig.paypal_ppcp_fastlane_root_styles_padding,
+                primaryColor: storeconfig.paypal_ppcp_fastlane_root_styles_primary_color,
+                textColor: storeconfig.paypal_ppcp_fastlane_root_styles_text_color,
+              },
+              inputs: {
+                bg: storeconfig.paypal_ppcp_fastlane_styling_input_bg,
+                borderColor: storeconfig.paypal_ppcp_fastlane_styling_input_border_color,
+                borderRadius: storeconfig.paypal_ppcp_fastlane_styling_input_border_radius,
+                borderWidth: storeconfig.paypal_ppcp_fastlane_styling_input_border_width,
+                focusBorderColor: storeconfig.paypal_ppcp_fastlane_styling_input_focus_border_color,
+                textColor: storeconfig.paypal_ppcp_fastlane_styling_input_text_color,
+              },
+            },
+          },
         });
       }
     },
@@ -338,22 +409,50 @@ export default defineStore('ppcpStore', {
       };
     },
 
-    async makePayment(email, orderID, method, express, vault = false, apmMethod = false) {
+    async makePayment(
+      email,
+      orderID,
+      method,
+      express,
+      vault = false,
+      apmMethod = false,
+      fastlaneActive = false,
+      fastlaneProfile = null,
+    ) {
+      const data = {
+        'express-payment': express,
+        'paypal-order-id': orderID,
+        is_active_payment_token_enabler: vault,
+      };
+
+      const cartStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
+        'stores.useCartStore',
+      ]);
+
       const payment = {
         email,
         paymentMethod: {
           method,
-          additional_data: {
-            'express-payment': express,
-            'paypal-order-id': orderID,
-            is_active_payment_token_enabler: vault,
-          },
+          additional_data: data,
           extension_attributes: window.bluefinchCheckout.helpers.getPaymentExtensionAttributes(),
         },
       };
 
+      if (fastlaneActive) {
+        data.fastlane = fastlaneActive;
+        data['fastlane-profile'] = fastlaneProfile;
+
+        if (fastlaneProfile === 'Yes') {
+          // Retrieve shipping/billing address from the cart store
+          const profileBillingAddress = cartStore.cart.billing_address
+            ? cartStore.cart.billing_address : cartStore.cart.shipping_addresses[0];
+
+          payment.billingAddress = await mapAddressToMagento(profileBillingAddress);
+        }
+      }
+
       if (apmMethod) {
-        payment.paymentMethod.additional_data['apm-method'] = apmMethod;
+        data['apm-method'] = apmMethod;
       }
 
       return window.bluefinchCheckout.services.createPaymentRest(payment);

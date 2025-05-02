@@ -1,6 +1,6 @@
 import buildPpcpCartUrl from '../helpers/buildPpcpCartUrl';
 
-export default async (method, vault = null, fromCheckout = 0, hash = '') => {
+export default async (method, vault = null, fromCheckout = 0, hash = '', singleUseToken = '') => {
   const [
     paymentStore,
     customerStore,
@@ -41,13 +41,19 @@ export default async (method, vault = null, fromCheckout = 0, hash = '') => {
     url = await buildPpcpCartUrl();
   }
 
+  const payload = {
+    cartId,
+    method,
+  };
+
+  if (singleUseToken) {
+    payload.singleUseToken = singleUseToken;
+  }
+
   try {
     const response = await window.bluefinchCheckout.services.authenticatedRequest().post(
       url,
-      {
-        cartId,
-        method,
-      },
+      payload,
       { headers },
     );
 
