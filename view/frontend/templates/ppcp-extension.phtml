@@ -3,22 +3,24 @@
  * @var \Magento\Framework\View\Element\Template $block
  * @var \Magento\Framework\Escaper $escaper
  * @var \BlueFinch\Checkout\ViewModel\Assets $assetViewModel
+ * @var \Magento\Framework\View\Helper\SecureHtmlRenderer $secureRenderer
  */
 
 $assetViewModel = $block->getAssetViewModel();
 
-$expressGooglePay = $assetViewModel->getDistViewFileUrl('BlueFinch_CheckoutPPCP::js/checkout/dist/components/ExpressPayments/GooglePay/GooglePay.min.js');
-$expressApplePay = $assetViewModel->getDistViewFileUrl('BlueFinch_CheckoutPPCP::js/checkout/dist/components/ExpressPayments/ApplePay/ApplePay.min.js');
-$expressPayPal = $assetViewModel->getDistViewFileUrl('BlueFinch_CheckoutPPCP::js/checkout/dist/components/ExpressPayments/PayPal/PayPal.min.js');
-$paymentMethods = $assetViewModel->getDistViewFileUrl('BlueFinch_CheckoutPPCP::js/checkout/dist/components/PaymentPage/PaymentMethodsList.min.js');
-$vaultedPaymentMethods = $assetViewModel->getDistViewFileUrl('BlueFinch_CheckoutPPCP::js/checkout/dist/components/PaymentPage/VaultedPayments/VaultedMethodsList.min.js');
-$icons = $assetViewModel->getDistViewFileUrl('BlueFinch_CheckoutPPCP::js/checkout/dist/components/FooterIcons/FooterIcons.min.js');
-$paymentIcons = $assetViewModel->getDistViewFileUrl('BlueFinch_CheckoutPPCP::js/checkout/dist/components/PaymentIcons/PaymentIcons.min.js');
+$expressGooglePay       = $assetViewModel->getDistViewFileUrl('BlueFinch_CheckoutPPCP::js/checkout/dist/components/ExpressPayments/GooglePay/GooglePay.min.js');
+$expressApplePay        = $assetViewModel->getDistViewFileUrl('BlueFinch_CheckoutPPCP::js/checkout/dist/components/ExpressPayments/ApplePay/ApplePay.min.js');
+$expressPayPal          = $assetViewModel->getDistViewFileUrl('BlueFinch_CheckoutPPCP::js/checkout/dist/components/ExpressPayments/PayPal/PayPal.min.js');
+$paymentMethods         = $assetViewModel->getDistViewFileUrl('BlueFinch_CheckoutPPCP::js/checkout/dist/components/PaymentPage/PaymentMethodsList.min.js');
+$vaultedPaymentMethods  = $assetViewModel->getDistViewFileUrl('BlueFinch_CheckoutPPCP::js/checkout/dist/components/PaymentPage/VaultedPayments/VaultedMethodsList.min.js');
+$icons                  = $assetViewModel->getDistViewFileUrl('BlueFinch_CheckoutPPCP::js/checkout/dist/components/FooterIcons/FooterIcons.min.js');
+$paymentIcons           = $assetViewModel->getDistViewFileUrl('BlueFinch_CheckoutPPCP::js/checkout/dist/components/PaymentIcons/PaymentIcons.min.js');
 
-$styles = $assetViewModel->getDistViewFileUrl('BlueFinch_CheckoutPPCP::js/checkout/dist/styles.css');
-?>
+$styles                 = $assetViewModel->getDistViewFileUrl('BlueFinch_CheckoutPPCP::js/checkout/dist/styles.css');
 
-<script>
+// Build inline script with CSP-safe renderer
+$scriptString = <<<script
+
     window.bluefinchCheckout = window.bluefinchCheckout || {};
     window.bluefinchCheckout.expressPaymentMethods = window.bluefinchCheckout.expressPaymentMethods || {};
     window.bluefinchCheckout.paymentMethods = window.bluefinchCheckout.paymentMethods || {};
@@ -27,19 +29,22 @@ $styles = $assetViewModel->getDistViewFileUrl('BlueFinch_CheckoutPPCP::js/checko
     window.bluefinchCheckout.additionalVaultedMethods = window.bluefinchCheckout.additionalVaultedMethods || {};
 
     // Express Payments
-    window.bluefinchCheckout.expressPaymentMethods.PpcpGooglePay = "<?= $escaper->escapeJs($expressGooglePay) ?>";
-    window.bluefinchCheckout.expressPaymentMethods.PpcpApplePay = "<?= $escaper->escapeJs($expressApplePay) ?>";
-    window.bluefinchCheckout.expressPaymentMethods.PpcpPayPal = "<?= $escaper->escapeJs($expressPayPal) ?>";
+    window.bluefinchCheckout.expressPaymentMethods.PpcpGooglePay = "{$escaper->escapeJs($expressGooglePay)}";
+    window.bluefinchCheckout.expressPaymentMethods.PpcpApplePay  = "{$escaper->escapeJs($expressApplePay)}";
+    window.bluefinchCheckout.expressPaymentMethods.PpcpPayPal    = "{$escaper->escapeJs($expressPayPal)}";
 
     // Icons
-    window.bluefinchCheckout.footerPaymentIcons.AdyenFooterIcons = "<?= $escaper->escapeJs($icons) ?>";
-    window.bluefinchCheckout.paymentIcons.AdyenIcons = "<?= $escaper->escapeJs($paymentIcons) ?>";
+    window.bluefinchCheckout.footerPaymentIcons.AdyenFooterIcons = "{$escaper->escapeJs($icons)}";
+    window.bluefinchCheckout.paymentIcons.AdyenIcons            = "{$escaper->escapeJs($paymentIcons)}";
 
     // Payment Methods
-    window.bluefinchCheckout.paymentMethods.PPCP = "<?= $escaper->escapeJs($paymentMethods) ?>";
+    window.bluefinchCheckout.paymentMethods.PPCP = "{$escaper->escapeJs($paymentMethods)}";
 
     // Vaulted Payment Methods
-    window.bluefinchCheckout.additionalVaultedMethods.vaultedPpcp = "<?= $escaper->escapeJs($vaultedPaymentMethods) ?>";
-</script>
+    window.bluefinchCheckout.additionalVaultedMethods.vaultedPpcp = "{$escaper->escapeJs($vaultedPaymentMethods)}";
+
+script;
+?>
+<?= /* @noEscape */ $secureRenderer->renderTag('script', [], $scriptString, false) ?>
 
 <link rel="stylesheet" href="<?= $escaper->escapeHtmlAttr($styles) ?>" />
