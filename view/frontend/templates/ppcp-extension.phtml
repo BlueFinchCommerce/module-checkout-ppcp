@@ -32,7 +32,7 @@ $scriptString = <<<script
     window.bluefinchCheckout.additionalVaultedMethods = window.bluefinchCheckout.additionalVaultedMethods || {};
 
     // WaterMark Fastlane
-    window.bluefinchCheckout.belowEmailFields.FastlaneEmail = "<?= $escaper->escapeJs($watermarkComponent) ?>";
+    window.bluefinchCheckout.belowEmailFields.FastlaneEmail = "{$escaper->escapeJs($watermarkComponent)}";
     
     // Express Payments
     window.bluefinchCheckout.expressPaymentMethods.PpcpGooglePay = "{$escaper->escapeJs($expressGooglePay)}";
