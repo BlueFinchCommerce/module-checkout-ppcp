@@ -197,7 +197,7 @@ export default {
         if (isValid) {
           try {
             const { id } = await this.getPaymentToken();
-            await this.createPayment(this, id);
+            await this.createPayment(id);
           } catch (error) {
             console.error(error);
             this.handleErrors('Cannot validate payment.');
@@ -241,7 +241,7 @@ export default {
       return agreementsValid && captchaValid;
     },
 
-    onApprove: async (self) => {
+    async onApprove() {
       const [
         loadingStore,
         paymentStore,
@@ -252,11 +252,11 @@ export default {
         'stores.useCartStore',
       ]);
 
-      const fastlaneProfile = self.profileData !== null ? 'Yes' : 'No';
+      const fastlaneProfile = this.profileData !== null ? 'Yes' : 'No';
 
-      return self.makePayment(
+      return this.makePayment(
         cartStore.cart.email,
-        self.orderID,
+        this.orderID,
         'ppcp_card',
         false,
         false,
@@ -276,7 +276,7 @@ export default {
       return this.fastlanePaymentComponent.getPaymentToken();
     },
 
-    createPayment: async (self, singleUseToken) => {
+    async createPayment(singleUseToken) {
       const loadingStore = await window.bluefinchCheckout.helpers.loadFromCheckout([
         'stores.useLoadingStore',
       ]);
@@ -294,10 +294,10 @@ export default {
 
         const [orderID] = orderData;
         /* eslint-disable no-param-reassign */
-        self.orderID = orderID;
+        this.orderID = orderID;
 
         if (orderID) {
-          self.onApprove(self);
+          this.onApprove();
         }
 
         return orderID;

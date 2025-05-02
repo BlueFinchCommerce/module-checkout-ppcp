@@ -48,37 +48,33 @@ export default {
       'apm',
       'fastlane',
     ]),
-    sortedPaymentMethods() {
-      const fastlaneActive = this.fastlane.enabled && !this.userLoggedIn;
+    computed: {
+      sortedPaymentMethods() {
+        const fastlaneActive = this.fastlane.enabled && !this.userLoggedIn;
 
-      const regular = [
-        { ...this.google, component: this.PpcpGooglePayPayment },
-        { ...this.apple, component: this.PpcpApplePayPayment },
-        { ...this.paypal, component: this.PpcpPayPalPayment },
-        { ...this.venmo, component: this.PpcpVenmoPayment },
-        { ...this.apm, component: this.PpcpApmPayment },
-      ]
-        .filter((m) => m.enabled)
-        .sort((a, b) => a.sortOrder - b.sortOrder);
-
-      if (fastlaneActive) {
-        return [
+        const regular = [
+          { ...this.google, component: this.PpcpGooglePayPayment },
+          { ...this.apple, component: this.PpcpApplePayPayment },
+          { ...this.paypal, component: this.PpcpPayPalPayment },
+          { ...this.venmo, component: this.PpcpVenmoPayment },
+          { ...this.apm, component: this.PpcpApmPayment },
           {
             ...this.card,
-            sortOrder: -999,
-            component: this.PpcpFastlanePayment,
-            enabled: true,
-          },
-          ...regular,
-        ];
-      }
 
-      return [
-        ...regular,
-        { ...this.card, component: this.PpcpCreditCardPayment },
-      ]
-        .filter((m) => m.enabled)
-        .sort((a, b) => a.sortOrder - b.sortOrder);
+            component: fastlaneActive
+              ? this.PpcpFastlanePayment
+              : this.PpcpCreditCardPayment,
+
+            sortOrder: fastlaneActive
+              ? -999
+              : this.card.sortOrder,
+          },
+        ];
+
+        return regular
+          .filter((m) => m.enabled)
+          .sort((a, b) => a.sortOrder - b.sortOrder);
+      },
     },
   },
   async created() {
