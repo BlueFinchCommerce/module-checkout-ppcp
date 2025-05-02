@@ -60,14 +60,9 @@ export default {
           { ...this.apm, component: this.PpcpApmPayment },
           {
             ...this.card,
-
             component: fastlaneActive
               ? this.PpcpFastlanePayment
               : this.PpcpCreditCardPayment,
-
-            sortOrder: fastlaneActive
-              ? -999
-              : this.card.sortOrder,
           },
         ];
 
