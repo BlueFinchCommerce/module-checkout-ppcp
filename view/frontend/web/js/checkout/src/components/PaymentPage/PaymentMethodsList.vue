@@ -48,28 +48,27 @@ export default {
       'apm',
       'fastlane',
     ]),
-    computed: {
-      sortedPaymentMethods() {
-        const fastlaneActive = this.fastlane.enabled && !this.userLoggedIn;
 
-        const regular = [
-          { ...this.google, component: this.PpcpGooglePayPayment },
-          { ...this.apple, component: this.PpcpApplePayPayment },
-          { ...this.paypal, component: this.PpcpPayPalPayment },
-          { ...this.venmo, component: this.PpcpVenmoPayment },
-          { ...this.apm, component: this.PpcpApmPayment },
-          {
-            ...this.card,
-            component: fastlaneActive
-              ? this.PpcpFastlanePayment
-              : this.PpcpCreditCardPayment,
-          },
-        ];
+    sortedPaymentMethods() {
+      const fastlaneActive = this.fastlane.enabled && !this.userLoggedIn;
 
-        return regular
-          .filter((m) => m.enabled)
-          .sort((a, b) => a.sortOrder - b.sortOrder);
-      },
+      const result = [
+        { ...this.google, component: this.PpcpGooglePayPayment },
+        { ...this.apple, component: this.PpcpApplePayPayment },
+        { ...this.paypal, component: this.PpcpPayPalPayment },
+        { ...this.venmo, component: this.PpcpVenmoPayment },
+        { ...this.apm, component: this.PpcpApmPayment },
+        {
+          ...this.card,
+          component: fastlaneActive
+            ? this.PpcpFastlanePayment
+            : this.PpcpCreditCardPayment,
+        },
+      ];
+
+      return result
+        .filter((m) => m.enabled)
+        .sort((a, b) => a.sortOrder - b.sortOrder);
     },
   },
   async created() {
