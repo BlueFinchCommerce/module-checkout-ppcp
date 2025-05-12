@@ -34,6 +34,11 @@ export default function loadScript() {
         script.dataset.sdkIntegrationSource = 'developer-studio';
       }
 
+      // Add CSP nonce if it exists.
+      if (window?.cspNonce) {
+        script.dataset.cspNonce = window.cspNonce;
+      }
+
       script.onload = () => {
         // Emit a custom event when the script loads.
         const event = new CustomEvent('ppcpScriptLoaded', { detail: namespace });
